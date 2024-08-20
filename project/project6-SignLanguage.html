@@ -1,0 +1,236 @@
+<!DOCTYPE HTML>
+<!--
+	Editorial by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Project1</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<style>
+            /* Flex container styles */
+            .container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            /* Text container styles */
+            .text-container {
+                flex: 1;
+                text-align: justify;
+            }
+            
+            /* Image container styles */
+            .image-container {
+                flex: 0 0 auto; /* Prevent image container from growing */
+            }
+            
+            /* Image styles */
+            .image-container img {
+                max-width: 450px; /* Adjust width as needed */
+                height: auto; /* Maintain aspect ratio */
+                border-radius: 8px; /* Optional: add rounded corners */
+                margin-left: 25px; /* Space between text and image */
+            }
+        </style>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+
+							<!-- Header -->
+                            <header id="header">
+                                <a href="self.html" class="logo"><strong>Yongkang Li </strong> homepage</a>
+                            </header>
+                        
+                        	<!-- Banner -->
+                            <section id="banner">
+                                <div class="content">
+                                    <header>
+                                        <h1 style="font-size: 36px;">Yolov5-based Sign Language Detection System</h1>
+                                    </header>
+                                </div>
+                            </section>
+                            <!-- <hr style="border-style: dashed; margin-top: -35px;" class="major" /> -->
+
+							<!-- Section -->
+							<section >						
+								<div style="width: 100%; display: flex; justify-content: space-between; margin-top: -36px; margin-bottom: 24px;">
+									<span class="image fit" style="flex: 1; margin-right: 10px;">
+										<img src="../images/project/project6-SignLanguage/2.png" alt="" style="width: 100%; display: block; margin: 0 auto;"/>
+									</span>
+								</div>	
+								<header class="main">
+									<h1 id="introducation" style="font-size: 28px; margin-top: -20px; margin-bottom: 5px;">Introduction</h1>
+								</header>
+				
+								<p style="font-size: 16px;">
+									The rapid development of deep learning and computer vision technologies has opened up new possibilities for improving communication between deaf-mute individuals and the general public. 
+									Despite the increasing availability of facilities designed for people with disabilities, the fundamental issue of effective communication for the deaf-mute community remains unresolved. 
+									This project addresses this critical gap by developing a real-time sign language recognition system using deep learning techniques.
+									</p>
+									
+									<p style="font-size: 16px;">
+									Traditional methods for sign language recognition often rely on expensive, cumbersome equipment or are limited by the availability of large, high-quality datasets. Additionally, 
+									these methods struggle with real-time performance and the accurate recognition of complex, continuous sign language sequences. This project seeks to overcome these limitations by leveraging the YOLOv5 algorithm, 
+									which is known for its balance between detection speed and accuracy.
+									</p>
+									
+									<p style="font-size: 16px;">
+										<ul>
+											<li style="font-size: 16px;"><b>Innovative Data Handling:</b> The project introduces an optimized approach to data collection and augmentation, categorizing datasets into basic, enhanced, complex, 
+												and custom types. This approach not only reduces the volume of data required but also improves recognition accuracy and robustness.</li>
+											<li style="font-size: 16px;"><b>Model Optimization and Lightweight Design:</b> To achieve real-time detection, the project employs knowledge distillation to compress large models, 
+												ensuring high accuracy while making the model more lightweight. Additionally, the incorporation of the SE attention mechanism and a weighted bidirectional pyramid network enhances the model's ability to detect small objects, further improving its effectiveness in real-world applications.</li>
+										</ul>
+									</p>
+										
+						</section>
+
+							<!-- Section -->
+							<section>
+								<div>
+									<header>
+										<h1 id="detailed-information" style="font-size: 28px; margin-top: -20px; margin-bottom: 12px;">Detailed Information</h1>
+									</header>
+								</div>
+
+								<div style="width: 100%; display: flex; justify-content: space-between;">
+									<span class="image fit" style="flex: 1; margin-right: 10px;">
+										<img src="../images/project/project6-SignLanguage/1.png" alt="" style="width: 100%; display: block; margin: 0 auto;"/>
+									</span>
+								</div>
+
+								<p style="font-size: 16px;">
+									The sign language recognition system is implemented through a series of well-defined modules, each contributing to the overall performance and accuracy of the model. Below is a breakdown of the system's core modules and their respective functionalities.
+									</p>
+									
+									<p style="font-size: 16px;">
+										<ul>
+											<li style="font-size: 16px;"><b>Input Module:</b> The input module is responsible for preparing the data for processing. It includes techniques like Mosaic data augmentation, which combines four images into one, enhancing the diversity of the training data. Additionally, adaptive image scaling and anchor box calculation are employed to ensure that the input data is compatible with the model's architecture.</li>
+											<li style="font-size: 16px;"><b>Backbone Module:</b> The backbone of the model, based on the YOLOv5 architecture, includes key components such as the Focus module, which slices the input image into four pieces to retain crucial spatial information while reducing the computational load. This module is crucial for initial feature extraction, providing a solid foundation for subsequent layers.</li>
+											<li style="font-size: 16px;"><b>Neck Module:</b> The Neck module integrates FPN (Feature Pyramid Network) and PAN (Path Aggregation Network) structures to fuse semantic features from different layers. This combination helps the model detect objects of various sizes by ensuring that features are well-represented across different scales, enhancing the accuracy of small object detection, which is particularly important in sign language recognition.</li>
+											<li style="font-size: 16px;"><b>Head Module:</b> The Head module outputs the final predictions, including the class probabilities and bounding box coordinates. The module is equipped with multiple detection layers to handle objects of different scales, ensuring that each sign language gesture is accurately recognized regardless of its size within the frame. The loss function, based on CIoU (Complete IoU), ensures that the model effectively handles bounding box regression with a focus on both overlap and distance between predicted and ground truth boxes.</li>
+										</ul>
+									</p>
+					
+							</section>
+
+							<!-- Section -->
+							<section>
+								<div>
+									<div>
+										<header>
+											<h1 id="project-achievements" style="font-size: 28px; margin-top: -20px; margin-bottom: 10px;">Project Achievements</h1>
+										</header>
+									</div>
+									<div style="width: 100%;">
+										<span class="image fit">
+											<img src="../images/project/project6-SignLanguage/3.png" alt="" style="width: 90%; display: block; margin: 0 auto;"/>
+										</span>
+									</div>
+									<div style="width: 100%; display: flex; justify-content: space-between;">
+										<span class="image fit" style="flex: 1; margin-right: 10px;">
+											<img src="../images/project/project6-SignLanguage/4.png" alt="" style="width: 100%; display: block; margin: 0 auto;"/>
+										</span>
+									</div>
+									<div style="width: 100%; display: flex; justify-content: space-between;">
+										<span class="image fit" style="flex: 1; margin-right: 10px;">
+											<img src="../images/project/project6-SignLanguage/5.png" alt="" style="width: 100%; display: block; margin: 0 auto;"/>
+										</span>
+									</div>
+
+									<p style="font-size: 16px;">
+										The project aimed to develop a sign language recognition system that leverages deep learning techniques to facilitate communication for the deaf and mute community. By employing the YOLOv5 algorithm and incorporating several advanced techniques, the project successfully achieved significant results that address both accuracy and efficiency in real-time sign language detection.
+										</p>
+										
+										<p style="font-size: 16px;">
+										The key outcomes of this project are as follows:
+										</p>
+										
+										<p style="font-size: 16px;">
+											<ul>
+												<li style="font-size: 16px;"><b>High Accuracy and Efficiency:</b> The system demonstrates a high level of accuracy in recognizing 38 types of sign language gestures, even in real-time settings. The use of optimized YOLOv5s, combined with data augmentation techniques like Mosaic and SE attention mechanisms, ensures that the system performs well in diverse environments with varying levels of complexity.</li>
+												<li style="font-size: 16px;"><b>Lightweight Model Design:</b> By applying knowledge distillation and other optimization techniques, the project successfully reduced the model's size without compromising its performance. This lightweight design is crucial for deploying the system on devices with limited computational resources, making it accessible for broader use cases, including mobile and IoT devices.</li>
+												<li style="font-size: 16px;"><b>Scalability and Adaptability:</b> The system's modular design allows for easy adaptation to different languages and environments. The ability to integrate additional datasets or adjust the model for new sign languages enhances the system's scalability, ensuring it can be used in various applications beyond its initial scope.</li>
+												<li style="font-size: 16px;"><b>Real-World Applicability:</b> The project's results highlight its potential for real-world deployment, offering a practical tool for improving communication between the deaf-mute community and the general public. The system's accuracy and efficiency in recognizing sign language gestures can significantly enhance the quality of life for its users.</li>
+											</ul>
+										</p>
+										
+								</div>
+							</section>
+						</div>
+					</div>
+
+					<!-- Sidebar -->
+					<div id="sidebar">
+						<div class="inner">
+
+							<!-- Search -->
+								<section id="search" class="alt">
+									<form method="post" action="#">
+										<input type="text" name="query" id="query" placeholder="Search" />
+									</form>
+								</section>
+
+								<!-- Menu -->
+								<nav id="menu">
+									<header class="major">
+										<h2>Menu</h2>
+									</header>
+									<ul>
+										<!-- <li><a href="index.html">Homepage</a></li> -->
+                                        <li>
+											<a href="../index.html" class="opener">Homepage</a>
+											<ul>
+												<li><a href="../index.html#self-introduction">SELF-INTRODUCTION</a></li>
+												<li><a href="../index.html#news">NEWS</a></li>
+												<li><a href="../index.html#research">RESEARCH</a></li>
+                                                <li><a href="../index.html#software-copyright">SOFTWARE COPYRIGHT</a></li>
+                                                <li><a href="../index.html#project">PROJECT</a></li>
+												<li><a href="../index.html#scholarship-and-awards">SCHOLARSHIP AND AWARDS</a></li>
+                                                <li><a href="../index.html#leadership-and-activities">LEADERSHIP AND ACTIVITIES</a></li>
+											</ul>
+                                        </li>
+                                        <li>
+                                            <a href="../publication/publication.html" class="opener">Publication</a>
+											<ul>
+												<li><a href="../publication/publication.html#2024">2024</a></li>
+                                                <ul>
+                                                    <li><a href="../publication/paper/aap.html">When, Where, and What? A Benchmark for Accident Anticipation and Localization with Large Language Models</a></li>
+                                                    <li><a href="../publication/paper/ecai24.html">Less is More: Efficient Brain-Inspired Learning for Autonomous Driving Trajectory Prediction</a></li>
+                                                    <li><a href="../publication/paper/aap.html">Real-time Accident Anticipation for Autonomous Driving Through Monocular Depth-Enhanced 3D Modeling</a></li>
+                                                    <li><a href="../publication/paper/tiv.html">A Cognitive-Based Trajectory Prediction Approach for Autonomous Driving</a></li>
+                                                </ul>
+												<li><a href="../publication/publication.html#2023">2023</a></li>
+                                                <ul>
+                                                    <li><a href="#">Lightweight Human Observation-inspired Trajectory Prediction For Autonomous Driving</a></li>
+                                                </ul>
+											</ul>
+										</li>
+									</ul>
+								</nav>
+
+						</div>
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="../assets/js/jquery.min.js"></script>
+			<script src="../assets/js/browser.min.js"></script>
+			<script src="../assets/js/breakpoints.min.js"></script>
+			<script src="../assets/js/util.js"></script>
+			<script src="../assets/js/main.js"></script>
+
+	</body>
+</html>

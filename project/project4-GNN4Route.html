@@ -1,0 +1,290 @@
+<!DOCTYPE HTML>
+<!--
+	Editorial by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Project1</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<style>
+            /* Flex container styles */
+            .container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            /* Text container styles */
+            .text-container {
+                flex: 1;
+                text-align: justify;
+            }
+            
+            /* Image container styles */
+            .image-container {
+                flex: 0 0 auto; /* Prevent image container from growing */
+            }
+            
+            /* Image styles */
+            .image-container img {
+                max-width: 450px; /* Adjust width as needed */
+                height: auto; /* Maintain aspect ratio */
+                border-radius: 8px; /* Optional: add rounded corners */
+                margin-left: 25px; /* Space between text and image */
+            }
+        </style>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+
+							<!-- Header -->
+                            <header id="header">
+                                <a href="self.html" class="logo"><strong>Yongkang Li </strong> homepage</a>
+                            </header>
+                        
+                        	<!-- Banner -->
+                            <section id="banner">
+                                <div class="content">
+                                    <header>
+                                        <h1 style="font-size: 36px;">Secure Facial Recognition Authentication System</h1>
+                                    </header>
+                                </div>
+                            </section>
+                            <!-- <hr style="border-style: dashed; margin-top: -35px;" class="major" /> -->
+
+							<!-- Section -->
+							<section >						
+								<div style="width: 100%; display: flex; justify-content: space-between; margin-top: -36px; margin-bottom: 24px;">
+									<span class="image fit" style="flex: 1; margin-right: 10px;">
+										<img src="../images/project/project4-GNN4Route/7.png" alt="" style="width: 100%; display: block; margin: 0 auto;"/>
+									</span>
+									<span class="image fit" style="flex: 1; margin-left: 10px;">
+										<img src="../images/project/project4-GNN4Route/8.png" alt="" style="width: 100%; display: block; margin: 0 auto;"/>
+									</span>
+								</div>	
+								<header class="main">
+									<h1 id="introducation" style="font-size: 28px; margin-top: -20px; margin-bottom: 5px;">Introduction</h1>
+								</header>
+
+								<p style="font-size: 16px;">The GNN4Route project tackles the significant challenges of fine-grained IP geolocation by introducing a novel framework that leverages Graph Neural Networks (GNNs). 
+									This project addresses the limitations of traditional IP geolocation methods, which often struggle with inaccuracies due to incomplete data, network complexity, 
+									and the dynamic nature of internet topologies.</p>
+
+								<p style="font-size: 16px;">The background of this project is rooted in the growing demand for precise IP geolocation across various industries, such as targeted advertising, fraud prevention,
+									 and logistics management. Traditional methods, which include database lookups and basic network measurements, often fall short in providing accurate and reliable geolocation results, 
+									 particularly at the street level. The GNN4Route project was developed to overcome these limitations and achieve more accurate geolocation results.</p>
+
+								<div style="width: 100%; display: flex; justify-content: space-between;">
+									<span class="image fit" style="flex: 1; margin-right: 10px;">
+										<img src="../images/project/project4-GNN4Route/1.png" alt="" style="width: 80%; display: block; margin: 0 auto;"/>
+									</span>
+								</div>	
+								<p style="font-size: 16px;">
+									<ul>
+										<li style="font-size: 16px;"><b>Graph-Based IP Geolocation:</b> The project introduces the use of Graph Neural Networks to model the relationships between IP addresses and network topologies. 
+											By representing IP hosts and their connections as nodes and edges within a graph, GNN4Route captures the complex spatial and topological dependencies that are critical for accurate geolocation.</li>
+										<li style="font-size: 16px;"><b>Addressing Data Incompleteness and Uncertainty:</b> The model incorporates a self-paced graph contrastive learning approach and Gaussian Mixture Model-based graph convolutional 
+											networks (GCNmf) to handle missing data and uncertainty in network measurements. This ensures that the model can maintain accuracy even in the presence of incomplete or noisy data.</li>
+										<li style="font-size: 16px;"><b>Innovative Uncertainty-Aware Modeling:</b> GNN4Route introduces an uncertainty-aware approach that factors in the inherent noise and instability in network measurements. 
+											By constructing probability distributions for predicted locations, the model provides not just location estimates, but also a measure of confidence for each prediction, making it more reliable for real-world applications.</li>
+										<li style="font-size: 16px;"><b>Visual and Interactive Tools:</b> The project includes a frontend interface that integrates with mapping services like Gaode Maps, enabling users to interactively visualize geolocation results. 
+											This makes the system accessible and user-friendly, catering to both technical and non-technical users.</li>
+									</ul>
+								</p>
+
+								<p style="font-size: 16px;">Overall, the GNN4Route project represents a significant innovation in the field of IP geolocation. By integrating advanced GNN techniques with robust handling of data uncertainty and missing information, 
+									the project sets a new standard for accurate and reliable IP geolocation at the street level.</p>
+
+						</section>
+
+							<!-- Section -->
+							<section>
+								<div>
+									<header>
+										<h1 id="detailed-information" style="font-size: 28px; margin-top: -20px; margin-bottom: 12px;">Detailed Information</h1>
+									</header>
+								</div>
+
+								<div style="width: 100%; display: flex; justify-content: space-between;">
+									<span class="image fit" style="flex: 1; margin-right: 10px;">
+										<img src="../images/project/project4-GNN4Route/2.png" alt="" style="width: 80%; display: block; margin: 0 auto;"/>
+									</span>
+								</div>
+
+								<p style="font-size: 16px;">The GNN4Route project introduces a cutting-edge approach to fine-grained IP geolocation by leveraging advanced graph neural networks (GNNs) and innovative data processing techniques. 
+									The model is designed to address the challenges of accurately predicting IP locations at the street level, even in complex and dynamic network environments. The implementation of the model is structured into several key modules, 
+									each contributing to the overall functionality and precision of the system.</p>
+
+								<p style="font-size: 16px;">The implementation of the GNN4Route model can be divided into the following modules:</p>
+
+								<p style="font-size: 16px;">
+									<ul>
+										<div>
+											<div class="container">
+												<div class="text-container">
+													<li style="font-size: 16px;"><b>IP Host Topology Clustering:</b> This module focuses on identifying and clustering IP hosts based on their topological relationships within the network. 
+														By grouping IP hosts with similar network characteristics, the model can create a more accurate representation of the network structure, which is crucial for effective geolocation.</li>			
+												</div>
+												<div class="image-container">
+													<span class="image fit">
+														<img src="../images/project/project4-GNN4Route/3.png" alt=""/>
+													</span>
+												</div>
+											</div>
+										</div>
+										<li style="font-size: 16px;"><b>IP Host Connectivity Analysis:</b> This module analyzes the connections between IP hosts to establish the network's topology. By mapping out the connections, 
+											the model can better understand the spatial and logical relationships between different nodes, enhancing the accuracy of location predictions.</li>
+										<div>
+											<div class="container">
+												<div class="text-container">
+													<li style="font-size: 16px;"><b>Uncertainty-Aware IP Attribute Aggregation:</b> Given the inherent noise and uncertainty in network measurements, this module aggregates IP attributes in a way that accounts for these uncertainties. 
+														By incorporating uncertainty into the model, it can make more robust predictions that are less affected by the noise present in real-world data.</li>			
+													<li style="font-size: 16px;"><b>Self-Paced Graph Contrastive Learning:</b> To handle the incomplete and dynamic nature of network data, this module employs a self-paced graph contrastive learning algorithm. 
+														This approach allows the model to dynamically adjust and refine the graph structure, ensuring that even with missing data, the model can still produce accurate geolocation predictions.</li>				
+												</div>
+												<div class="image-container">
+													<span class="image fit">
+														<img src="../images/project/project4-GNN4Route/5.png" alt=""/>
+													</span>
+												</div>
+											</div>
+										</div>
+										<li style="font-size: 16px;"><b>GCNmf Model for Missing Data Handling:</b> The model uses a Gaussian Mixture Model (GMM) within the Graph Convolutional Network (GCN) to handle missing data. 
+											This innovative approach ensures that the model remains accurate and effective even when some data points are unavailable or incomplete.</li>
+										<div style="width: 100%; display: flex; justify-content: space-between;">
+											<span class="image fit" style="flex: 1; margin-right: 10px;">
+												<img src="../images/project/project4-GNN4Route/4.png" alt="" style="width: 60%; display: block; margin: 0 auto;"/>
+											</span>
+										</div>
+										<li style="font-size: 16px;"><b>Probability Distribution Construction:</b> To further enhance the robustness of the geolocation predictions, this module constructs probability distributions for the predicted locations. 
+											This allows the model to express its confidence in each prediction, providing users with a measure of uncertainty alongside the geolocation results.</li>
+										<li style="font-size: 16px;"><b>Prediction and Training Algorithms:</b> The final module involves the training and prediction algorithms used to fine-tune the model and generate geolocation predictions. 
+											These algorithms are optimized to handle large-scale, real-world datasets, ensuring that the model performs well in practical applications.</li>
+									</ul>
+								</p>
+
+								<p style="font-size: 16px;">Each of these modules plays a critical role in ensuring that the GNN4Route model can deliver highly accurate and reliable IP geolocation results. By integrating advanced machine learning techniques with robust data processing methods, 
+									the project sets a new standard for IP geolocation technology.</p>
+
+							</section>
+
+							<!-- Section -->
+							<section>
+								<div>
+									<div>
+										<header>
+											<h1 id="project-achievements" style="font-size: 28px; margin-top: -20px; margin-bottom: 10px;">Project Achievements</h1>
+										</header>
+									</div>
+									<div style="width: 100%; display: flex; justify-content: space-between;">
+										<span class="image fit" style="flex: 1; margin-right: 10px;">
+											<img src="../images/project/project4-GNN4Route/9.png" alt="" style="width: 100%; display: block; margin: 0 auto;"/>
+										</span>
+										<span class="image fit" style="flex: 1; margin-left: 10px;">
+											<img src="../images/project/project4-GNN4Route/10.png" alt="" style="width: 100%; display: block; margin: 0 auto;"/>
+										</span>
+									</div>
+
+									<p style="font-size: 16px;">The GNN4Route project has made significant strides in advancing the field of IP geolocation by leveraging the power of graph neural networks (GNNs) to achieve fine-grained location predictions. 
+										The project's outcomes are not only innovative but also highly impactful, setting new benchmarks in the accuracy and efficiency of IP geolocation technologies.</p>
+
+									<p style="font-size: 16px;">The following key achievements summarize the core outcomes of the GNN4Route project:</p>
+
+									<p style="font-size: 16px;">
+										<ul>
+											<li style="font-size: 16px;"><b>Achieving Fine-Grained IP Geolocation:</b> The project successfully developed a model capable of predicting IP locations with street-level accuracy. 
+												This fine-grained geolocation is a significant improvement over traditional methods, which often provide only city-level or regional estimates. 
+												This advancement opens up new possibilities for applications that require precise location data, such as targeted advertising, logistics, and fraud prevention.</li>
+											<li style="font-size: 16px;"><b>Robust Handling of Missing and Noisy Data:</b> One of the major challenges in IP geolocation is dealing with incomplete and noisy data. 
+												GNN4Route addresses this challenge by incorporating advanced techniques like self-paced graph contrastive learning and GCNmf (Gaussian Mixture Model-based Graph Convolutional Networks). 
+												These innovations ensure that the model remains accurate and reliable even when dealing with real-world data imperfections.</li>
+											<li style="font-size: 16px;"><b>Integration of Uncertainty Estimation:</b> The project includes a novel approach to uncertainty estimation, 
+												allowing the model to provide not only location predictions but also a confidence measure for each prediction. This feature is crucial for applications where the reliability of location data is critical, 
+												providing users with a clearer understanding of the model's predictions.</li>
+											<li style="font-size: 16px;"><b>User-Friendly Visualization and Interaction:</b> GNN4Route is complemented by a frontend platform that integrates with mapping services like Gaode Maps. 
+												This platform enables users to visualize geolocation predictions interactively, making the model's outcomes accessible and actionable for both technical and non-technical users.</li>
+											<li style="font-size: 16px;"><b>Scalability and Practical Application:</b> The model is designed to handle large-scale datasets, ensuring that it can be applied effectively in various practical scenarios. 
+												Its scalability makes it suitable for use in diverse fields, ranging from cybersecurity to urban planning.</li>
+										</ul>
+									</p>
+
+									<p style="font-size: 16px;">In summary, the GNN4Route project represents a significant advancement in the field of IP geolocation. Its innovative use of graph neural networks, 
+										coupled with robust data handling and user-friendly tools, has the potential to revolutionize how IP locations are predicted and utilized across various industries.</p>
+
+							</section>
+						</div>
+					</div>
+
+					<!-- Sidebar -->
+					<div id="sidebar">
+						<div class="inner">
+
+							<!-- Search -->
+								<section id="search" class="alt">
+									<form method="post" action="#">
+										<input type="text" name="query" id="query" placeholder="Search" />
+									</form>
+								</section>
+
+								<!-- Menu -->
+								<nav id="menu">
+									<header class="major">
+										<h2>Menu</h2>
+									</header>
+									<ul>
+										<!-- <li><a href="index.html">Homepage</a></li> -->
+                                        <li>
+											<a href="../index.html" class="opener">Homepage</a>
+											<ul>
+												<li><a href="../index.html#self-introduction">SELF-INTRODUCTION</a></li>
+												<li><a href="../index.html#news">NEWS</a></li>
+												<li><a href="../index.html#research">RESEARCH</a></li>
+                                                <li><a href="../index.html#software-copyright">SOFTWARE COPYRIGHT</a></li>
+                                                <li><a href="../index.html#project">PROJECT</a></li>
+												<li><a href="../index.html#scholarship-and-awards">SCHOLARSHIP AND AWARDS</a></li>
+                                                <li><a href="../index.html#leadership-and-activities">LEADERSHIP AND ACTIVITIES</a></li>
+											</ul>
+                                        </li>
+                                        <li>
+                                            <a href="../publication/publication.html" class="opener">Publication</a>
+											<ul>
+												<li><a href="../publication/publication.html#2024">2024</a></li>
+                                                <ul>
+                                                    <li><a href="../publication/paper/aap.html">When, Where, and What? A Benchmark for Accident Anticipation and Localization with Large Language Models</a></li>
+                                                    <li><a href="../publication/paper/ecai24.html">Less is More: Efficient Brain-Inspired Learning for Autonomous Driving Trajectory Prediction</a></li>
+                                                    <li><a href="../publication/paper/aap.html">Real-time Accident Anticipation for Autonomous Driving Through Monocular Depth-Enhanced 3D Modeling</a></li>
+                                                    <li><a href="../publication/paper/tiv.html">A Cognitive-Based Trajectory Prediction Approach for Autonomous Driving</a></li>
+                                                </ul>
+												<li><a href="../publication/publication.html#2023">2023</a></li>
+                                                <ul>
+                                                    <li><a href="#">Lightweight Human Observation-inspired Trajectory Prediction For Autonomous Driving</a></li>
+                                                </ul>
+											</ul>
+										</li>
+									</ul>
+								</nav>
+
+						</div>
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="../assets/js/jquery.min.js"></script>
+			<script src="../assets/js/browser.min.js"></script>
+			<script src="../assets/js/breakpoints.min.js"></script>
+			<script src="../assets/js/util.js"></script>
+			<script src="../assets/js/main.js"></script>
+
+	</body>
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE HTML>
+<!--
+	Editorial by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Project1</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<style>
+            /* Flex container styles */
+            .container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            /* Text container styles */
+            .text-container {
+                flex: 1;
+                text-align: justify;
+            }
+            
+            /* Image container styles */
+            .image-container {
+                flex: 0 0 auto; /* Prevent image container from growing */
+            }
+            
+            /* Image styles */
+            .image-container img {
+                max-width: 450px; /* Adjust width as needed */
+                height: auto; /* Maintain aspect ratio */
+                border-radius: 8px; /* Optional: add rounded corners */
+                margin-left: 25px; /* Space between text and image */
+            }
+        </style>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+
+							<!-- Header -->
+                            <header id="header">
+                                <a href="self.html" class="logo"><strong>Yongkang Li </strong> homepage</a>
+                            </header>
+                        
+                        	<!-- Banner -->
+                            <section id="banner">
+                                <div class="content">
+                                    <header>
+                                        <h1 style="font-size: 36px;">Secure Facial Recognition Authentication System based on capsule network</h1>
+                                    </header>
+                                </div>
+                            </section>
+                            <!-- <hr style="border-style: dashed; margin-top: -35px;" class="major" /> -->
+
+							<!-- Section -->
+							<section >						
+								<div style="width: 100%; display: flex; justify-content: space-between; margin-top: -36px; margin-bottom: 24px;">
+									<span class="image fit" style="flex: 1; margin-right: 10px;">
+										<img src="../images/project/project5-facedetection/10.png" alt="" style="width: 100%; display: block; margin: 0 auto;"/>
+									</span>
+								</div>	
+								<header class="main">
+									<h1 id="introducation" style="font-size: 28px; margin-top: -20px; margin-bottom: 5px;">Introduction</h1>
+								</header>
+
+								<p style="font-size: 16px;">
+									<div class="container">
+										<div class="text-container">
+											<p style="font-size: 16px;">
+												The rapid advancement of internet technology has shifted communication from offline to online platforms, necessitating reliable authentication methods to establish trust between individuals, 
+												businesses, and institutions. Given the importance of facial features in personal identification, facial recognition technology has become an essential tool for ensuring security in various 
+												sectors, including finance, security, and government.
+											</p>
+											
+											<p style="font-size: 16px;">
+												However, despite its growing maturity, current facial recognition technology still faces significant challenges. These challenges include vulnerability to remote, 
+												unsupervised spoofing attacks and the rising threat of deepfake technology, which has outpaced human ability to detect fake images. This technology poses risks to personal safety, economic security, and even national security.
+											</p>
+										</div>
+										<div class="image-container">
+											<span class="image fit">
+												<img src="../images/project/project5-facedetection/9.png" alt=""/>
+											</span>
+										</div>
+								</div>
+								<p style="font-size: 16px;">
+									<ul>
+										<li style="font-size: 16px;"><b>High-Accuracy Detection:</b> The system significantly improves facial detection accuracy, outperforming previous methods while also enhancing detection speed.</li>
+										<li style="font-size: 16px;"><b>Comprehensive Fraud Prevention:</b> The system is designed to counter a wide range of spoofing techniques, including traditional methods like photo printing and 3D modeling, as well as advanced deepfake attacks.</li>
+										<li style="font-size: 16px;"><b>Robust System Design:</b> By integrating advanced algorithms such as FaceNet-KD for facial recognition and optimized Capsule Networks for deepfake detection, the system ensures both high accuracy and efficiency.</li>
+										<li style="font-size: 16px;"><b>User-Friendly Interface:</b> The system includes a user-friendly UI, making it suitable for various applications, including remote authentication and secure transactions.</li>
+									</ul>
+								</p>
+										
+						</section>
+
+							<!-- Section -->
+							<section>
+								<div>
+									<header>
+										<h1 id="detailed-information" style="font-size: 28px; margin-top: -20px; margin-bottom: 12px;">Detailed Information</h1>
+									</header>
+								</div>
+
+								<p style="font-size: 16px;">
+									The secure facial recognition system presented in this project is designed with several key modules, each playing a crucial role in ensuring robust and accurate performance against various types of facial spoofing attacks. 
+									Below, we describe the specific implementation details of these modules.
+									</p>
+									
+									<p style="font-size: 16px;">
+										<ul>
+											<p style="font-size: 16px;">
+												<div class="container">
+													<div class="text-container">
+														<li style="font-size: 16px;"><b>Extended Functionality Module:</b> This module includes Human Pose Estimation and Fine-Grained Image Segmentation. The Human Pose Estimation is powered by an Openpose-based algorithm, 
+															which helps identify key body points to verify whether the detected person is a live individual. The Image Segmentation utilizes an enhanced U2Net model, which is lightweight yet capable of capturing detailed features, making it suitable for real-time segmentation tasks.</li>			
+													</div>
+													<div class="image-container">
+														<span class="image fit">
+															<img src="../images/project/project5-facedetection/5.png" alt=""/>
+														</span>
+													</div>
+												</div>
+											</p>
+											<p style="font-size: 16px;">
+												<div class="container">
+													<div class="text-container">
+														<li style="font-size: 16px;"><b>Face Authentication Module:</b> This module uses the FaceNet-KD model, which is a knowledge-distilled version of the original FaceNet. 
+															The distillation process reduces the model's size while retaining high accuracy, making it more efficient for real-time applications. It first performs face segmentation using BlazeNet and then extracts facial features to compare similarity, 
+															thereby ensuring robust identification even in varying lighting conditions and backgrounds.</li>
+													</div>
+													<div class="image-container">
+														<span class="image fit">
+															<img src="../images/project/project5-facedetection/11.png" alt=""/>
+														</span>
+													</div>
+												</div>
+											</p>
+											
+											<li style="font-size: 16px;"><b>Forgery Detection Module:</b> This module is divided into two sub-modules: Traditional Forgery Detection and Deepfake Detection. The Traditional Forgery Detection uses the FAS (Face Anti-Spoofing) model to defend 
+												against attacks such as printed photos or 3D masks. The Deepfake Detection sub-module employs an optimized Capsule Network that integrates VGG-16p as the feature extractor, followed by dynamic routing algorithms to accurately detect AI-generated fake faces, 
+												ensuring high precision and fast processing.</li>
+											<p style="font-size: 16px;">
+												<div class="container">
+													<div class="text-container">
+														<li style="font-size: 16px;"><b>Extended Functionality Module:</b> This module includes Human Pose Estimation and Fine-Grained Image Segmentation. The Human Pose Estimation is powered by an Openpose-based algorithm, 
+															which helps identify key body points to verify whether the detected person is a live individual. The Image Segmentation utilizes an enhanced U2Net model, which is lightweight yet capable of capturing detailed features, making it suitable for real-time segmentation tasks.</li>			
+													</div>
+													<div class="image-container">
+														<span class="image fit">
+															<img src="../images/project/project5-facedetection/2.png" alt=""/>
+														</span>
+													</div>
+												</div>
+											</p>
+											<li style="font-size: 16px;"><b>Frontend and Backend Module:</b> The system's frontend offers a user-friendly interface for uploading images or videos and visualizing the results. The backend manages data processing, 
+												interfaces with the machine learning models, and returns the authentication results. This module is designed to provide a seamless user experience while ensuring high security and accuracy.</li>
+										</ul>
+									</p>									
+								
+							</section>
+
+							<!-- Section -->
+							<section>
+								<div>
+									<div>
+										<header>
+											<h1 id="project-achievements" style="font-size: 28px; margin-top: -20px; margin-bottom: 10px;">Project Achievements</h1>
+										</header>
+									</div>
+									<div style="width: 100%; display: flex; justify-content: space-between;">
+										<span class="image fit" style="flex: 1; margin-right: 10px;">
+											<img src="../images/project/project5-facedetection/7.png" alt="" style="width: 100%; display: block; margin: 0 auto;"/>
+										</span>
+										<span class="image fit" style="flex: 1; margin-left: 10px;">
+											<img src="../images/project/project5-facedetection/8.png" alt="" style="width: 100%; display: block; margin: 0 auto;"/>
+										</span>
+									</div>
+									
+									<p style="font-size: 16px;">
+										The project successfully developed a robust facial recognition system capable of withstanding a wide array of spoofing attacks, including those leveraging advanced deepfake technologies. 
+										The system was rigorously tested and demonstrated significant improvements in both detection accuracy and processing speed, making it suitable for real-time applications in various scenarios.
+										</p>
+										
+										<p style="font-size: 16px;">
+											<ul>
+												<li style="font-size: 16px;"><b>Enhanced Security:</b> The system was able to effectively identify and prevent various types of facial spoofing attacks, including traditional methods such as photo and video-based attacks, 
+													as well as more sophisticated deepfake threats. This was achieved by integrating optimized algorithms like FaceNet-KD and Capsule Networks, ensuring high accuracy while maintaining efficiency.</li>
+												<li style="font-size: 16px;"><b>User-Friendly Interface:</b> The project also focused on creating a user-friendly UI, which allows easy interaction and deployment across multiple platforms. 
+													This ensures that the system is not only secure but also accessible for a broad range of applications, from financial transactions to secure authentication in government sectors.</li>
+											</ul>
+										</p>
+										
+										<p style="font-size: 16px;">
+											<ul>
+												<li style="font-size: 16px;"><b>Scalability and Flexibility:</b> The system's modular design allows for easy adaptation to different use cases, 
+													whether it's for secure online payments or ensuring the authenticity of users in remote settings. The combination of traditional spoof detection and deepfake identification makes the system versatile and capable of evolving with emerging threats.</li>
+												<li style="font-size: 16px;"><b>Real-Time Performance:</b> One of the significant achievements was optimizing the system to perform efficiently in real-time, 
+													ensuring that even complex tasks such as deepfake detection could be handled swiftly, without compromising accuracy. This balance between speed and security makes the system highly effective for practical deployment.</li>
+											</ul>
+										</p>										
+								</div>
+							</section>
+						</div>
+					</div>
+
+					<!-- Sidebar -->
+					<div id="sidebar">
+						<div class="inner">
+
+							<!-- Search -->
+								<section id="search" class="alt">
+									<form method="post" action="#">
+										<input type="text" name="query" id="query" placeholder="Search" />
+									</form>
+								</section>
+
+								<!-- Menu -->
+								<nav id="menu">
+									<header class="major">
+										<h2>Menu</h2>
+									</header>
+									<ul>
+										<!-- <li><a href="index.html">Homepage</a></li> -->
+                                        <li>
+											<a href="../index.html" class="opener">Homepage</a>
+											<ul>
+												<li><a href="../index.html#self-introduction">SELF-INTRODUCTION</a></li>
+												<li><a href="../index.html#news">NEWS</a></li>
+												<li><a href="../index.html#research">RESEARCH</a></li>
+                                                <li><a href="../index.html#software-copyright">SOFTWARE COPYRIGHT</a></li>
+                                                <li><a href="../index.html#project">PROJECT</a></li>
+												<li><a href="../index.html#scholarship-and-awards">SCHOLARSHIP AND AWARDS</a></li>
+                                                <li><a href="../index.html#leadership-and-activities">LEADERSHIP AND ACTIVITIES</a></li>
+											</ul>
+                                        </li>
+                                        <li>
+                                            <a href="../publication/publication.html" class="opener">Publication</a>
+											<ul>
+												<li><a href="../publication/publication.html#2024">2024</a></li>
+                                                <ul>
+                                                    <li><a href="../publication/paper/aap.html">When, Where, and What? A Benchmark for Accident Anticipation and Localization with Large Language Models</a></li>
+                                                    <li><a href="../publication/paper/ecai24.html">Less is More: Efficient Brain-Inspired Learning for Autonomous Driving Trajectory Prediction</a></li>
+                                                    <li><a href="../publication/paper/aap.html">Real-time Accident Anticipation for Autonomous Driving Through Monocular Depth-Enhanced 3D Modeling</a></li>
+                                                    <li><a href="../publication/paper/tiv.html">A Cognitive-Based Trajectory Prediction Approach for Autonomous Driving</a></li>
+                                                </ul>
+												<li><a href="../publication/publication.html#2023">2023</a></li>
+                                                <ul>
+                                                    <li><a href="#">Lightweight Human Observation-inspired Trajectory Prediction For Autonomous Driving</a></li>
+                                                </ul>
+											</ul>
+										</li>
+									</ul>
+								</nav>
+
+						</div>
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="../assets/js/jquery.min.js"></script>
+			<script src="../assets/js/browser.min.js"></script>
+			<script src="../assets/js/breakpoints.min.js"></script>
+			<script src="../assets/js/util.js"></script>
+			<script src="../assets/js/main.js"></script>
+
+	</body>
+</html>
