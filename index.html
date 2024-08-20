@@ -10,6 +10,46 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="assets/css/main.css" />
+        <style>
+            /* Flex container styles */
+            .container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            /* Text container styles */
+            .text-container {
+                flex: 1;
+                text-align: justify;
+            }
+            
+            /* Image container styles */
+            .image-container {
+                flex: 0 0 auto; /* Prevent image container from growing */
+            }
+            
+            /* Image styles */
+            .image-container img {
+                max-width: 180px; /* Adjust width as needed */
+                height: auto; /* Maintain aspect ratio */
+                border-radius: 8px; /* Optional: add rounded corners */
+                margin-left: 25px; /* Space between text and image */
+            }
+
+            /* Image container styles */
+            .image-container-0 {
+                flex: 0 0 auto; /* Prevent image container from growing */
+            }
+            
+            /* Image styles */
+            .image-container-0 img {
+                max-width: 300px; /* Adjust width as needed */
+                height: auto; /* Maintain aspect ratio */
+                border-radius: 8px; /* Optional: add rounded corners */
+                margin-left: 25px; /* Space between text and image */
+            }
+        </style>
 	</head>
 	<body class="is-preload">
 
@@ -31,239 +71,531 @@
 										<li><a href="#" class="icon brands fa-medium-m"><span class="label">Medium</span></a></li>
 									</ul> -->
 								</header>
-
+                            
+                            <!-- Banner -->
                                 <section id="banner">
 									<div class="content">
 										<header>
-											<h1>Hi, welcome to Yongkang Li's<br />
-											homepage</h1>
-											<p style="font-size: 24px;">A free explore of this person</p>
+											<h1 style="font-size: 36px;">Hi, welcome to Yongkang Li's homepage</h1>
+											<p style="font-size: 28px; margin-bottom: 5px;">A free explore of this person</p>
 										</header>
-                                        <p style="font-size: 24px;">Email:franklin1234560@163.com/FranklinLi0904@outlook.com</p>
-										<!-- <p>Aenean ornare velit lacus, ac varius enim ullamcorper eu. Proin aliquam facilisis ante interdum congue. Integer mollis, nisl amet convallis, porttitor magna ullamcorper, amet egestas mauris. Ut magna finibus nisi nec lacinia. Nam maximus erat id euismod egestas. Pellentesque sapien ac quam. Lorem ipsum dolor sit nullam.</p> -->
-										<!-- <ul class="actions">
-											<li><a href="#" class="button big">Learn More</a></li>
-										</ul> -->
+                                        <p style="font-size: 18px; margin-bottom: -15px;">Email:likangkang753@gmail.com/FranklinLi0904@outlook.com (preferred)</p>
 									</div>
-									<!-- <span class="image object">
-										<img src="images/pic10.jpg" alt=""/>
-									</span> -->
 								</section>
 
 							<!-- Content -->
-                            <section >
-                                <div style="display: flex;justify-content: space-between;align-items: flex-end;">
-                                    <div>
-                                <header class="main">
-                                    <div><h1>SELF-INTRODUCTION</h1></div>
-                                </header>
+                                <section >
+                                    <div class="container">
+                                        <div class="text-container">
+                                            <header class="main">
+                                                <h1 id="self-introduction" style="font-size: 28px; margin-top: -20px; margin-bottom: 5px;">SELF-INTRODUCTION</h1>
+                                            </header>
+                            
+                                            <p style="font-size: 16px;">
+                                                I am an undergraduate student majoring in Software Engineering at University of Electronic Science and Technology of China with a GPA of 3.8/4.0. 
+                                                Currently, I am a research assistant working with Prof. Zhenning Li at the University of Macau, focusing on Trajectory Prediction and Accident Anticipation in Autonomous Driving. 
+                                                My research interests include Deep learning, Computer Vision, Autonomous Driving and User Interface. I am also deeply fascinated by the relationship between brain neurons and artificial neural networks. 
+                                                Feel free to engage in academic discussions with me.
+                                            </p>
+                                            <p style="font-size: 16px;">
+                                                Also, welcome to read my blogs on <a href="https://www.zhihu.com/people/li-yong-kang-69-58" target="_blank">Zhihu</a>. I will share some study notes about Deep Learning and research experience from time to time.
+                                            </p>
+                                        </div>
+                                        <div class="image-container">
+                                            <img src="images/pic13.jpg" alt="Profile Picture">
+                                        </div>
+                                    </div>
+                                </section>
 
-                                <!-- <span class="image main"><img src="images/pic11.jpg" alt="" /></span> -->
+                                <section >
+                                    <div class="container">
+                                        <div class="text-container">
+                                            <header class="main">
+                                                <h1 id="news" style="font-size: 28px; margin-top: -20px; margin-bottom: 5px;">NEWS 🚄</h1>
+                                            </header>
 
-                                <p style="font-size: 24px;">I am an undergraduate student majoring in Software Engineering at University of Electronic Science and Technology of China. I have a GPA of 3.8/4.0.Currently I work with Prof. Zhenning Li at the University of Macau, focusing on Trajectory Prediction in Autonomous Driving. Previously, I was a research assistant at Sun Yat-sen University, advised by Prof. Wenyuan Yang.</p>
-                                <p style="font-size: 24px;"> Also welcome to read my blogs on <a href="https://www.zhihu.com/people/li-yong-kang-69-58" target="_blank">Zhihu</a>, I will share some knowledge about Deep Learning from time to time.</p>
-</div>
-                                    <div><img src="images/pic12.jpg"></div>
-                                </div>
-                            </section>
+                                            <p>
+                                                <li style="font-size: 16px;">🌕2024.7.21: The paper accepted on ACM Multimedia Conference is selected as an 
+                                                    <span style="color: orangered; padding: 2px 4px; border-radius: 4px; font-weight: bold;">Oral</span> presentation!🎉🎉 </li>
+                                                <li style="font-size: 16px;">🌖2024.7.16: A new paper is accepted on ACM Multimedia Conference!🎉 </li>
+                                                <li style="font-size: 16px; margin-bottom: -25px;">🌗2024.7.4: A new paper is accepted on European Conference on Artificial Intelligence!🎉 </li>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </section>
 
                                 <section>
 									<header class="main">
-										<h1>RESEARCH</h1>
+										<h1 id="research" style="font-size: 28px; margin-top: -20px; margin-bottom: -25px;">RESEARCH</h1>
 									</header>
 
 									<!-- <span class="image main"><img src="images/pic11.jpg" alt="" /></span> -->
-									<hr style="border-style: dashed;" class="major" />
+									<hr style="border-style: dashed; margin-bottom: 5px;" class="major" />
 
 									<header class="major">
-                                        <h2>Research Interest</h2>
+                                        <h2 id="research-interest" style="font-size: 20px; margin-top: 5px; margin-bottom: 5px;">Research Interest</h2>
                                     </header>
                                     <ul>
-                                        <li style="font-size: 24px;"><b>Deep Learning</b></li>
-                                        <li style="font-size: 24px;"><b>Computer vision</b></li>
-                                        <li style="font-size: 24px;"><b>Deepfake Detection</b></li>
-                                        <li style="font-size: 24px;"><b>Diffusion and Large-scale models</b></li>
-                                        <li style="font-size: 24px;"><b>Autonomous Driving</b></li>
+                                        <li style="font-size: 16px;"><b>Deep Learning</b></li>
+                                        <li style="font-size: 16px;"><b>Computer vision</b></li>
+                                        <li style="font-size: 16px;"><b>Deepfake Detection</b></li>
+                                        <li style="font-size: 16px;"><b>Diffusion and Large-scare models</b></li>
+                                        <li style="font-size: 16px;"><b>Autonomous Driving</b></li>
                                     </ul>
 
-                                    <hr style="border-style: dashed;" class="major" />
+                                    <hr style="border-style: dashed; margin-top: -5px; margin-bottom: 15px;" class="major" />
 
+                                <!-- Publication -->
 									<header class="major">
-                                        <h2>Research Experiences</h2>
+                                        <h2 id="publication" style="font-size: 20px; margin-top: 5px; margin-bottom: 5px;">Publication</h2>
                                     </header>
-
-                                    <div style="display: flex; justify-content: space-between;">
-                                        <div style="text-align: left;font-size: 24px; font-weight: bold; color:black">Trajectory Prediction in Autonomous Driving , University of Macau</div>
-                                        <div style="text-align: right;font-size: 24px; font-weight: bold; color:black">Macau,China</div>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between;">
-                                        <div style="text-align: left;font-size: 20px; font-weight: bold; color:grey">Research Assistant, IOTSC Lab, Supervisor: Prof. Zhenning Li</div>
-                                        <div style="text-align: right;font-size: 20px; font-weight: bold; color:grey">Jul. 2023-Dec. 2023</div>
-                                    </div>
                                     <ul>
-                                        <li style="font-size: 20px;color:grey;"><b>Conducted research in the field of autonomous driving, focusing on trajectory prediction using deep learning models. Successfully reduced model complexity through knowledge distillation and optimized existing multi-task knowledge distillation and attention mechanisms.</b></li>
-                                        <li style="font-size: 20px;color:grey;"><b>Investigated large language models, specifically Llama2, for understanding traffic scenarios and integrating them with existing methods.</b></li>
-                                        <li style="font-size: 20px;color:grey;"><b>Explored the impact of the driver's vision and human-like driving behavior on vehicle's speed. Incorporated security considerations into the analysis. Utilizing neural networks to learn these factors and integrating the features to guide vehicle driving trajectories.</b></li>
-                                        <li style="font-size: 20px;color:grey;"><b>Published a paper at TRB 2024 (Accepted) and submitted three papers for consideration at CVPR 2024, ICRA 2024 and CICTP 2024.</b></li>
+                                        <li style="font-size: 16px;">Haicheng Liao*, <b>Yongkang Li*</b>, Zhenning Li et al. <a href="https://doi.org/10.48550/arXiv.2402.19251" target="_blank">A Cognitive-Based Trajectory Prediction Approach for Autonomous Driving.</a> <span style="font-style: italic;">IEEE Transactions on Intelligent Vehicles (TIV) (Accepted)</span>  </li>
+                                        <li style="font-size: 16px;">Haicheng Liao*, <b>Yongkang Li*</b>, Zhenning Li et al. <a href="https://doi.org/10.48550/arXiv.2407.16277" target="_blank">When, Where, and What? A Benchmark for Accident Anticipation and Localization with Large Language Models.</a> <span style="font-style: italic;">ACM Multimedia (MM) (Oral)</span> </li>
+                                        <li style="font-size: 16px;">Haicheng Liao*, <b>Yongkang Li*</b>, Zhenning Li et al. <a href="https://doi.org/10.48550/arXiv.2407.07020" target="_blank">Towards Human-like Trajectory Prediction for Autonomous Driving: A Cognitive-inspired Lightweight Model.</a> <span style="font-style: italic;">European Conference on Artificial Intelligence (ECAI) (Accepted)</span> </li>
+                                        <li style="font-size: 16px;">Haicheng Liao*, <b>Yongkang Li*</b>, Zhenning Li et al. Enhancing Accident Anticipation for Autonomous Driving through Monocular Depth-Enhanced 3D Modeling. <span style="font-style: italic;">Accident Analysis and Prevention (Under Review)</span></li>   
+                                        <li style="font-size: 16px;"><b>Yongkang Li*</b>, Haicheng Liao*, Zhenning Li et al. Lightweight Human Observation-inspired Trajectory Prediction for Autonomous Driving. <span style="font-style: italic;">Transportation Research Board (Accepted)</span></li>
+                                        <li style="font-size: 16px;">Haicheng Liao*, Shangqian Liu*, <b>Yongkang Li</b>, Zhenning Li et al. <a href="https://doi.org/10.48550/arXiv.2402.04318" target="_blank">Human Observation-Inspired Trajectory Prediction for Autonomous Driving in Mixed-Autonomy Traffic Environments.</a> <span style="font-style: italic;">International Conference on Robotics and Automation (ICRA) (Accepted)</span> </li>   
+                                        <li style="font-size: 16px;">Haicheng Liao*, Chengyue Wang*, Zhenning Li, <b>Yongkang Li</b> et al. <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4809575" target="_blank">Physics-Informed Trajectory Prediction for Autonomous Driving under Missing Observation.</a> <span style="font-style: italic;">International Joint Conference on Artificial Intelligence (IJCAI) (Accepted)</span> </li>   
+                                        <li style="font-size: 16px; margin-bottom: -15px;">Haicheng Liao*, Xuelin Li*, <b>Yongkang Li</b>, Zhenning Li, Chengzhong Xu et al. <a href="https://doi.org/10.48550/arXiv.2402.02145" target="_blank">Characterized Diffusion and Spatial-Temporal Interaction Network for Trajectory Prediction in Autonomous Driving. </a><span style="font-style: italic;">International Joint Conference on Artificial Intelligence (IJCAI) (Accepted)</span></li>    
                                     </ul>
 
-                                    <div style="display: flex; justify-content: space-between;">
-                                        <div style="text-align: left;font-size: 24px; font-weight: bold; color:black">Multi-modal Deepfake and Diffusion Detection, Peking University</div>
-                                        <div style="text-align: right;font-size: 24px; font-weight: bold; color:black">Beijing, China</div>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between;">
-                                        <div style="text-align: left;font-size: 20px; font-weight: bold; color:grey">Research Assistant, CIS Lab, Supervisor: Prof. Yuesheng Zhu</div>
-                                        <div style="text-align: right;font-size: 20px; font-weight: bold; color:grey">May 2023-Jun. 2023</div>
-                                    </div>
-                                    <ul>
-                                        <li style="font-size: 20px;color:grey;"><b>Conducted research on the temporal and spatial forgery of the deepfake videos based on the transformer, aiming to detect inconsistencies in the time or space dimensions of audio and video for the purpose of deepfake detection.</b></li>
-                                        <li style="font-size: 20px;color:grey;"><b>Explored detection algorithms for diffusion-generated images, acquiring knowledge of the basic principles of diffusion models and applying them to the field of deepfake detection.</b></li>
-                                   </ul>
+                                <!-- publication link -->
+                                    <div style="font-size: 20px; font-style: oblique; color: black; margin-bottom: 12px;"> More detailed information about my work, <a href="./publication/publication.html">click here</a>📒.</div>
 
-                                   <div style="display: flex; justify-content: space-between;">
-                                    <div style="text-align: left;font-size: 24px; font-weight: bold; color:black">Deepfake Detection Based on Capsule Network, Sun Yat-sen University</div>
-                                    <div style="text-align: right;font-size: 24px; font-weight: bold; color:black">Shenzhen, China</div>
+                                    <div class="box alt">
+                                        <div class="row gtr-50 gtr-uniform">
+                                            <div class="col-4">
+                                                <span class="image fit">
+                                                    <img src="images/paper/mm24-head.png" alt="" style="width: 95%; height: 240px; object-fit: cover; border-radius: 8px; border: 2px solid #ff7c7c;"/>
+                                                </span>
+                                            </div>
+                                            <div class="col-4">
+                                                <span class="image fit">
+                                                    <img src="images/paper/ecai24-head.png" alt="" style="width: 95%; height: 240px; object-fit: cover; border-radius: 8px; border: 2px solid #ff7c7c;"/>
+                                                </span>
+                                            </div>
+                                            <div class="col-4">
+                                                <span class="image fit">
+                                                    <img src="images/paper/tiv-head.jpg" alt="" style="width: 95%; height: 240px; object-fit: cover; border-radius: 8px; border: 2px solid #ff7c7c;"/>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr style="border-style: dashed; margin-top: 5px; margin-bottom: 15px;" class="major" />
+                                
+                                    <header class="major">
+                                        <h2 id="research" style="font-size: 20px; margin-top: 5px; margin-bottom: 5px;">Research Experiences</h2>
+                                    </header>
+
+                                <!-- research 1 -->
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <div style="text-align: left;font-size: 18px; font-weight: bold; color:black">Trajectory Prediction in Autonomous Driving , University of Macau</div>
+                                        <div style="text-align: right;font-size: 18px; font-weight: bold; color:black">Macau,China</div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <div style="text-align: left;font-size: 16px; font-weight: bold; color:grey">Research Assistant, IOTSC Lab, Supervisor: Prof. Zhenning Li</div>
+                                        <div style="text-align: right;font-size: 16px; font-weight: bold; color:grey">Jul. 2023-Aug. 2024</div>
+                                    </div>
+
+                                    <div class="container">
+                                        <div class="text-container">
+                                            <div style="display: flex; justify-content: space-between;">
+                                                <div style="text-align: left;font-size: 16px; font-weight: bold; color:black">Project 1: Human Observation-Inspired Trajectory Prediction for Autonomous Driving</div>
+                                            </div>
+                                            <ul>
+                                                <li style="font-size: 16px;color:grey;"><b>Developed a teacher-student model that mimics human visual and reasoning processes during driving, utilizing Graph Attention Networks and Transformers to capture spatio-temporal relationships between agents.</b></li>
+                                                <li style="font-size: 16px;color:grey;"><b>Introduced a new multi-task knowledge distillation modulation method that automatically adjusts scaling coefficients under complex loss function conditions.</b></li>
+                                                <li style="font-size: 16px;color:grey;"><b>Reduced trajectory prediction errors by 15.5% while decreasing the model's parameter count by 30%. Co-authored three papers, currently accepted on TRB, ECAI conferences and TIV Journal.</b></li>
+                                            </ul>
+                                        </div>
+                                        <div class="image-container-0">
+                                            <img src="images/paper/tiv-head.jpg" alt="Profile Picture">
+                                        </div>
+                                    </div>
+
+                                    <div class="container">
+                                        <div class="text-container">
+                                            <div style="display: flex; justify-content: space-between;">
+                                                <div style="text-align: left;font-size: 16px; font-weight: bold; color:black">Project 2: Accident Anticipation for Autonomous Driving</div>
+                                            </div>
+                                            <ul>
+                                                <li style="font-size: 16px;color:grey;"><b>Subproject 1: Integrated monocular depth cues for 3D modeling of dashcam videos, enhancing accident precision by 4.0%.</b></li>
+                                                <li style="font-size: 16px;color:grey;"><b>Subproject 2: Combined object detection with accident anticipation tasks in a novel three-stage framework that integrates large language models for scene prompting. Improved accident precision by 14.6% and predicting accidents 16.4% earlier.</b></li>
+                                                <li style="font-size: 16px;color:grey;"><b>Co-authored two papers, one accepted on MM conference and one submitted to AAP Journal which currently under review.</b></li>
+                                            </ul>
+                                        </div>
+                                        <div class="image-container-0">
+                                            <img src="images/paper/aap-head.png" alt="Profile Picture">
+                                        </div>
+                                    </div>
+
+                                    <div class="container">
+                                        <div class="text-container">
+                                            <div style="display: flex; justify-content: space-between;">
+                                                <div style="text-align: left;font-size: 16px; font-weight: bold; color:black">Project 3: End-to-End Autonomous Driving Framework</div>
+                                            </div>
+                                            <ul>
+                                                <li style="font-size: 16px;color:grey;"><b>Seamlessly integrated ethical principles into AV decision-making using LLMs and deep learning, enhancing the handling of complex driving scenarios through advanced reasoning mechanisms.</b></li>
+                                                <li style="font-size: 16px;color:grey;"><b>Our model exceeded other models by 2.4%-7.9% on the IoU0.5 metric on the Talk2Car and DrivePilot datasets and reduced prediction errors by 3.6% on the MoCAD dataset.</b></li>
+                                            </ul>
+                                        </div>
+                                        <div class="image-container-0">
+                                            <img src="images/paper/aaai-endtoend.png" alt="Profile Picture">
+                                        </div>
+                                    </div>
+
+                                <!-- research 2 -->
+                                <div style="display: flex; justify-content: space-between;">
+                                    <div style="text-align: left;font-size: 18px; font-weight: bold; color:black">Multi-modal Deepfake and Diffusion Detection, Peking University</div>
+                                    <div style="text-align: right;font-size: 18px; font-weight: bold; color:black">Beijing, China</div>
                                 </div>
                                 <div style="display: flex; justify-content: space-between;">
-                                    <div style="text-align: left;font-size: 20px; font-weight: bold; color:grey">Research Assistant, SCST, Supervisor: Prof. Wenyuan Yang</div>
-                                    <div style="text-align: right;font-size: 20px; font-weight: bold; color:grey">Aug. 2022-Apr. 2023</div>
+                                    <div style="text-align: left;font-size: 16px; font-weight: bold; color:grey">Research Assistant, CIS Lab, Supervisor: Prof. Yuesheng Zhu</div>
+                                    <div style="text-align: right;font-size: 16px; font-weight: bold; color:grey">May 2023-Jun. 2023</div>
                                 </div>
-                                <ul>
-                                    <li style="font-size: 20px;color:grey;"><b>Studied algorithms for generating and detecting deepfake images, especially Generative Adversarial Networks (GANs). Researched characteristics of different image forgery methods and classified based on latent features.</b></li>
-                                    <li style="font-size: 20px;color:grey;"><b>Researched and improved Capsule Network algorithms to improve the accuracy of deepfake detection model. Proposed a Capsule Arbitration Mechanism combining insights from ensemble learning.</b></li>
-                                    <li style="font-size: 20px;color:grey;"><b>Planned to submit a paper to IEEE Transactions on Information Forensics and Security (TIFS) CCF-A journal.</b></li>
-                                </ul>
-							
-									<hr style="border-style: dashed;" class="major" />
+                                <div class="container">
+                                    <div class="text-container">
+                                        <ul>
+                                            <li style="font-size: 16px;color:grey;"><b>Conducted research on the temporal and spatial forgery of the deepfake videos based on the transformer, aiming to detect inconsistencies in the time or space dimensions of audio and video for the purpose of deepfake detection.</b></li>
+                                            <li style="font-size: 16px;color:grey;"><b>Explored detection algorithms for diffusion-generated images, explore the differences in deepfake images and diffusion-based fake images in latent space, and unify the model for detecting both forgery methods.</b></li>
+                                        </ul>
+                                    </div>
+                                    <div class="image-container-0">
+                                        <img src="images/project/project5-facedetection/deepfake-structure.png" alt="Profile Picture">
+                                    </div>
+                                </div>
+                                    
 
-									<header class="major">
-                                        <h2>Publication</h2>
-                                    </header>
-                                    <ul>
-                                        <li style="font-size: 20px;"><b>Yongkang Li*</b>, Haicheng Liao*, Zhenning Li et al Lightweight Human Observation-inspired Trajectory Prediction for Autonomous Driving. TRB 2024 (Accepted)</li>
-                                        <li style="font-size: 20px;"><b>Yongkang Li</b>, Haicheng Liao, Zhenning Li et al How Can Less Offer More? Unveiling Cognitive-Based Trajectory Prediction in Autonomous Driving. CVPR 2024 (Under Review)</li>
-                                        <li style="font-size: 20px;">Haicheng Liao, Shangqian Liu, <b>Yongkang Li</b>, Zhenning Li et al Human Observation-Inspired Trajectory Prediction for Autonomous Driving in Mixed-Autonomy Traffic Environments. ICRA 2024 (Under Review)</li>
-                                        <li style="font-size: 20px;">Haicheng Liao, <b>Yongkang Li</b>, Zhenning Li et al Minds on the Move: Decoding Trajectory Prediction in Autonomous Driving with Cognitive Insights. CICTP 2024 (Under Review)</li>
-                                    </ul>
+                                <!-- research 3 -->
+                                
+                                    <div style="display: flex; justify-content: space-between;">
+                                    <div style="text-align: left;font-size: 18px; font-weight: bold; color:black">Deepfake Detection Based on Capsule Network, Sun Yat-sen University</div>
+                                    <div style="text-align: right;font-size: 18px; font-weight: bold; color:black">Shenzhen, China</div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <div style="text-align: left;font-size: 16px; font-weight: bold; color:grey">Research Assistant, SCST, Supervisor: Prof. Wenyuan Yang</div>
+                                        <div style="text-align: right;font-size: 16px; font-weight: bold; color:grey">Aug. 2022-Apr. 2023</div>
+                                    </div>
+                                    <div class="container">
+                                        <div class="text-container">
+                                            <ul>
+                                                <li style="font-size: 16px;color:grey;"><b>Studied algorithms for generating and detecting deepfake images, especially Generative Adversarial Networks (GANs). Researched characteristics of different image forgery methods and classified based on latent features.</b></li>
+                                                <li style="font-size: 16px;color:grey;"><b>Researched and improved Capsule Network algorithms to improve the accuracy of deepfake detection by 7.3% in average, which were conducted on three datasets with four forgery methods.</b></li>
+                                                <li style="font-size: 16px;color:grey; margin-bottom: -45px;"><b>Proposed a Capsule Arbitration Mechanism to combining insights from different capsule models, which further improved the detection accuracy by 5.2%.</b></li>
+                                            </ul>	
+                                        </div>
+                                        <div class="image-container-0">
+                                            <img src="images/project/project5-facedetection/11.png" alt="Profile Picture">
+                                        </div>
+                                    </div>	
 									
 								</section>
 
-                            </section>
+                                <section>
+                                    <header class="main">
+										<h1 id="software-copyright" style="font-size: 28px; margin-top: -20px; margin-bottom: -25px;">SOFTWARE COPYRIGHT</h1>
+									</header>
 
-                            <section>
-                                <header class="main">
-                                    <h1>SCHOLARSHIP AND AWARDS</h1>
+									<!-- <span class="image main"><img src="images/pic11.jpg" alt="" /></span> -->
+									<hr style="border-style: dashed; margin-bottom: 5px;" class="major" />
+
+                                    <ul>
+                                        <li style="font-size: 18px;"><strong>Title:</strong> "Web Link Positioning and Security Detection System Based on ChatGLM and LangChain V1.0"</li>
+                                        <li style="font-size: 18px;"><strong>Authors:</strong> Huang Zhanyi, Yang Zhenhao, Kong Hanlin, Li Yongkang, Jiang Xinke, Zeng Wenxuan</li>
+                                        <li style="font-size: 18px;"><strong>Completion Date:</strong> August 25, 2023</li>
+                                        <li style="font-size: 18px;"><strong>Registration Number:</strong> 2024SR0355199</li>
+                                        <li style="font-size: 18px;"><strong>Certificate Number:</strong> Soft Registration No. 12759072</li>
+                                        <li style="font-size: 18px;"><strong>Issued Date:</strong> March 6, 2024</li>
+                                        <li style="font-size: 18px;"><strong>Rights:</strong> All rights reserved</li>
+                                    </ul>
+
+                                </section>
+
+                                <section>
+									<header class="main">
+										<h1 id="project" style="font-size: 28px; margin-top: -20px; margin-bottom: -25px;">PROJECT</h1>
+									</header>
+
+									<!-- <span class="image main"><img src="images/pic11.jpg" alt="" /></span> -->
+									<hr style="border-style: dashed; margin-bottom: 5px;" class="major" />
+
+                                <!-- project 1 -->
+                                <header class="major">
+                                    <h2 id="project1" style="font-size: 20px; margin-top: 5px; margin-bottom: 5px;">Project1</h2>
                                 </header>
-
-                                <!-- <span class="image main"><img src="images/pic11.jpg" alt="" /></span> -->
-                                <hr style="border-style: dashed;" class="major" />
-
-                                <ul>
-                                    <li style="font-size: 16px;">
-                                        <div style="display: flex; justify-content: space-between;">
-                                            <div style="text-align: left;font-size: 20px; font-weight: bold; color:grey">Grand Prize (National, Ranked 1st ), China College Computer Competition</div>
-                                            <div style="text-align: right;font-size: 20px; font-weight: bold; color:grey">Sep. 2023</div>
-                                        </div>
-                                    </li>
-
-                                    <li style="font-size: 16px;">
-                                        <div style="display: flex; justify-content: space-between;">
-                                            <div style="text-align: left;font-size: 20px; font-weight: bold; color:grey">2nd Prize (National, Ranked 12th), Pangu Stone Cup Electronic Digital Forensics Competition</div>
-                                            <div style="text-align: right;font-size: 20px; font-weight: bold; color:grey">May 2023</div>
-                                        </div>
-                                    </li>
-
-                                    <li style="font-size: 16px;">
-                                        <div style="display: flex; justify-content: space-between;">
-                                            <div style="text-align: left;font-size: 20px; font-weight: bold; color:grey">2nd Prize (National), China Students Service Outsourcing Innovation and Entrepreneurship Competition</div>
-                                            <div style="text-align: right;font-size: 20px; font-weight: bold; color:grey">Aug.2023</div>
-                                        </div>
-                                    </li>
-
-                                    <li style="font-size: 16px;">
-                                        <div style="display: flex; justify-content: space-between;">
-                                            <div style="text-align: left;font-size: 20px; font-weight: bold; color:grey">3rd Prize (National), China College Student Computer Design Competition</div>
-                                            <div style="text-align: right;font-size: 20px; font-weight: bold; color:grey">Aug.2022</div>
-                                        </div>
-                                    </li>
-
-                                    <li style="font-size: 16px;">
-                                        <div style="display: flex; justify-content: space-between;">
-                                            <div style="text-align: left;font-size: 20px; font-weight: bold; color:grey">1st Prize (Ranked 1st), UESTC Social Practice Service for Rural Revitalization</div>
-                                            <div style="text-align: right;font-size: 20px; font-weight: bold; color:grey">Dec.2022</div>
-                                        </div>
-                                    </li>
-
-                                    <li style="font-size: 16px;">
-                                        <div style="display: flex; justify-content: space-between;">
-                                            <div style="text-align: left;font-size: 20px; font-weight: bold; color:grey">Outstanding Student Scholarship, University of Electronic Science and Technology</div>
-                                            <div style="text-align: right;font-size: 20px; font-weight: bold; color:grey">Nov.2022</div>
-                                        </div>
-                                    </li>
-                                </ul>
-                                
-                            </section>
-
-                            <!-- <section>
-                                <div class="posts">
-                                    <article>
-                                        <a href="#" class="image"><img src="images/pic01.jpg" alt="" /></a>
-                                        <h3>Interdum aenean</h3>
-                                        </article>
-                                    <article>
-                                        <a href="#" class="image"><img src="images/pic02.jpg" alt="" /></a>
-                                        <h3>Nulla amet dolore</h3>
-                                        </article>
-                                    <article>
-                                        <a href="#" class="image"><img src="images/pic03.jpg" alt="" /></a>
-                                        <h3>Tempus ullamcorper</h3>
-                                        </article>
-                                    <article>
-                                        <a href="#" class="image"><img src="images/pic04.jpg" alt="" /></a>
-                                        <h3>Sed etiam facilis</h3>
-                                        </article>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <div style="text-align: left;font-size: 18px; font-weight: bold; color:black">VisionNaviPro: Multimodal Visual Perception Solution for V2X, UESTC</div>
+                                    <div style="text-align: right;font-size: 18px; font-weight: bold; color:black">Chengdu, China</div>
                                 </div>
-                            </section> -->
+                                <div style="display: flex; justify-content: space-between;">
+                                    <div style="text-align: left;font-size: 16px; font-weight: bold; color:grey">Team Leader, Supervisor: Prof. Chong Fu</div>
+                                    <div style="text-align: right;font-size: 16px; font-weight: bold; color:grey">May 2024</div>
+                                </div>
+                                <div class="container">
+                                    <div class="text-container">
+                                        <ul>
+                                            <li style="font-size: 16px;color:grey;"><b>Proposed VisionNaviPro perception model for autonomous driving, integrating pure visual perception, large language model analysis, and semantic localization to provide high-precision perception and positioning services for autonomous systems.</b></li>
+                                            <li style="font-size: 16px;color:grey;"><b>Implemented visual perception for autonomous vehicles in complex and dynamic environments, covering tasks such as lane segmentation, traffic sign detection, and identification of other traffic participants.</b></li>
+                                            <li style="font-size: 16px;color:grey;"><b>In the object detection task, accuracy was improved by 12% while reducing parameter count by 10.2%. In the semantic localization task, accuracy was increased by 13.8%.</b></li>
+                                        </ul>
+                                    </div>
+                                    <div class="image-container-0">
+                                        <img src="images/project/project1-VisionNaviPro/5.png" alt="Profile Picture">
+                                    </div>
+                                </div>
+                                <ul class="actions">
+                                    <li><a href="project/project1-VisionNaviPro.html" class="button">Learn more</a></li>
+                                </ul>                       
 
-                            <section>
-                                <header class="main">
-                                    <h1>LEADERSHIP AND ACTIVITIES</h1>
+                                <!-- project 2 -->
+                                <header class="major">
+                                    <h2 id="project2" style="font-size: 20px; margin-top: 5px; margin-bottom: 5px;">Project2</h2>
                                 </header>
-
-                                <!-- <span class="image main"><img src="images/pic11.jpg" alt="" /></span> -->
-                                <hr style="border-style: dashed;" class="major" />
-
                                 <div style="display: flex; justify-content: space-between;">
-                                    <div style="text-align: left;font-size: 24px; font-weight: bold; color:black">LingRui Studio</div>
-                                    <div style="text-align: right;font-size: 24px; font-weight: bold; color:black">Chengdu,China</div>
+                                    <div style="text-align: left;font-size: 18px; font-weight: bold; color:black">TravelMate AI: Generative QA Model for Cultural Tourism, UESTC</div>
+                                    <div style="text-align: right;font-size: 18px; font-weight: bold; color:black">Chengdu, China</div>
                                 </div>
                                 <div style="display: flex; justify-content: space-between;">
-                                    <div style="text-align: left;font-size: 20px; font-weight: bold; color:grey">Vice-president, University of Electronic Science and Technology of China</div>
-                                    <div style="text-align: right;font-size: 20px; font-weight: bold; color:grey">Oct. 2022-Oct. 2023</div>
+                                    <div style="text-align: left;font-size: 16px; font-weight: bold; color:grey">Member, Supervisor: Prof. Weizhong Qian</div>
+                                    <div style="text-align: right;font-size: 16px; font-weight: bold; color:grey">Feb. 2024</div>
                                 </div>
-                                <ul>
-                                    <li style="font-size: 20px;color:grey;"><b>Led the studio to achieve the First Place in the Annual Review of the School of Information and Software Engineering for the year 2022-2023.</b></li>
-                                    <li style="font-size: 20px;color:grey;"><b>Served as the UI Team Leader, overseeing the mentoring of new members, organizing their participation in competitions and securing national-level awards in four contests.</b></li>
+                                <div class="container">
+                                    <div class="text-container">
+                                        <ul>
+                                            <li style="font-size: 16px;color:grey;"><b>Trained the model on nearly 600,000 crawled text data, processed using heuristic methods, and fine-tuned into a multi-turn dialogue format for training.</b></li>
+                                            <li style="font-size: 16px;color:grey;"><b>Developed a tailored tourism TravelMate AI model based on the LLaMa-Chat-7B Chinese model, which provided services including attraction recommendation, cultural background introducations, personalized planning with real-time weather and traffic conditions, etc.</b></li>
+                                        </ul>
+                                    </div>
+                                    <div class="image-container-0">
+                                        <img src="images/project/project2-TravelMateAI/3.png" alt="Profile Picture">
+                                    </div>
+                                </div>
+                                <ul class="actions">
+                                    <li><a href="project/project2-TravelMateAI.html" class="button">Learn more</a></li>
+                                </ul>    
+                                
+                                <!-- project 3 -->
+                                <header class="major">
+                                    <h2 id="project3" style="font-size: 20px; margin-top: 5px; margin-bottom: 5px;">Project3</h2>
+                                </header>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <div style="text-align: left;font-size: 18px; font-weight: bold; color:black">UI Interface Generation Based on Diffusion Models and Multi-modal LLMs, UESTC</div>
+                                    <div style="text-align: right;font-size: 18px; font-weight: bold; color:black">Chengdu, China</div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <div style="text-align: left;font-size: 16px; font-weight: bold; color:grey">Team Leader, Supervisor: Prof. Weizhong Qian</div>
+                                    <div style="text-align: right;font-size: 16px; font-weight: bold; color:grey">Dec. 2023</div>
+                                </div>
+                                <div class="container">
+                                    <div class="text-container">
+                                        <ul>
+                                            <li style="font-size: 16px;color:grey;"><b>Utilized Stable Diffusion to generate diverse, realistic UI interfaces based on input text, style, and other specifications.</b></li>
+                                            <li style="font-size: 16px;color:grey;"><b>Features multiple functionalities including text-to-image, image-to-image, and mask editing for image modifications, enabling rapid and customized creation of UI images, significantly reducing the labor and time costs of design.</b></li>
+                                        </ul>
+                                    </div>
+                                    <div class="image-container-0">
+                                        <img src="images/project/project3-DiffUI/1.png" alt="Profile Picture">
+                                    </div>
+                                </div>
+                                <ul class="actions">
+                                    <li><a href="project/project3-Diffusion.html" class="button">Learn more</a></li>
+                                </ul> 
+
+                                <!-- project 4 -->
+                                <header class="major">
+                                    <h2 id="project4" style="font-size: 20px; margin-top: 5px; margin-bottom: 5px;">Project4</h2>
+                                </header>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <div style="text-align: left;font-size: 18px; font-weight: bold; color:black">Security Detection System Based on LLMs and Graph Neural Networks, UESTC</div>
+                                    <div style="text-align: right;font-size: 18px; font-weight: bold; color:black">Chengdu, China</div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <div style="text-align: left;font-size: 16px; font-weight: bold; color:grey">Member, Supervisor: Prof. Manping Fan</div>
+                                    <div style="text-align: right;font-size: 16px; font-weight: bold; color:grey">May 2023</div>
+                                </div>
+                                <div class="container">
+                                    <div class="text-container">
+                                        <ul>
+                                            <li style="font-size: 16px;color:grey;"><b>Developed a ChatGLM-based webpage security detection system using Vue, Spring language and Web JS API, achieving webpage source IP geolocation, security analysis, and visualization.</b></li>
+                                            <li style="font-size: 16px;color:grey;"><b>Utilized a GNN-based street-level IP geolocation model along with the Amap API for webpage source IP localization and visualization; deployed fine-tuned Chat-GLM for security analysis.</b></li>
+                                            <li style="font-size: 16px;color:grey;"><b>Authored engineering documentation and conducted comprehensive testing of the project, which will be further developed in collaboration with a company to extend the system into a deployable product.</b></li>
+                                            <li style="font-size: 16px;color:grey;"><b>The project has been awarded a <span style="color: orangered; padding: 2px 4px; border-radius: 4px; font-weight: bold;">computer software copyright.</span></b></li>
+                                        </ul>
+                                    </div>
+                                    <div class="image-container-0">
+                                        <img src="images/project/project4-GNN4Route/5.png" alt="Profile Picture">
+                                    </div>
+                                </div>
+                                <ul class="actions">
+                                    <li><a href="project/project4-GNN4Route.html" class="button">Learn more</a></li>
+                                </ul> 
+
+                                <!-- project 5 -->
+                                <header class="major">
+                                    <h2 id="project5" style="font-size: 20px; margin-top: 5px; margin-bottom: 5px;">Project5</h2>
+                                </header>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <div style="text-align: left;font-size: 18px; font-weight: bold; color:black">Secure Facial Recognition Authentication System based on capsule network, UESTC</div>
+                                    <div style="text-align: right;font-size: 18px; font-weight: bold; color:black">Chengdu, China</div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <div style="text-align: left;font-size: 16px; font-weight: bold; color:grey">Team Leader, Supervisor: Prof. Chong Fu</div>
+                                    <div style="text-align: right;font-size: 16px; font-weight: bold; color:grey">Mar. 2023</div>
+                                </div>
+                                <div class="container">
+                                    <div class="text-container">
+                                        <ul>
+                                            <li style="font-size: 16px;color:grey;"><b>Trained and optimized a lightweight network based on U2Net for efficient image segmentation.</b></li>
+                                            <li style="font-size: 16px;color:grey;"><b>Enhanced FaceNet for facial similarity detection and recognition; utilized knowledge distillation for model light-weighting, facilitating mobile deployment.</b></li>
+                                            <li style="font-size: 16px;color:grey;"><b>Employed capsule networks to detect deepfakes created using Face2Face, FaceSwap, and GANs technologies.</b></li>
+                                            <li style="font-size: 16px;color:grey;"><b>Designed the user interface of the secure facial recognition authentication system.</b></li>
+                                        </ul>
+                                    </div>
+                                    <div class="image-container-0">
+                                        <img src="images/paper/aaai-endtoend.png" alt="Profile Picture">
+                                    </div>
+                                </div>
+                                <ul class="actions">
+                                    <li><a href="project/project5-FaceDetection.html" class="button">Learn more</a></li>
+                                </ul> 
+
+                                <!-- project 6 -->
+                                <header class="major">
+                                    <h2 id="Project6" style="font-size: 20px; margin-top: 5px; margin-bottom: 5px;">Project6</h2>
+                                </header>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <div style="text-align: left;font-size: 18px; font-weight: bold; color:black">Yolov5-based Sign Language Detection System, UESTC</div>
+                                    <div style="text-align: right;font-size: 18px; font-weight: bold; color:black">Chengdu, China</div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <div style="text-align: left;font-size: 16px; font-weight: bold; color:grey">Team Leader, Supervisor: Prof. Chong Fu</div>
+                                    <div style="text-align: right;font-size: 16px; font-weight: bold; color:grey">Mar. 2022</div>
+                                </div>
+                                <div class="container">
+                                    <div class="text-container">
+                                        <ul>
+                                            <li style="font-size: 16px;color:grey;"><b>Utilized the Yolov5 algorithm for target detection of sign language gestures using knowledge distillation and attention mechanisms, achieving high-accuracy recognition of 36 different sign language gestures in real-world environments.</b></li>
+                                            <li style="font-size: 16px;color:grey;"><b>Responsible for parameter tuning, training, testing, and analysis of Yolov5. Independently created a small dataset and implemented data augmentation to enhance the model's sign language detection capabilities across different scenes. </b></li>
+                                            <li style="font-size: 16px;color:grey;"><b>Improved the average accuracy of 36 sign language recognition by 4.6%.</b></li>
+                                        </ul>
+                                    </div>
+                                    <div class="image-container-0">
+                                        <img src="images/project/project6-SignLanguage/1.png" alt="Profile Picture">
+                                    </div>
+                                </div>
+                                <ul class="actions">
+                                    <li><a href="project/project6-SignLanguage.html" class="button">Learn more</a></li>
+                                </ul> 
+                                                            
+								</section>
+
+                                <section>
+                                    <header class="main">
+                                        <h1 id="scholarship-and-awards" style="font-size: 28px; margin-top: -25px; margin-bottom: -25px;">SCHOLARSHIP AND AWARDS</h1>
+                                    </header>
+
+                                    <!-- <span class="image main"><img src="images/pic11.jpg" alt="" /></span> -->
+                                    <hr style="border-style: dashed; margin-bottom: 10px;" class="major" /> 
+
+                                    <ul>
+                                        <li style="font-size: 16px;">
+                                            <div style="display: flex; justify-content: space-between;">
+                                                <div style="text-align: left;font-size: 16px; font-weight: bold; color:grey">2nd Prize(National), China Students Service Outsourcing Innovation and Entrepreneurship Competition</div>
+                                                <div style="text-align: right;font-size: 16px; font-weight: bold; color:grey">May 2024</div>
+                                            </div>
+                                        </li>
+
+                                        <li style="font-size: 16px;">
+                                            <div style="display: flex; justify-content: space-between;">
+                                                <div style="text-align: left;font-size: 16px; font-weight: bold; color:grey">Grand Prize(National, Ranked 1st), China College Computer Competition</div>
+                                                <div style="text-align: right;font-size: 16px; font-weight: bold; color:grey">Sep 2023</div>
+                                            </div>
+                                        </li>
+
+                                        <li style="font-size: 16px;">
+                                            <div style="display: flex; justify-content: space-between;">
+                                                <div style="text-align: left;font-size: 16px; font-weight: bold; color:grey">2nd Prize(National, Ranked 12th), Pangu Stone Cup Electronic Digital Forensics Competition</div>
+                                                <div style="text-align: right;font-size: 16px; font-weight: bold; color:grey">May 2023</div>
+                                            </div>
+                                        </li>
+
+                                        <li style="font-size: 16px;">
+                                            <div style="display: flex; justify-content: space-between;">
+                                                <div style="text-align: left;font-size: 16px; font-weight: bold; color:grey">2nd Prize(National), China Students Service Outsourcing Innovation and Entrepreneurship Competition</div>
+                                                <div style="text-align: right;font-size: 16px; font-weight: bold; color:grey">Aug 2023</div>
+                                            </div>
+                                        </li>
+
+                                        <li style="font-size: 16px;">
+                                            <div style="display: flex; justify-content: space-between;">
+                                                <div style="text-align: left;font-size: 16px; font-weight: bold; color:grey">3rd Prize(National), China College Student Computer Design Competition</div>
+                                                <div style="text-align: right;font-size: 16px; font-weight: bold; color:grey">Aug 2022</div>
+                                            </div>
+                                        </li>
+
+                                        <li style="font-size: 16px;">
+                                            <div style="display: flex; justify-content: space-between;">
+                                                <div style="text-align: left;font-size: 16px; font-weight: bold; color:grey">1st Prize(Ranked 1st), UESTC Social Practice Service for Rural Revitalization</div>
+                                                <div style="text-align: right;font-size: 16px; font-weight: bold; color:grey">Dec 2022</div>
+                                            </div>
+                                        </li>
+
+                                        <li style="font-size: 16px;">
+                                            <div style="display: flex; justify-content: space-between;">
+                                                <div style="text-align: left;font-size: 16px; font-weight: bold; color:grey; margin-bottom: -100px;">Outstanding Student Scholarship, University of Electronic Science and Technology</div>
+                                                <div style="text-align: right;font-size: 16px; font-weight: bold; color:grey; margin-bottom: -100px;">Nov 2022</div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                    
+                                </section>
+
+                                <section>
+                                    <header class="main">
+                                        <h2 id="leadership-and-activities" style="font-size: 28px; margin-top: -25px; margin-bottom: -25px;">LEADERSHIP AND ACTIVITIES</h1>
+                                    </header>
+
+                                    <!-- <span class="image main"><img src="images/pic11.jpg" alt="" /></span> -->
+                                    <hr style="border-style: dashed; margin-bottom: 5px;" class="major" />
+
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <div style="text-align: left;font-size: 18px; font-weight: bold; color:black">LingRui Studio</div>
+                                        <div style="text-align: right;font-size: 18px; font-weight: bold; color:black">Chengdu,China</div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <div style="text-align: left;font-size: 16px; font-weight: bold; color:grey">Vice-president, University of Electronic Science and Technology of China</div>
+                                        <div style="text-align: right;font-size: 16px; font-weight: bold; color:grey">Oct. 2022-Oct. 2023</div>
+                                    </div>
+                                    <ul>
+                                        <li style="font-size: 16px;color:grey;"><b>Led the studio to achieve the First Place in the Annual Review of the School of Information and Software Engineering for the year 2022-2023.</b></li>
+                                        <li style="font-size: 16px;color:grey;"><b>Served as the UI Team Leader, overseeing the mentoring of new members, organizing their participation in competitions and securing national-level awards in four contests.</b></li>
+                                    </ul>
+                                    <ul class="actions">
+                                        <li><a href="project/project6-SignLanguage.html" class="button">Learn more</a></li>
+                                    </ul> 
+
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <div style="text-align: left;font-size: 18px; font-weight: bold; color:black">Weiyang Voluntary Education Team</div>
+                                        <div style="text-align: right;font-size: 18px; font-weight: bold; color:black">Chengdu, China</div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <div style="text-align: left;font-size: 16px; font-weight: bold; color:grey">President of Publicity,University of Electronic Science and Technology of China</div>
+                                        <div style="text-align: right;font-size: 16px; font-weight: bold; color:grey">Dec. 2021-Dec. 2022</div>
+                                    </div>
+                                    <ul>
+                                        <li style="font-size: 16px;color:grey;"><b>Led the team to achieve First Place in the school-wide annual evaluation for the 2021-2022 academic year.</b></li>
+                                        <li style="font-size: 16px;color:grey;"><b>Led a team on a voluntary teaching mission to Longwan Township's Nine-Year Compulsory School.</b></li>
+                                        <li style="font-size: 16px;color:grey;"><b>Managed the production of photography, video editing, posters and promotional videos for the whole team.</b></li>
                                 </ul>
 
-                                <div style="display: flex; justify-content: space-between;">
-                                    <div style="text-align: left;font-size: 24px; font-weight: bold; color:black">Weiyang Voluntary Education Team</div>
-                                    <div style="text-align: right;font-size: 24px; font-weight: bold; color:black">Chengdu, China</div>
-                                </div>
-                                <div style="display: flex; justify-content: space-between;">
-                                    <div style="text-align: left;font-size: 20px; font-weight: bold; color:grey">President of Publicity,University of Electronic Science and Technology of China</div>
-                                    <div style="text-align: right;font-size: 20px; font-weight: bold; color:grey">Dec. 2021-Dec. 2022</div>
-                                </div>
-                                <ul>
-                                    <li style="font-size: 20px;color:grey;"><b>Led the team to achieve First Place in the school-wide annual evaluation for the 2021-2022 academic year.</b></li>
-                                    <li style="font-size: 20px;color:grey;"><b>Led a team on a voluntary teaching mission to Longwan Township's Nine-Year Compulsory School.</b></li>
-                                    <li style="font-size: 20px;color:grey;"><b>Managed the production of photography, video editing, posters and promotional videos for the whole team.</b></li>
-                               </ul>
-                        
-                                <hr style="border-style: dashed;" class="major" />
-
-                                
-                            </section>
+                                    <ul class="actions">
+                                        <li><a href="project/project6-SignLanguage.html" class="button">Learn more</a></li>
+                                    </ul> 
+                                    <hr style="border-style: dashed;" class="major" />
+                                    
+                                </section>
 
 						</div>
 					</div>
@@ -285,78 +617,37 @@
 										<h2>Menu</h2>
 									</header>
 									<ul>
-										<li><a href="index.html">Homepage</a></li>
-										<!-- <li><a href="generic.html">Generic</a></li>
-										<li><a href="elements.html">Elements</a></li>
-										<li>
-											<span class="opener">Submenu</span>
+										<!-- <li><a href="index.html">Homepage</a></li> -->
+                                        <li>
+											<a href="index.html" class="opener">Homepage</a>
 											<ul>
-												<li><a href="#">Lorem Dolor</a></li>
-												<li><a href="#">Ipsum Adipiscing</a></li>
-												<li><a href="#">Tempus Magna</a></li>
-												<li><a href="#">Feugiat Veroeros</a></li>
+												<li><a href="#self-introduction">SELF-INTRODUCTION</a></li>
+												<li><a href="#news">NEWS</a></li>
+												<li><a href="#research">RESEARCH</a></li>
+                                                <li><a href="#software-copyright">SOFTWARE COPYRIGHT</a></li>
+                                                <li><a href="#project">PROJECT</a></li>
+												<li><a href="#scholarship-and-awards">SCHOLARSHIP AND AWARDS</a></li>
+                                                <li><a href="#leadership-and-activities">LEADERSHIP AND ACTIVITIES</a></li>
+											</ul>
+                                        </li>
+                                        <li>
+                                            <a href="publication/publication.html" class="opener">Publication</a>
+											<ul>
+												<li><a href="./publication/publication.html#2024">2024</a></li>
+                                                <ul>
+                                                    <li><a href="./publication/paper/mm24.html">When, Where, and What? A Benchmark for Accident Anticipation and Localization with Large Language Models</a></li>
+                                                    <li><a href="./publication/paper/ecai24.html">Less is More: Efficient Brain-Inspired Learning for Autonomous Driving Trajectory Prediction</a></li>
+                                                    <li><a href="./publication/paper/aap.html">Real-time Accident Anticipation for Autonomous Driving Through Monocular Depth-Enhanced 3D Modeling</a></li>
+                                                    <li><a href="./publication/paper/tiv.html">A Cognitive-Based Trajectory Prediction Approach for Autonomous Driving</a></li>
+                                                </ul>
+												<li><a href="./publication/publication.html#2023">2023</a></li>
+                                                <ul>
+                                                    <li><a href="#">Lightweight Human Observation-inspired Trajectory Prediction For Autonomous Driving</a></li>
+                                                </ul>
 											</ul>
 										</li>
-										<li><a href="#">Etiam Dolore</a></li>
-										<li><a href="#">Adipiscing</a></li>
-										<li>
-											<span class="opener">Another Submenu</span>
-											<ul>
-												<li><a href="#">Lorem Dolor</a></li>
-												<li><a href="#">Ipsum Adipiscing</a></li>
-												<li><a href="#">Tempus Magna</a></li>
-												<li><a href="#">Feugiat Veroeros</a></li>
-											</ul>
-										</li>
-										<li><a href="#">Maximus Erat</a></li>
-										<li><a href="#">Sapien Mauris</a></li>
-										<li><a href="#">Amet Lacinia</a></li> -->
 									</ul>
 								</nav>
-
-							<!-- Section -->
-								<!-- <section>
-									<header class="major">
-										<h2>Ante interdum</h2>
-									</header>
-									<div class="mini-posts">
-										<article>
-											<a href="#" class="image"><img src="images/pic07.jpg" alt="" /></a>
-											<p>Aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore aliquam.</p>
-										</article>
-										<article>
-											<a href="#" class="image"><img src="images/pic08.jpg" alt="" /></a>
-											<p>Aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore aliquam.</p>
-										</article>
-										<article>
-											<a href="#" class="image"><img src="images/pic09.jpg" alt="" /></a>
-											<p>Aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore aliquam.</p>
-										</article>
-									</div>
-									<ul class="actions">
-										<li><a href="#" class="button">More</a></li>
-									</ul>
-								</section> -->
-
-							<!-- Section -->
-								<!-- <section>
-									<header class="major">
-										<h2>Get in touch</h2>
-									</header>
-									<p>Sed varius enim lorem ullamcorper dolore aliquam aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore. Proin sed aliquam facilisis ante interdum. Sed nulla amet lorem feugiat tempus aliquam.</p>
-									<ul class="contact">
-										<li class="icon solid fa-envelope"><a href="#">information@untitled.tld</a></li>
-										<li class="icon solid fa-phone">(000) 000-0000</li>
-										<li class="icon solid fa-home">1234 Somewhere Road #8254<br />
-										Nashville, TN 00000-0000</li>
-									</ul>
-								</section> -->
-
-							<!-- Footer -->
-								<!-- <footer id="footer">
-									<p class="copyright">&copy; Untitled. All rights reserved. Demo Images: <a href="https://unsplash.com">Unsplash</a>. Design: <a href="https://html5up.net">HTML5 UP</a>.</p>
-								</footer> -->
-
 						</div>
 					</div>
 
@@ -368,6 +659,7 @@
 			<script src="assets/js/breakpoints.min.js"></script>
 			<script src="assets/js/util.js"></script>
 			<script src="assets/js/main.js"></script>
+            <script src="carousel.js"></script>
 
 	</body>
 </html>

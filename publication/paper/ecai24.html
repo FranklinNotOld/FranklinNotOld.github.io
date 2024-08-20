@@ -1,0 +1,263 @@
+<!DOCTYPE HTML>
+<!--
+	Editorial by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Publication</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../../assets/css/main.css" />
+		<style>
+            /* Flex container styles */
+            .container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            /* Text container styles */
+            .text-container {
+                flex: 1;
+                text-align: justify;
+            }
+            
+            /* Image container styles */
+            .image-container {
+                flex: 0 0 auto; /* Prevent image container from growing */
+            }
+            
+            /* Image styles */
+            .image-container img {
+                max-width: 450px; /* Adjust width as needed */
+                height: auto; /* Maintain aspect ratio */
+                border-radius: 8px; /* Optional: add rounded corners */
+                margin-left: 25px; /* Space between text and image */
+            }
+        </style>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+
+							<!-- Header -->
+                            <header id="header">
+                                <a href="self.html" class="logo"><strong>Yongkang Li </strong> homepage</a>
+                            </header>
+                        
+                        	<!-- Banner -->
+                            <section id="banner">
+                                <div class="content">
+                                    <header>
+                                        <h1 style="font-size: 36px;">Less is More: Efficient Brain-Inspired Learning for Autonomous Driving Trajectory Prediction</h1>
+                                    </header>
+									<div style="font-size: 16px;">Haicheng Liao*, Yongkang Li*, Zhenning Li, Chengyue Wang, Chunlin Tian, Yuming Huang, Zilin Bian, Kaiqun Zhu, Guofa Li, Ziyuan Pu, Jia Hu, Zhiyong Cui, Chengzhong Xu</div>
+                                </div>
+                            </section>
+                            <!-- <hr style="border-style: dashed; margin-top: -35px;" class="major" /> -->
+
+							<!-- Section -->
+							<section >
+								<div class="container">
+									<div class="text-container">
+										<header class="main">
+											<h1 id="abstract" style="font-size: 28px; margin-top: -20px; margin-bottom: 5px;">Abstract</h1>
+										</header>
+						
+										<p style="font-size: 16px;">
+											Accurately and safely predicting the trajectories of surrounding vehicles is essential for fully realizing autonomous driving (AD). 
+											This paper presents the Human-Like Trajectory Prediction model (HLTP++), which emulates human cognitive processes to improve trajectory prediction in AD. 
+											HLTP++ incorporates a novel teacher-student knowledge distillation framework. The ``teacher'' model equipped with an adaptive visual sector, 
+											mimics the dynamic allocation of attention human drivers exhibit based on factors like spatial orientation, proximity, and driving speed. 
+											On the other hand, the ``student'' model focuses on real-time interaction and human decision-making, drawing parallels to the human memory storage mechanism. 
+											Furthermore, we improve the model's efficiency by introducing a new Fourier Adaptive Spike Neural Network (FA-SNN), allowing for faster and more precise predictions with fewer parameters. 
+											Evaluated using the NGSIM, HighD, and MoCAD benchmarks, HLTP++ demonstrates superior performance compared to existing models, 
+											which reduces the predicted trajectory error with over 11% on the NGSIM dataset and 25\% on the HighD datasets. 
+											Moreover, HLTP++ demonstrates strong adaptability in challenging environments with incomplete input data. 
+											This marks a significant stride in the journey towards fully AD systems.
+										</p>
+									</div>
+									<div class="image-container">
+										<span class="image fit">
+											<img src="../../images/paper/ecai24-head.png" alt=""/>
+										</span>
+									</div>
+								</div>
+							</section>
+
+							<!-- Section -->
+							<section>
+								<div>
+									<div>
+										<header>
+											<h1 id="model-structure" style="font-size: 28px; margin-top: -20px; margin-bottom: 10px;">Model Structure</h1>
+										</header>
+									</div>																																		
+									<p style="font-size: 16px;">
+										Overview of the HLTP++ Model:
+										<div class="container">
+											<div class="text-container">
+												<p style="font-size: 16px;">1. <b>Teacher-Student Knowledge Distillation Framework</b>:
+													<ul>
+														<li>
+															<p style="font-size: 16px;"><b>The Teacher Model</b>: This model is designed to learn rich and complex spatio-temporal patterns from driving scenarios. 
+																It uses a deep neural network to process and understand the intricate relationships between various elements in the driving environment, such as other vehicles, pedestrians, road signs, and more. 
+																The teacher model captures this data through extensive training on large datasets, allowing it to predict future trajectories with high accuracy.</p>
+															</li>
+															<li>
+															<p style="font-size: 16px;"><b>The Student Model</b>: The teacher model is computationally expensive, making it less suitable for real-time applications. 
+																The student model is a lightweight version that learns from the teacher model through a process called knowledge distillation. 
+																This means that the student model is trained to replicate the predictions of the teacher model but with much fewer computational resources. 
+																The student model is thus optimized for real-time trajectory prediction on embedded systems.</p>
+														</li>
+													</ul>	 
+												<p style="font-size: 16px;">2. <b>Fourier Adaptive Spike Neural Network (FA-SNN)</b>: FA-SNN is inspired by how the human brain processes information. It incorporates spike-based neural processing, 
+													where information is encoded in spikes or pulses, similar to how neurons communicate in the brain. The model integrates Fourier transforms to efficiently capture frequency-domain information, 
+													which helps in understanding periodic patterns in the data, such as the regular motion of vehicles or pedestrians. </p>
+												<p style="font-size: 16px;">3. <b>Adaptive Visual Pooling Mechanism</b>: This mechanism mimics the human driver's ability to focus on the most relevant parts of the visual field while driving. 
+													The model dynamically adjusts its attention based on the current driving context. 
+													For example, if the vehicle is moving at high speed, the model may focus more on distant objects, while at lower speeds, it might pay more attention to nearby pedestrians or cyclists.</p>
+											</div>
+											<div class="image-container">
+												<span class="image fit">
+													<img src="../../images/paper/ecai24-structure.png" alt=""/>
+												</span>
+											</div>
+										<!-- <div class="container">
+											<div class="text-container">
+												<p style="font-size: 16px;">2. <b>Fourier Adaptive Spike Neural Network (FA-SNN)</b>: This is a critical component of the student model, designed to efficiently handle temporal data by mimicking the neuronal processes in the human brain. 
+													It improves prediction accuracy while maintaining computational efficiency, which is crucial for embedded systems in autonomous vehicles.</p>
+											</div>
+											<div class="image-container">
+												<span class="image fit">
+													<img src="../../images/paper/mm24-dynamic.png" alt=""/>
+												</span>
+											</div>
+										</div> -->
+									</p>
+								</div>
+							</section>
+
+							<!-- Section -->
+							<section>
+								<div>
+									<div>
+										<header>
+											<h1 id="experiment-result" style="font-size: 28px; margin-top: -20px; margin-bottom: 10px;">Experiment Result</h1>
+										</header>
+									</div>
+									<div style="width: 100%;">
+										<span class="image fit">
+											<img src="../../images/paper/ecai24-loss.png" alt="" style="width: 100%; display: block; margin: 0 auto;"/>
+										</span>
+									</div>
+									<div style="display: flex; justify-content: space-between;">
+										<article style="flex: 1; margin-right: 10px;">
+											<a href="#" class="image">
+												<img src="../../images/paper/ecai24-hot.png" alt="" style="width: 100%; object-fit: cover;"/>
+											</a>
+										</article>
+										<article style="flex: 1; margin-left: 10px;">
+											<a href="#" class="image">
+												<img src="../../images/paper/ecai24-comprision.png" alt="" style="width: 100%; object-fit: cover;"/>
+											</a>
+										</article>
+									</div>									
+									<p style="font-size: 16px;">
+										Our comprehensive evaluation demonstrates HLTP++'s superior performance compared to state-of-the-art baselines. 
+										It notably achieves gains of 11.2% for long-term (5s) and 11.4% for average predictions on the NGSIM dataset. 
+										The corresponding outstanding performance is also evident on the HighD dataset and the MACAD dataset. It is noteworthy that our model HLTP++(h), 
+										despite utilizing only 1.5 seconds of input data (half of the input of other baselines), achieves comparable prediction accuracy. This highlights the adaptability and robustness of HLTP++.
+									</p>
+									<p style="font-size: 16px;">
+										Our benchmarking against SOTA baselines reveals that HLTP++ models outperform in all metrics while maintaining a minimal parameter count. 
+										Specifically, HLTP++ reduce parameters by 56.91% and 33.51% compared to WSiP and CS-LSTM, respectively. Compared to HLTP++(SM), the ``teacher'' model of HLTP++, HLTP++(TM), 
+										achieve the second best score in three datasets, while maintaining a larger number of parameters and slower inference speed. However, HLTP++ maintain the lowest inference time while achieve the best accuracy in trajectory prediction. 
+										Utilizing the Knowledge Distillation Module (KDM), HLTP++ retains the lightweight advantages of the HLTP++(SM), while concurrently enhancing its predictive capabilities by assimilating knowledge gleaned from the teacher model, 
+										thereby surpassing the performance of the teacher model itself. This highlights the efficiency and adaptability of our lightweight ``teacher-student'' knowledge distillation framework, offering a balance between accuracy and computational resources.
+									</p>
+									<p style="font-size: 16px;">
+										Figure showcases the multimodal probabilistic prediction performance of HLTP++ on the NGSIM dataset. The heat maps shown represent the Gaussian Mixture Model of predictions in challenging scenes. 
+										These visualizations show that the highest probability predictions of our model are very close to the ground truth, indicating its impressive performance. 
+										Moreover, the figure visually demonstrates our model's ability to accurately predict complex scenarios such as merging and lane changing, confirming its effectiveness and safety in various traffic situations. 
+										Interestingly, in certain complex scenarios, the trajectory predictions of the ``student'' model exceed the accuracy of the ``teacher'' model. 
+										This result illustrates the ability of the ``student'' model to selectively assimilate and refine the knowledge acquired from the ``teacher'' model, 
+										effectively ``extracting the essence and discarding the dross''. Moreover, we observed that vehicles in closer proximity to the target vehicle received higher attention values. 
+										This observation aligns with the driving behavior of human operators who primarily focus on the vehicle ahead, as it has the most significant influence on the driving trajectory. 
+										This also substantiates the utility of vision pooling in reducing the perturbations caused by neighboring vehicles, thereby prioritizing the significance of the leading vehicle.
+									</p>
+								</div>
+							</section>
+						</div>
+					</div>
+
+					<!-- Sidebar -->
+					<div id="sidebar">
+						<div class="inner">
+
+							<!-- Search -->
+								<section id="search" class="alt">
+									<form method="post" action="#">
+										<input type="text" name="query" id="query" placeholder="Search" />
+									</form>
+								</section>
+
+								<!-- Menu -->
+								<nav id="menu">
+									<header class="major">
+										<h2>Menu</h2>
+									</header>
+									<ul>
+										<!-- <li><a href="index.html">Homepage</a></li> -->
+                                        <li>
+											<a href="../../index.html" class="opener">Homepage</a>
+											<ul>
+												<li><a href="../../index.html#self-introduction">SELF-INTRODUCTION</a></li>
+												<li><a href="../../index.html#news">NEWS</a></li>
+												<li><a href="../../index.html#research">RESEARCH</a></li>
+                                                <li><a href="../../index.html#software-copyright">SOFTWARE COPYRIGHT</a></li>
+                                                <li><a href="../../index.html#project">PROJECT</a></li>
+												<li><a href="../../index.html#scholarship-and-awards">SCHOLARSHIP AND AWARDS</a></li>
+                                                <li><a href="../../index.html#leadership-and-activities">LEADERSHIP AND ACTIVITIES</a></li>
+											</ul>
+                                        </li>
+                                        <li>
+                                            <a href="publication/publication.html" class="opener">Publication</a>
+											<ul>
+												<li><a href="../publication.html#2024">2024</a></li>
+                                                <ul>
+                                                    <li><a href="mm24.html">When, Where, and What? A Benchmark for Accident Anticipation and Localization with Large Language Models</a></li>
+                                                    <li><a href="ecai24.html">Less is More: Efficient Brain-Inspired Learning for Autonomous Driving Trajectory Prediction</a></li>
+                                                    <li><a href="aap.html">Real-time Accident Anticipation for Autonomous Driving Through Monocular Depth-Enhanced 3D Modeling</a></li>
+                                                    <li><a href="tiv.html">A Cognitive-Based Trajectory Prediction Approach for Autonomous Driving</a></li>
+                                                </ul>
+												<li><a href="../publication.html#2023">2023</a></li>
+                                                <ul>
+                                                    <li><a href="#">Lightweight Human Observation-inspired Trajectory Prediction For Autonomous Driving</a></li>
+                                                </ul>
+											</ul>
+										</li>
+									</ul>
+								</nav>
+
+						</div>
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="../../assets/js/jquery.min.js"></script>
+			<script src="../../assets/js/browser.min.js"></script>
+			<script src="../../assets/js/breakpoints.min.js"></script>
+			<script src="../../assets/js/util.js"></script>
+			<script src="../../assets/js/main.js"></script>
+
+	</body>
+</html>
