@@ -1,0 +1,789 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>torchvision.transforms · Yongkang Li</title>
+<meta name="description" content="torchvision is a computer vision toolkit. It includes some commonly used image preprocessing methods (torchvision.transforms), implementations of comm…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">PyTorch and tools</span><span data-l="cn">PyTorch 与工具</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">torchvision.transforms</span><span data-l="cn">torchvision.transforms</span></h1>
+    <div class="meta"><span data-l="en">5 min read</span><span data-l="cn">约 4 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="pt-tensor-advanced.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">More on Tensors</span><span data-l="cn">Tensor 进阶</span></span></a><a class="pn glass" href="pt-mnist.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Loading MNIST</span><span data-l="cn">加载 MNIST</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+torchvision is a computer vision toolkit. It includes some commonly used image preprocessing methods (torchvision.transforms), implementations of common datasets (torchvision.datasets), and commonly used models for training (torchvision.model).
+
+This time we will go over the syntax of transforms.
+
+Before we get started, let me first introduce the transforms.Compose() class. Its main purpose is to chain several image transformations together, and it will be used heavily in the code below. Its structure is as follows:
+
+```python
+transforms.Compose([
+    transforms.CenterCrop(10),
+    transforms.ToTensor(),
+    ······
+])
+```
+
+What goes inside the square brackets are the various image transforms operations.
+
+### Basic Operations
+
+#### 1. Image normalization: transforms.Normalize()
+
+> **transforms.Normalize(mean,std,inplace=False)**
+
+- Normalizes each channel of the image, i.e. converts the values of each channel into the interval (-1,1). Doing so speeds up the convergence of the model. (This is somewhat like converting a normal distribution into the standard normal distribution.)
+
+###### Parameter Explanation
+
+Here mean denotes the average $\mu$ and std denotes the standard deviation $\sigma$
+
+According to the mathematical formula
+$$
+\widehat{x}=\frac{x_i-\mu}{\sigma}
+$$
+we get
+$$
+\widehat{outplace}=\frac{inplace_i-mean}{std}
+$$
+In addition, `Normalize()` has another parameter, `inplace`, which specifies whether to operate in place.
+
+If `inplace=True`, the operation is done in place: the newly generated data overwrites the original data, which in terms of storage means the original storage location is modified directly;
+
+If `inplace=False`, the operation is not done in place: the newly generated data does not overwrite the original data, which in terms of storage means new memory is allocated to hold the new data.
+
+For large datasets, using inplace can save a great deal of memory.
+
+### Data Augmentation
+
+Data augmentation is a common way to improve a model's ability to generalize. Its main purpose is to turn a small dataset into a larger one. It works by processing the original dataset in some way, such as adjusting colors, rotating, stitching, and so on. The transforms syntax below is what applies transformations to images to achieve the effect of data augmentation.
+
+> Data augmentation can be understood in a way that most Chinese people will relate to. Nearly everyone has to go through the gaokao (the national college entrance exam), and past gaokao papers are usually treated as classics to analyze at each high school. But the number of gaokao questions is limited; even counting mock exams from various regions, it falls far short of the number of questions a high school student works through in the senior year. So what to do? Teachers start imitating gaokao questions and writing their own. They apply all kinds of transformations to gaokao questions, such as swapping the conclusion and the given conditions, changing the numbers, and so on. These methods are like data augmentation. And students who work through large numbers of these varied questions achieve better exam scores, just as a model trained after data augmentation performs better.
+
+#### Image Cropping
+
+##### 1. Image center crop: transforms.CenterCrop()
+
+>transforms.CenterCtop(size)
+
+- Crops each image from its center, keeping the central part of the image
+
+###### Parameter Explanation
+
+`size` is the size of the cropped image.
+
+If `size` is just a single integer constant, the crop is a square with dimensions `size*size`
+
+If `size` is written in the form `(h,w)`, the crop is a rectangle with a length of w and a width of h, with dimensions `h*w`
+
+###### Code Implementation
+
+```python
+from PIL import Image
+from torchvision import transforms
+
+img = Image.open('Avengers.jpeg')
+print(img.size)
+img.show()
+
+transformer = transforms.Compose([
+    transforms.CenterCrop((150, 200)),
+])
+
+img1 = transformer(img)  # applies the transformer transformation to img
+print(img1.size)
+img1.show()
+```
+
+###### Output
+
+```python
+(600, 299)
+(200, 150)
+```
+
+> Note that the order of length and width in resize() is not the same as in CenterCrop()
+
+This is the original image:
+
+<img src="media/pt-transforms/图像-QQ图片20221019162753.png" alt="QQ图片20221019162753" style="zoom:50%;" /> 
+
+This is the image after running the code:
+
+<img src="media/pt-transforms/图像-QQ图片20221019162849.png" alt="QQ图片20221019162849" style="zoom:50%;" /> 
+
+##### 2. Image random crop: transforms.RandomCrop()
+
+> **transforms.RandomCrop(size, padding=None, pad_if_needed=False, fill=0, padding_mode='constant')**
+
+- Randomly crops a picture of size size from the image
+
+###### Parameter Explanation
+
+`size`: `size` is used here in the same way as in CenterCrop()
+
+`padding`: sets the padding size
+
+(1) `padding=a`: pads a pixels on the left, right, top and bottom
+
+(2) `padding=(a,b)`: pads a pixels on the left and right, and b pixels on the top and bottom
+
+(3) `padding=(a,b,c,d)`: pads a, b, c and d pixels on the left, top, right and bottom respectively
+
+`pad_if_need`: when True, the image is padded if the specified size is larger than the original image size
+
+`padding_mode`: the padding mode; there are four modes to choose from
+
+(1) `constant`: fills with a constant value, equivalent to filling the blank area with a single solid color
+
+(2) `edge`: fills using the edge pixels of the image
+
+(3) `reflect`: fills by reflection
+
+(4) `symmetric`: fills by symmetry
+
+###### Code Implementation
+
+```python
+from PIL import Image
+from torchvision import transforms
+
+img = Image.open('Avengers.jpeg')
+print(img.size)
+img.show()
+
+transformer = transforms.Compose([
+    # edge
+    transforms.RandomCrop((1000, 1600), (400, 450), pad_if_needed=True,  padding_mode='edge'),
+    
+])
+
+img1 = transformer(img)  # applies the transformer transformation to img
+print(img1.size)
+img1.show()
+```
+
+###### Output
+
+edge
+
+![QQ图片20221026093918](media/pt-transforms/图像-QQ图片20221026093918.png)
+
+reflect
+
+![QQ图片20221026094229](media/pt-transforms/图像-QQ图片20221026094229.png)
+
+symmetric
+
+![QQ图片20221026094434](media/pt-transforms/图像-QQ图片20221026094434.png)
+
+##### 2. Image random crop: transforms.RandomResizedCrop()
+
+> **transforms.RandomResizedCrop(size, scale=(0.08, 1.0), ratio=(3/4, 4/3), interpolation=<InterpolationMode.BILINEAR: 'bilinear'>)**
+
+- Crops the image to a random size and a random aspect ratio
+
+###### Parameter Explanation
+
+`size`: the crop size, same as size in CenterCrop()
+
+`scale`: the area ratio of the random crop; the default interval is $(0.08,1)$, i.e. $\text{output area}=scale\times\text{original area}$
+
+`ratio`: the random aspect ratio; the default interval is $(\frac{3}{4},\frac{4}{3})$, i.e. $\text{output aspect ratio}=ratio\times\text{original aspect ratio}$
+
+`interpolation`: the interpolation method; the available methods are ` PIL. Image. NEAREST, PIL. Image. BILINEAR, PIL. Image. BICUBIC`
+
+###### Code Implementation
+
+```python
+from PIL import Image
+from torchvision import transforms
+
+img = Image.open('Avengers.jpeg')
+print(img.size)
+img.show()
+
+transformer = transforms.Compose([
+    transforms.RandomResizedCrop(size=(299, 600), scale=(0.2, 0.5)),
+])
+
+img1 = transformer(img)  # applies the transformer transformation to img
+print(img1.size)
+img1.show()
+```
+
+###### Output
+
+![QQ图片20221026100219](media/pt-transforms/图像-QQ图片20221026100219.png)
+
+##### 3. Image random crop: transforms.FiveCrop()
+
+> **transforms.FiveCrop(size)**
+
+- Randomly crops `5` images of size `size` at the top-left, top-right, bottom-left, bottom-right and center of the image
+
+###### Parameter Explanation
+
+`size`: the crop size, same as size in CenterCrop()
+
+###### Code Implementation
+
+```python
+transformer = transforms.Compose([
+    transforms.FiveCrop((100, 200)),
+    transforms.Lambda(lambda crops: torch.stack([(transforms.ToTensor()(crop)) for crop in crops])),
+])
+```
+
+###### Output
+
+The output is a five-dimensional vector (*batch_size\*ncrops\*channels\*image width\*image height*)
+
+A similar function is **transforms.TenCrop()**. The difference is that it also applies a mirror flip, so it produces twice as many crops as FiveCrop
+
+#### Image Rotation
+
+##### 1. Image horizontal flip: transforms.RandomHorizontalFlip()
+
+> **transforms.RandomHorizontalFlip(p)**\
+
+- Decides, according to the probability p, whether to flip the image horizontally. For example, with p=0.5, half of the images will be flipped left to right
+
+###### Parameter Explanation
+
+`p`: the flip probability
+
+###### Code Implementation
+
+```python
+from PIL import Image
+from torchvision import transforms
+import torch
+
+img = Image.open('Avengers.jpeg')
+print(img.size)
+img.show()
+
+transformer = transforms.Compose([
+    transforms.RandomHorizontalFlip(p=1),
+])
+
+img1 = transformer(img)  # applies the transformer transformation to img
+print(img1.size)
+img1.show()
+```
+
+###### Output
+
+<img src="media/pt-transforms/图像-QQ图片20221029113132.png" alt="QQ图片20221029113132" style="zoom:50%;" /> 
+
+##### 2. Image vertical flip: transforms.RandomVerticalFlip()
+
+> **transforms.RandomVerticalFlip(p)**
+
+- Decides, according to the probability p, whether to flip the image vertically. For example, with p=0.5, half of the images will be flipped upside down
+
+###### Parameter Explanation
+
+`p`: the flip probability
+
+###### Code Implementation
+
+```python
+from PIL import Image
+from torchvision import transforms
+import torch
+
+img = Image.open('Avengers.jpeg')
+print(img.size)
+img.show()
+
+transformer = transforms.Compose([
+    transforms.RandomVerticalFlip(p=1),
+])
+
+img1 = transformer(img)  # applies the transformer transformation to img
+print(img1.size)
+img1.show()
+```
+
+###### Output
+
+<img src="media/pt-transforms/图像-QQ图片20221029113507.png" alt="QQ图片20221029113507" style="zoom:50%;" /> 
+
+##### 3. Image random rotation: transforms.RandomRotation()
+
+> **transforms.RandomRotation(degrees, expand, center, fill, resample)**
+
+- Rotates the image by a random angle
+
+###### Parameter Explanation
+
+`degrees`:
+
+- If `degree=a`, the image is rotated by a random angle in the interval `(-a,a)`
+- If `degree=(a,b)`, the image is rotated by a random angle in the interval `(a,b)`
+
+`resample`: the resampling method
+
+`expand`: whether to enlarge the image so that the original information is preserved. After rotation, some information may be lost because of the original size limit; with `expand=True` the complete image information can be shown;
+
+`center`:
+
+- `center=True` means rotating about the center
+- `center=False` means rotating about the top-left corner
+
+`fill`:
+
+###### Code Implementation
+
+```python
+from PIL import Image
+from torchvision import transforms
+import torch
+
+img = Image.open('Avengers.jpeg')
+print(img.size)
+img.show()
+
+transformer = transforms.Compose([
+    transforms.RandomRotation(15, expand=False),
+])
+
+img1 = transformer(img)  # applies the transformer transformation to img
+print(img1.size)
+img1.show()
+```
+
+###### Output
+
+<img src="media/pt-transforms/图像-QQ图片20221029114917.png" alt="QQ图片20221029114917" style="zoom:50%;" /> 
+
+
+
+#### Image Transformations
+
+##### 1. Image edge padding: transforms.Pad()
+
+> **transforms.Pad(padding, fill, padding_mode)**
+
+###### Parameter Explanation
+
+###### Code Implementation
+
+###### Output
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+torchvision是一个计算机视觉工具包，包括一些常用的图像预处理方法(torchvision.transforms)、常用数据集实现(torchvision.datasets)和常用的模型训练(torchvision.model)。
+
+本次我们来介绍一下transforms的语法。
+
+在一切开始之间，先介绍下transforms.Compose()类。这个类的主要作用是将多个图片变换操作串联起来，在后面代码中会大量用到。其结构如下：
+
+```python
+transforms.Compose([
+    transforms.CenterCrop(10),
+    transforms.ToTensor(),
+    ······
+])
+```
+
+中括号内的内容就是各种图像transforms操作。
+
+### 基础操作
+
+#### 1、图像标准化transforms.Normalize()
+
+> **transforms.Normalize(mean,std,inplace=False)**
+
+- 对图像每个通道进行标准化操作，即将图像每个通道的值转化到(-1,1)区间内。这样做可以加快模型的收敛效果。(有点类似于将正态分布转化为标准正态分布)
+
+###### 参数解释
+
+其中mean表示平均值$\mu$，std表示标准差$\sigma$
+
+根据数学公式
+$$
+\widehat{x}=\frac{x_i-\mu}{\sigma}
+$$
+可以得到
+$$
+\widehat{outplace}=\frac{inplace_i-mean}{std}
+$$
+此外，`Normalize()`中还有一个参数是`inplace`，这个参数指的是是否进行原地操作。
+
+如果`inplace=True`，则说明进行原地操作，即新生成的数据覆盖原来的数据，在存储结构上的表现就是直接在原数据储存位置修改；
+
+如果`inplace=False`，则说明不进行原地操作，即新生成的数据不覆盖原来的数据，在存储结构上的表现就是新数据重新开辟存储空间进行存储。
+
+对于较大数据集，使用inplace可以极大节约运行内存。
+
+### 数据增强
+
+​		数据增强是一种常用的提高模型泛化能力的手段，它的主要目的是将少量的数据集转化成更多的数据集。其主要方式是对原有的数据集进行一些处理，比如调整颜色、旋转、拼接等等。而下面的transforms语法就是对图像进行变换以达到数据增强的效果。
+
+> ​		可以用一个大部分中国人都理解的方式来理解数据增强。绝大部分人都需要经历高考，而高考卷一般被各个高中作为经典去评析。但是高考题的数量也是有限的，即使加入各地的模考卷，也远远不及高中生高三一年所刷的题量。那么怎么办呢？于是老师们开始模仿高考题自己出题。对高考题进行各种变换，比如结论和已知条件调换、修改数据等等，这些方法就像是数据增强。而学生大量的做这些变化的题目也达到了更好的应试分数，这就像经过数据增强后训练出来的模型更加优秀。
+
+#### 图像裁剪
+
+##### 1、图像中心裁剪transforms.CenterCrop()
+
+>transforms.CenterCtop(size)
+
+- 从图像中心对每个图像进行裁剪，保留图像中心部分
+
+###### 参数解释
+
+`size`指的是裁剪出的图像的尺寸。
+
+如果`size`只写的是一个整型常量，那么表示裁剪出的是一个正方形，且其尺寸为`size*size`
+
+如果`size`写成`(h,w)`的形式，那么表示裁剪出的是一个长为w宽为h的长方形，其尺寸为`h*w`
+
+###### 代码实现
+
+```python
+from PIL import Image
+from torchvision import transforms
+
+img = Image.open('Avengers.jpeg')
+print(img.size)
+img.show()
+
+transformer = transforms.Compose([
+    transforms.CenterCrop((150, 200)),
+])
+
+img1 = transformer(img)  # 表示对img进行transformer变换
+print(img1.size)
+img1.show()
+```
+
+###### 运行结果
+
+```python
+(600, 299)
+(200, 150)
+```
+
+> 这里需要注意的是，resize()中的长宽与CenterCrop()中的长宽先后顺序并不一致
+
+这是原图片：
+
+<img src="media/pt-transforms/图像-QQ图片20221019162753.png" alt="QQ图片20221019162753" style="zoom:50%;" /> 
+
+这是运行代码之后的图片：
+
+<img src="media/pt-transforms/图像-QQ图片20221019162849.png" alt="QQ图片20221019162849" style="zoom:50%;" /> 
+
+##### 2、图像随机裁剪transforms.RandomCrop()
+
+> **transforms.RandomCrop(size, padding=None, pad_if_needed=False, fill=0, padding_mode='constant')**
+
+- 对图像随机裁剪出尺寸为size的图片
+
+###### 参数解释
+
+`size`：这里`size`的用法跟CenterCrop()中的size一样
+
+`padding`：设置填充大小
+
+（1）`padding=a`，左右上下均填充a个像素
+
+（2）`padding=(a,b)`，左右填充a个像素，上下填充b个像素
+
+（3）`padding=(a,b,c,d)`，左、上、右、下分别填充a、b、c、d个像素
+
+`pad_if_need`：等于True表示若设定的size大于原图像尺寸，则填充
+
+`padding_mode`：填充模式，共有四种模式供选择
+
+（1）`constant`：利用常值进行填充，相当于把空白的位置用一种纯色填充
+
+（2）`edge`：利用图像边缘像素点进行填充
+
+（3）`reflect`：利用反射的方式进行填充
+
+（4）`symmetric`：利用对称的方式进行填充
+
+###### 代码实现
+
+```python
+from PIL import Image
+from torchvision import transforms
+
+img = Image.open('Avengers.jpeg')
+print(img.size)
+img.show()
+
+transformer = transforms.Compose([
+    # edge
+    transforms.RandomCrop((1000, 1600), (400, 450), pad_if_needed=True,  padding_mode='edge'),
+    
+])
+
+img1 = transformer(img)  # 表示对img进行transformer变换
+print(img1.size)
+img1.show()
+```
+
+###### 运行结果
+
+edge
+
+![QQ图片20221026093918](media/pt-transforms/图像-QQ图片20221026093918.png)
+
+reflect
+
+![QQ图片20221026094229](media/pt-transforms/图像-QQ图片20221026094229.png)
+
+symmetric
+
+![QQ图片20221026094434](media/pt-transforms/图像-QQ图片20221026094434.png)
+
+##### 2、图像随机裁剪transforms.RandomResizedCrop()
+
+> **transforms.RandomResizedCrop(size, scale=(0.08, 1.0), ratio=(3/4, 4/3), interpolation=<InterpolationMode.BILINEAR: 'bilinear'>)**
+
+- 对图像裁剪随机大小，随机长宽比的图片
+
+###### 参数解释
+
+`size`：裁剪尺寸，同CenterCrop()中的size
+
+`scale`：随机裁剪的面积比例，默认区间为$(0.08,1)$，即$生成图像=scale*原图像$
+
+`ratio`：随机长宽比，默认区间为$(\frac{3}{4},\frac{4}{3})$，即$生成图像长宽比=ratio*原图像长宽比$
+
+`interpolation`：差值方法，有` PIL. Image. NEAREST, PIL. Image. BILINEAR, PIL. Image. BICUBIC`这些方法
+
+###### 代码实现
+
+```python
+from PIL import Image
+from torchvision import transforms
+
+img = Image.open('Avengers.jpeg')
+print(img.size)
+img.show()
+
+transformer = transforms.Compose([
+    transforms.RandomResizedCrop(size=(299, 600), scale=(0.2, 0.5)),
+])
+
+img1 = transformer(img)  # 表示对img进行transformer变换
+print(img1.size)
+img1.show()
+```
+
+###### 运行结果
+
+![QQ图片20221026100219](media/pt-transforms/图像-QQ图片20221026100219.png)
+
+##### 3、图像随机裁剪transforms.FiveCrop()
+
+> **transforms.FiveCrop(size)**
+
+- 在图像的左上、右上、左下、右下、中心随机剪裁出尺寸为`size`的`5`张图片
+
+###### 参数解释
+
+`size`：裁剪尺寸，同CenterCrop()中的size
+
+###### 代码实现
+
+```python
+transformer = transforms.Compose([
+    transforms.FiveCrop((100, 200)),
+    transforms.Lambda(lambda crops: torch.stack([(transforms.ToTensor()(crop)) for crop in crops])),
+])
+```
+
+###### 运行结果
+
+输出结果为一个五维向量（*batch_size\*ncrops\*通道\*图像宽\*图像高*）
+
+与此类似的还有一个函数：**transforms.TenCrop()**，其差别是还进行了镜像翻转操作，为FiveCrop数量的两倍
+
+#### 图像旋转
+
+##### 1、图像水平翻转transforms.RandomHorizontalFlip()
+
+> **transforms.RandomHorizontalFlip(p)**\
+
+- 根据概率p来决定是是否对图片进行水平翻转。比如p=0.5，那么有一半的图片会左右翻转
+
+###### 参数解释
+
+`p`：翻转概率
+
+###### 代码实现
+
+```python
+from PIL import Image
+from torchvision import transforms
+import torch
+
+img = Image.open('Avengers.jpeg')
+print(img.size)
+img.show()
+
+transformer = transforms.Compose([
+    transforms.RandomHorizontalFlip(p=1),
+])
+
+img1 = transformer(img)  # 表示对img进行transformer变换
+print(img1.size)
+img1.show()
+```
+
+###### 运行结果
+
+<img src="media/pt-transforms/图像-QQ图片20221029113132.png" alt="QQ图片20221029113132" style="zoom:50%;" /> 
+
+##### 2、图像数值翻转transforms.RandomVerticalFlip()
+
+> **transforms.RandomVerticalFlip(p)**
+
+- 根据概率p来决定是是否对图片进行竖直翻转。比如p=0.5，那么有一半的图片会上下翻转
+
+###### 参数解释
+
+`p`：翻转概率
+
+###### 代码实现
+
+```python
+from PIL import Image
+from torchvision import transforms
+import torch
+
+img = Image.open('Avengers.jpeg')
+print(img.size)
+img.show()
+
+transformer = transforms.Compose([
+    transforms.RandomVerticalFlip(p=1),
+])
+
+img1 = transformer(img)  # 表示对img进行transformer变换
+print(img1.size)
+img1.show()
+```
+
+###### 运行结果
+
+<img src="media/pt-transforms/图像-QQ图片20221029113507.png" alt="QQ图片20221029113507" style="zoom:50%;" /> 
+
+##### 3、图像随机旋转transforms.RandomRotation()
+
+> **transforms.RandomRotation(degrees, expand, center, fill, resample)**
+
+- 对图片随机旋转一定角度
+
+###### 参数解释
+
+`degrees`：
+
+- 如果`degree=a`，则表示在区间`(-a,a)`中随机旋转一定角度
+- 如果`degree=(a,b)`，则表示在区间`(a,b)`中随机旋转一定角度
+
+`resample`：重采样方法
+
+`expand`：是否扩大图片以保持原图信息，因为旋转后可能有些信息受到原尺寸限制而丢失，如果`expand=True`则可以显示完整图片信息；
+
+`center`：
+
+- `center=True` 表示绕中心旋转
+- `center=False` 表示绕左上角旋转
+
+`fill`：
+
+###### 代码实现
+
+```python
+from PIL import Image
+from torchvision import transforms
+import torch
+
+img = Image.open('Avengers.jpeg')
+print(img.size)
+img.show()
+
+transformer = transforms.Compose([
+    transforms.RandomRotation(15, expand=False),
+])
+
+img1 = transformer(img)  # 表示对img进行transformer变换
+print(img1.size)
+img1.show()
+```
+
+###### 运行结果
+
+<img src="media/pt-transforms/图像-QQ图片20221029114917.png" alt="QQ图片20221029114917" style="zoom:50%;" /> 
+
+
+
+#### 图像变换
+
+##### 1、图像边缘填充transforms.Pad()
+
+> **transforms.Pad(padding, fill, padding_mode)**
+
+###### 参数解释
+
+###### 代码实现
+
+###### 运行结果
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Linear Regression · Yongkang Li</title>
+<meta name="description" content="This article is based on my study of Mu Li&#x27;s book Dive into Deep Learning and the corresponding online course">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Dive into Deep Learning notes</span><span data-l="cn">《动手学深度学习》笔记</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Linear Regression</span><span data-l="cn">线性回归</span></h1>
+    <div class="meta"><span data-l="en">3 min read</span><span data-l="cn">约 3 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="d2l-derivatives.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Derivatives</span><span data-l="cn">导数</span></span></a><a class="pn glass" href="d2l-softmax.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Softmax Regression and Loss Functions</span><span data-l="cn">softmax 回归与损失函数</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+This article is based on my study of Mu Li's book *Dive into Deep Learning* and the corresponding online course
+
+### Linear Model
+
+Given an input $X=[x_1,x_2,···,x_n]^T$, we get the linear regression equation:
+$$
+y=w^TX=w_1x_1+w_2x_2+...+w_nx_n+b
+$$
+where $w=[w_1,w_2,...,w_n]^T$ are the weights.
+
+We can simply compare it with $y=kx+b$. Suppose we have a dataset that satisfies some linear relationship, say $y=kx+b$, but we do not yet know what $k$ and $b$ actually are. We then need to estimate the values of these two parameters from the **dataset** using a model or other means.
+
+A linear model can be viewed as a simple neural network: we can regard x as nodes, assign a corresponding weight to each edge, and finally take the weighted sum to get the result.
+
+![Resource 9](media/d2l-linear-regression/JPG-资源-9.jpg) 
+
+#### Measuring the Quality of the Estimate
+
+We use the sum of squared differences between the true value $y$ and the estimate $\hat y$ (a bit like variance) as the loss function:
+$$
+Loss=\frac{1}{2}\sum_{i=1}^n(y-\hat{y})^2
+$$
+Minimizing the loss function is the goal of our training. The smaller the loss, the closer the result is to the value we want. The method for minimizing the loss is gradient descent:
+$$
+W_t=W_{t-1}-\eta\frac{\partial{Loss}}{\partial W_{t-1}}
+$$
+In effect, this makes the loss decrease along the direction of steepest descent. $\eta$ is the learning rate, a kind of parameter that controls how far each step goes. If the learning rate is too large, the loss will bounce back and forth; if it is too small, the loss will decrease very slowly.
+
+In practice we often have a lot of data, and performing a gradient descent step on a single data point every time would waste a great deal of compute. So the usual approach is to group several data points into a batch, take the average of the gradients over all of them, and then perform gradient descent; the batch size is therefore also a key parameter
+
+
+
+### Basic Code Implementation of Linear Regression
+
+First, import the libraries we need:
+
+```python
+import random
+import torch
+from d2l import torch as d2l
+```
+
+Then generate the training samples, using random numbers drawn from a normal distribution to generate random samples:
+
+```python
+# Generate the training samples
+def synthetic_data(w, b, num_examples):
+    X = torch.normal(0, 1, (num_examples, len(w)))  # normal means generating random numbers that follow a normal distribution
+    y = torch.matmul(X, w) + b
+    y += torch.normal(0, 0.01, y.shape)  # Here we add random noise to y to increase the complexity
+    return X, y.reshape((-1, 1))
+```
+
+Define the true w and b of the linear function:
+
+```python
+# Define the true values of w and b
+true_w = torch.tensor([2, -3.4])
+true_b = 4.2
+features, labels = synthetic_data(true_w, true_b, 1000)
+```
+
+> Supplement: Defining the true values here is really just to make it easy to compare the true values with the predicted values at the end. In real situations we usually do not know what the true values look like, so we have to train a model to obtain estimated "true values"
+
+Because of reasons such as the large amount of data, in actual training we generally train with mini-batch gradient descent, i.e., we compute the gradient of the average of the summed losses of several data points, which greatly speeds up training:
+
+```python
+# Take the feature vectors and labels and produce batches of size batch_size
+def data_iter(batch_size, features, labels):
+    num_examples = len(features)  # Length of the features
+    indices = list(range(num_examples))  # Read the samples at random, in no particular order
+    random.shuffle(indices)  # Used to shuffle the elements of the original list
+    for i in range(0, num_examples, batch_size):
+        batch_indices = torch.tensor(indices[i:min(i + batch_size, num_examples)])
+        # Equivalent to taking out batch_size indices each time; min prevents taking out too many
+        yield features[batch_indices], labels[batch_indices]
+        
+batch_size = 10
+```
+
+Define the contents of the relevant model components. Functions are used here, which makes it more convenient to add, remove, and modify things. For example, if I want to switch to a different loss function, I only need to define another loss function and change the function name in the code, rather than editing the original code bit by bit.
+
+```python
+# Define and initialize the model parameters
+w = torch.normal(0, 0.01, size=(2, 1), requires_grad=True)
+b = torch.zeros(1, requires_grad=True)
+
+# Linear regression model
+def linreg(X, w, b):
+    return torch.matmul(X, w) + b
+
+# Define the mean squared error loss function
+def squared_loss(y_hat, y):  # y_hat is the predicted value
+    return (y_hat - y.reshape(y_hat.shape)) ** 2 / 2
+
+# Define the optimization algorithm: mini-batch stochastic gradient descent
+def sgd(params, lr, batch_size):
+    with torch.no_grad():
+        for param in params:
+            param -= lr * param.grad / batch_size  # Perform gradient descent
+            param.grad.zero_()
+```
+
+Next define the hyperparameters, continuing from above. Defining them this way makes changes easy: to switch the loss function, just change what follows the equals sign:
+
+```python
+# Training process
+lr = 0.001  # Learning rate
+num_epochs = 10  # Sweep through all the data ten times
+net = linreg  # Choose the model network; writing it this way makes it easy to swap the network later, and likewise below
+loss = squared_loss  # Choose the loss function
+```
+
+Now start training, using a loop to control the number of epochs:
+
+```python
+for epoch in range(num_epochs):
+    for X, y in data_iter(batch_size, features, labels):  # A loop that keeps optimizing
+        l = loss(net(X, w, b), y)
+        l.sum().backward()  # Compute the gradient of the sum
+        sgd([w, b], lr, batch_size)  # Perform the gradient update
+        with torch.no_grad():
+            train_l = loss(net(features, w, b), labels)
+            print(f'epoch{epoch + 1}, loss{float(train_l.mean())}')
+```
+
+Finally, print the results:
+
+```python
+print(f'error in estimating w: {true_w - w.reshape(true_w.shape)}')
+print(f'error in estimating b: {true_b - b}')
+```
+
+One output I got myself:
+
+```python
+error in estimating w: tensor([nan, nan], grad_fn=<SubBackward0>)
+error in estimating b: tensor([nan], grad_fn=<RsubBackward1>)
+```
+
+This result depends on the hyperparameters; moreover, even with the same hyperparameters, the results from each training run differ somewhat.
+
+
+
+### Concise Code Implementation of Linear Regression
+
+Most of the code above trains the linear regression model from the ground up, but we can also implement it in a more concise way (using the libraries that come with PyTorch).
+
+First, as before, import the packages, this time also importing the nn and data packages:
+
+```python
+import torch
+from torch.utils import data
+from torch import nn  # nn is short for neural network, mainly used to define the layers of various models
+```
+
+Next, generate the training samples and define the true parameter values, which is basically the same as before:
+
+```python
+# Generate the training samples
+def synthetic_data(w, b, num_examples):
+    X = torch.normal(0, 1, (num_examples, len(w)))  # normal means generating random numbers that follow a normal distribution
+    y = torch.matmul(X, w) + b
+    y += torch.normal(0, 0.01, y.shape)  # Here we add random noise to y to increase the complexity
+    return X, y.reshape((-1, 1))
+
+
+# Define the true values of w and b
+true_w = torch.tensor([2, -3.4])
+true_b = 4.2
+features, labels = synthetic_data(true_w, true_b, 1000)
+```
+
+Next we construct a data iterator for reading the contents of the dataset:
+
+```python
+# Construct a data iterator
+def load_array(data_arrays, batch_size, is_train=True):
+    dataset = data.TensorDataset(*data_arrays)
+    return data.DataLoader(dataset, batch_size, shuffle=is_train)
+
+batch_size = 10
+data_iter = load_array((features, labels), batch_size)
+
+next(iter(data_iter))
+```
+
+Then we use some of the APIs that come with nn and the other packages to design the neural network layer and the loss function:
+
+```python
+# Use a layer predefined in the framework
+net = nn.Sequential(nn.Linear(2, 1))
+
+# Initialize the model parameters
+net[0].weight.data.normal_(0, 0.01)
+# [0] indicates the layer, weight indicates the weights, data indicates the data contents, and normal_ means replacing the original values with ones drawn from a normal distribution
+net[0].bias.data.fill_(0)
+# [0] indicates the layer, bias indicates the bias, data indicates the data contents, and fill_ means replacing the original values with 0
+
+# Use a loss function predefined in the framework
+loss = nn.MSELoss()
+
+# Instantiate an SGD (stochastic gradient descent) instance
+trainer = torch.optim.SGD(net.parameters(), lr=0.03)
+```
+
+> Perhaps this does not reduce the amount of code by much here, but when later network layers involve more complex ones such as convolutional layers, writing it this way brings a large improvement
+
+Finally, we train. The approach is similar to the earlier code, but there are some differences in the details:
+
+```python
+# Training process
+num_epochs = 10
+for epoch in range(num_epochs):
+    for X, y in data_iter:  # A loop that keeps optimizing
+        l = loss(net(X), y)
+        trainer.zero_grad()
+        l.backward()  # Compute the gradient of the sum
+        trainer.step()  # Use the step function to update the model
+        l = loss(net(features), labels)
+        print(f'epoch{epoch + 1}, loss{l:f}')
+```
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+本文基于李沐老师的动手学深度学习这本书和相应的网课所整理学习
+
+### 线性模型
+
+给定输入$X=[x_1,x_2,···,x_n]^T$，可以得到线性回归的方程：
+$$
+y=w^TX=w_1x_1+w_2x_2+...+w_nx_n+b
+$$
+其中，$w=[w_1,w_2,...,w_n]^T$是权重。
+
+我们可以简单的将其和$y=kx+b$进行类比。就是现在有一些数据集满足某种线性关系，比如$y=kx+b$，但是我们目前还不知道$k$和$b$具体是什么，这就需要根据**数据集**通过模型或者各种手段去估计出这两个参数的值是多少。
+
+线性模型可以看成是简单的神经网络，可以将x看成结点，线上赋予相应的权重值，最后加权求和得到结果。
+
+![资源 9](media/d2l-linear-regression/JPG-资源-9.jpg) 
+
+#### 衡量预估质量
+
+利用真实值$y$与估计值$\hat y$之差的平方之和（有点点像方差）作为损失函数：
+$$
+Loss=\frac{1}{2}\sum_{i=1}^n(y-\hat{y})^2
+$$
+让损失函数最小，即我们训练的目的。损失函数越小，说明结果越接近我们想要的值。而让损失函数最小的方法就是使用梯度下降：
+$$
+W_t=W_{t-1}-\eta\frac{\partial{Loss}}{\partial W_{t-1}}
+$$
+其实就是使损失函数在下降最快的方向上下降。$\eta$是学习率，相当于一个参数，控制每次下降多远。学习率过大，会导致损失函数来回蹦跶；学习率过小，会导致损失函数下降很缓慢。
+
+在现实处理中，我们往往有很多数据集，而我们如果每次都对一个数据进行梯度下降，则十分浪费算力。所以通常我们采用的方法是，对好几个数据组成一个批量，求所有数据的梯度的平均值，再进行梯度下降，那这个批量的大小也是一个关键的参数
+
+
+
+### 线性回归的基本代码实现
+
+首先是导入各种所需要的库：
+
+```python
+import random
+import torch
+from d2l import torch as d2l
+```
+
+然后产生训练样本，利用满足正太分布的随机数产生随机样本：
+
+```python
+# 产生训练样本
+def synthetic_data(w, b, num_examples):
+    X = torch.normal(0, 1, (num_examples, len(w)))  # normal表示生成满足正态分布的随机数
+    y = torch.matmul(X, w) + b
+    y += torch.normal(0, 0.01, y.shape)  # 这里是让y加上一个随机噪音，增加复杂度
+    return X, y.reshape((-1, 1))
+```
+
+定义线性函数中真实的w和b值：
+
+```python
+# 定义真实的w和b的值
+true_w = torch.tensor([2, -3.4])
+true_b = 4.2
+features, labels = synthetic_data(true_w, true_b, 1000)
+```
+
+> 补充：这里定义真实的值其实只是为了最后方便比较真实值与预测值的大小，在实际情况中，我们往往不知道真实值是什么样的，所以我们需要去训练模型得到估计的“真实值”
+
+由于数据量较大等原因，在实际训练中，我们一般会用批量梯度下降进行训练，即将多个数据的损失函数相加的平均求梯度，这样可以大大提高训练速度：
+
+```python
+# 接收特征向量和标签，生成批量batch_size
+def data_iter(batch_size, features, labels):
+    num_examples = len(features)  # 特征的长度
+    indices = list(range(num_examples))  # 随机读取样本，没有特定顺序
+    random.shuffle(indices)  # 用于将原来地列表元素打乱顺序
+    for i in range(0, num_examples, batch_size):
+        batch_indices = torch.tensor(indices[i:min(i + batch_size, num_examples)])
+        # 相当于每次取出batch_size个数的索引，min的作用是防止取出的数量过多
+        yield features[batch_indices], labels[batch_indices]
+        
+batch_size = 10
+```
+
+定义相关模块的模型内容。这里使用的是函数来定义，这样可以更加方便的进行增删修改。比如我想换一个损失函数，我只要再定义一个损失函数的方法并修改代码中的方法名，而不需要从原代码中一点一点去改。
+
+```python
+# 定义初始化模型参数
+w = torch.normal(0, 0.01, size=(2, 1), requires_grad=True)
+b = torch.zeros(1, requires_grad=True)
+
+# 线性回归模型
+def linreg(X, w, b):
+    return torch.matmul(X, w) + b
+
+# 定义均方差损失函数
+def squared_loss(y_hat, y):  # y_hat是预测值
+    return (y_hat - y.reshape(y_hat.shape)) ** 2 / 2
+
+# 定义优化算法——小批量随机梯度下降
+def sgd(params, lr, batch_size):
+    with torch.no_grad():
+        for param in params:
+            param -= lr * param.grad / batch_size  # 进行梯度下降
+            param.grad.zero_()
+```
+
+之后定义超参数，承接上文，这样定义十分方便修改，要换损失函数直接修改等号后面内容即可：
+
+```python
+# 训练过程
+lr = 0.001  # 学习率
+num_epochs = 10  # 所有数据扫十遍
+net = linreg  # 选择模型网络，这样写方便后续替换网络，下面同理
+loss = squared_loss  # 选择损失函数
+```
+
+正式开始训练，用循环控制训练轮数：
+
+```python
+for epoch in range(num_epochs):
+    for X, y in data_iter(batch_size, features, labels):  # 一个循环，不断优化
+        l = loss(net(X, w, b), y)
+        l.sum().backward()  # 计算出一个和的梯度
+        sgd([w, b], lr, batch_size)  # 进行梯队更新
+        with torch.no_grad():
+            train_l = loss(net(features, w, b), labels)
+            print(f'epoch{epoch + 1}, loss{float(train_l.mean())}')
+```
+
+最后输出结果：
+
+```python
+print(f'w的估计误差：{true_w - w.reshape(true_w.shape)}')
+print(f'b的估计误差：{true_b - b}')
+```
+
+我个人的一个输出结果：
+
+```python
+w的估计误差：tensor([nan, nan], grad_fn=<SubBackward0>)
+b的估计误差：tensor([nan], grad_fn=<RsubBackward1>)
+```
+
+这个结果根据超参数有关，此外，即使超参数相同，每次训练出来的结果也有一定区别。
+
+
+
+### 线性回归的简洁代码实现
+
+上面的代码其实大部分是从底层对线性回归模型进行的一个训练，而我们也可以用一些更简洁的方式（利用pytorch自带的库）进行实现。
+
+首先依然是导入包，要多导入nn包和data包：
+
+```python
+import torch
+from torch.utils import data
+from torch import nn  # nn是神将网络的缩写，主要用于定义各类模型的层
+```
+
+接下来是产生训练样本和定义真实参数值，这里和之前基本一致：
+
+```python
+# 产生训练样本
+def synthetic_data(w, b, num_examples):
+    X = torch.normal(0, 1, (num_examples, len(w)))  # normal表示生成满足正态分布的随机数
+    y = torch.matmul(X, w) + b
+    y += torch.normal(0, 0.01, y.shape)  # 这里是让y加上一个随机噪音，增加复杂度
+    return X, y.reshape((-1, 1))
+
+
+# 定义真实的w和b的值
+true_w = torch.tensor([2, -3.4])
+true_b = 4.2
+features, labels = synthetic_data(true_w, true_b, 1000)
+```
+
+下面要构造一个数据迭代器，用于读取数据集内容：
+
+```python
+# 构造一个数据迭代器
+def load_array(data_arrays, batch_size, is_train=True):
+    dataset = data.TensorDataset(*data_arrays)
+    return data.DataLoader(dataset, batch_size, shuffle=is_train)
+
+batch_size = 10
+data_iter = load_array((features, labels), batch_size)
+
+next(iter(data_iter))
+```
+
+之后利用nn和其它包里面自带的一些api设计神经网络层和损失函数：
+
+```python
+# 使用框架中预先定义好的层
+net = nn.Sequential(nn.Linear(2, 1))
+
+# 初始化模型参数
+net[0].weight.data.normal_(0, 0.01)
+# [0]表示层数，weight表示权重，data表示数据内容，normal_表示使用正态分布替换原来的值
+net[0].bias.data.fill_(0)
+# [0]表示层数，bias表示偏差，data表示数据内容，fill_表示使用0替换原来的值
+
+# 使用框架中预先定义好的损失函数
+loss = nn.MSELoss()
+
+# 实例化SGD(随机梯度下降)实例
+trainer = torch.optim.SGD(net.parameters(), lr=0.03)
+```
+
+> 或许这里代码量优化并不多，但是如果以后的神经层设计到更复杂的卷积层等等，这样写就能极大地进行优化
+
+最后就进行训练，与之前的代码思路比较像，但是具体上会有一些区别：
+
+```python
+# 训练过程
+num_epochs = 10
+for epoch in range(num_epochs):
+    for X, y in data_iter:  # 一个循环，不断优化
+        l = loss(net(X), y)
+        trainer.zero_grad()
+        l.backward()  # 计算出一个和的梯度
+        trainer.step()  # 用step函数对模型进行更新
+        l = loss(net(features), labels)
+        print(f'epoch{epoch + 1}, loss{l:f}')
+```
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

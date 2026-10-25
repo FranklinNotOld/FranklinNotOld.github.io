@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ReLU · Yongkang Li</title>
+<meta name="description" content="Rectified Linear Unit (ReLU), often abbreviated as ReLU, is the most commonly used activation function in modern neural networks, with the majority of…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Deep Learning from Zero to Kang</span><span data-l="cn">Deep Learning from Zero to Kang</span></span><i>/</i><span><span data-l="en">Activation functions</span><span data-l="cn">激活函数</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">ReLU</span><span data-l="cn">ReLU 激活函数</span></h1>
+    <div class="meta"><span data-l="en">1 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="tanh.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Tanh</span><span data-l="cn">Tanh 激活函数</span></span></a><a class="pn glass" href="leaky-relu.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Leaky ReLU</span><span data-l="cn">Leaky ReLU 激活函数</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+
+Rectified Linear Unit (ReLU), often abbreviated as ReLU, is the most commonly used activation function in modern neural networks, with the majority of feedforward neural networks defaulting to its usage.
+
+### Function Expression
+
+$$
+f(x) = \max\{0, x\}
+$$
+
+When $x < 0$, the function value is 0; when $x > 0$, the function value is $f(x) = x$.
+
+### Function Graph
+
+![ReLU Function Graph](media/relu/1.png)
+
+### Function Characteristics
+
+In the current usage scenario, ReLU remains the most effective activation function. We can understand the role of ReLU as follows: when $x > 0$, the function value is positively correlated with $x$, indicating that stronger feature signals lead to stronger results; whereas when $x$ is negative, indicating that the feature has a negative impact on the result, we do not need negative signals, so all signal results are converted to 0.
+
+#### Advantages:
+
+- ReLU converges much faster compared to logistic and Tanh functions.
+- ReLU has fast computational speed since it is a linear function with low computational complexity, eliminating the need for exponential or logarithmic operations.
+- ReLU is less prone to overfitting because the $x < 0$ part of the function value is 0, making parameters more sparse (since some parameters are directly converted to 0), thereby reducing interdependency between parameters.
+- ReLU does not suffer from the vanishing gradient problem, as its gradient is constant at 1 when $x > 0$.
+
+#### Disadvantages:
+
+- ReLU directly outputs 0 for the $x < 0$ part, which may lead to excessive blocking of features and an inability to learn effective features. This phenomenon is also known as "dead ReLU," where neurons become inactive. Once a neuron's gradient becomes 0, subsequent gradients will remain 0, preventing further parameter updates.
+
+
+
+
+
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+整流线性单元(ReLU)，全称Rectified linear unit，是现代神经网络中最常用的激活函数，大多数前馈神经网络都默认使用该激活函数。
+
+### 函数表达式
+
+$$
+f(x)=max\{0,x\}
+$$
+
+当$x<0$时，函数值为0；当$x>0$时，函数值为$f(x)=x$
+
+### 函数图像
+
+![image-20221224155308577](media/relu/1.png)
+
+### 函数特性
+
+在现阶段的使用过程中，依然是ReLU激活函数效果最好。我们可以这样去理解ReLU的作用：当$x>0$时，这时候函数值是与$x$正相关的，我们希望当检测特征信号越强时，得到的结果越强；而当$x$为负值时，说明该特征对结果有负面影响，我们不需要负面信号，那么所有信号结果都转化为0。
+
+#### 优点：
+
+- ReLU收敛速度相较于logistic和Tanh要快很多
+- ReLU运算速度较快，因为其是线性函数，计算复杂度低，不需要进行指数、对数等运算
+- ReLU不容易过拟合，因为其$x<0$的部分函数值为0，可以使参数更加稀疏（因为部分参数直接转化为0），从而减小参数之间的依存关系
+- ReLU不会出现梯度消失的问题，因为其在$x>0$时梯度恒为1
+
+#### 缺点：
+
+- ReLU在$x<0$部分直接为0，可能导致屏蔽特征过多而导致无法学习到有效特征。这一现象也被称为dead relu，即神经元坏死。只要神经元梯度为0，其之后梯度将一直为0，导致参数不会再被更新。
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

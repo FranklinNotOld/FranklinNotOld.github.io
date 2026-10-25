@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ELU · Yongkang Li</title>
+<meta name="description" content="Exponential Linear Units (ELU) incorporate an exponential component into the activation function.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Deep Learning from Zero to Kang</span><span data-l="cn">Deep Learning from Zero to Kang</span></span><i>/</i><span><span data-l="en">Activation functions</span><span data-l="cn">激活函数</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">ELU</span><span data-l="cn">ELU 激活函数</span></h1>
+    <div class="meta"><span data-l="en">1 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="rrelu.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">RReLU</span><span data-l="cn">RReLU 激活函数</span></span></a><a class="pn glass" href="nll-loss.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">NLL Loss</span><span data-l="cn">NLL 损失函数</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+
+Exponential Linear Units (ELU) incorporate an exponential component into the activation function.
+
+### Function Expression
+
+$$
+f(x) = 
+\begin{cases} 
+\alpha (e^x - 1), & \text{if } x \leq 0 \\
+x, & \text{if } x > 0 
+\end{cases}
+$$
+
+### Function Graph
+
+![ELU Graph](media/elu/1.png)
+
+The graph shows that for $x > 0$, the function behaves similarly to ReLU, while for $x < 0$, it resembles sigmoid or tanh.
+
+### Function Characteristics
+
+The ELU activation function is continuous and differentiable at all points ($\alpha = 1$), avoiding the issues of gradient vanishing and exploding. It combines the benefits of ReLU for $x > 0$ and sigmoid/tanh for $x < 0$. While theoretically superior to ReLU, empirical evidence does not consistently show ELU outperforming ReLU.
+
+#### Advantages:
+
+- Shorter training time and higher accuracy compared to ReLU, sigmoid, and tanh, due to continuity at the origin, which accelerates convergence.
+- No dead ReLU problem.
+
+#### Disadvantages:
+
+- Slower computation due to non-linear operations, though this is partially offset by faster convergence.
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+指数线性单元(ELU)，全称Exponential Linear Units，使用了指数作为激活函数的一部分。
+
+### 函数表达式
+
+$$
+f(x)=\begin{cases}
+\alpha (e^x-1),\quad x\leq 0\\
+x, \quad x>0
+\end{cases}
+$$
+
+### 函数图像
+
+![QQ图片20221225153437](media/elu/1.png)
+
+在图像上，$x>0$部分与ReLU相似，而在$x<0$部分与sigmoid/tanh相似
+
+### 函数特性
+
+ELU激活函数上所有点都是连续且可微的($\alpha =1$)，所以不存在梯度消失和梯度爆炸的问题。ELU在$x>0$部分与ReLU相似，而在$x<0$部分与sigmoid/tanh相似，这样就能很好的结合两者的优点。理论上，ELU要好于ReLU，但是实际上，并没有证据表明ELU总是优于ReLU。
+
+#### 优点：
+
+- 相比于ReLU、sigmoid、tanh激活函数，其训练时间更短、精确度也更高。因为其在原点处函数连续，这样能够加快函数收敛
+- 没有dead relu神经元死亡问题
+
+#### 缺点：
+
+- 计算速度较慢，因为涉及到非线性的运算，但是其较快的收敛速度会对其进行一定程度上的弥补
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

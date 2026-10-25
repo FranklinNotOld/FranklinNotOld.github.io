@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Knowledge Distillation in PyTorch · Yongkang Li</title>
+<meta name="description" content="Teacher model architecture (just one example here): convolutional layer - convolutional layer - dropout - dropout - fully connected layer - fully conn…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Deep learning fundamentals</span><span data-l="cn">深度学习基础</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Knowledge Distillation in PyTorch</span><span data-l="cn">知识蒸馏的 PyTorch 实现</span></h1>
+    <div class="meta"><span data-l="en">2 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="dl-distillation.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Knowledge Distillation</span><span data-l="cn">知识蒸馏</span></span></a><span></span></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+#### Step 1: Import the Required Packages
+
+```python
+import math
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torchvision import datasets, transforms
+import torch.utils.data
+
+torch.manual_seed(0)		# Set the random seed for the CPU
+torch.cuda.manual_seed(0)	# Set the random seed for the GPU
+```
+
+#### Step 2: Define the Teacher Model
+
+Teacher model architecture (just one example here): convolutional layer - convolutional layer - dropout - dropout - fully connected layer - fully connected layer
+
+```python
+class TeacherNet(nn.Module):
+    def __init__(self):
+        super(TeacherNet, self).__init__()
+        self.conv1 = nn.Conv2d(1, 32, 3, 1)		# Convolutional layer
+        self.conv2 = nn.Conv2d(32, 64, 3, 1)	# Convolutional layer
+        self.dropout1 = nn.Dropout2d(0.3)		# dropout
+        self.dropout2 = nn.Dropout2d(0.5)		# dropout
+        self.fc1 = nn.Linear(9216, 128)			# Fully connected layer
+        self.fc2 = nn.Linear(128, 10)			# Fully connected layer
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = F.relu(x)			# Activation function
+        x = self.conv2(x)
+        x = F.relu(x)
+        x = F.max_pool2d(x, 2)
+        x = self.dropout1(x)
+        x = torch.flatten(x, 1)
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.dropout2(x)
+        output = self.fc2(x)
+        return output
+```
+
+#### Step 3: Define the Training Method for the Teacher Model
+
+Define a neural network model as usual
+
+```python
+def train_teacher(model, device, train_loader, optimizer, epoch):
+    model.train()
+    trained_samples = 0
+    for batch_idx, (data, target) in enumerate(train_loader):
+        data, target = data.to(device), target.to(device)	# Move the data to the CPU/GPU
+        optimizer.zero_grad()	# The optimizer sets all gradients to 0
+        output = model(data)	# Forward pass of the data through the model
+        loss = F.cross_entropy(output, target)  # Compute the loss
+        loss.backward()			# Backpropagation
+        optimizer.step()		# Update the gradients
+
+        trained_samples += len(data)
+        progress = math.ceil(batch_idx / len(train_loader) * 50) # Compute the training progress
+        print("\rTrain epoch %d: %d/%d, [%-51s] %d%%" %
+              (epoch, trained_samples, len(train_loader.dataset),
+               '-' * progress + '>', progress * 2), end='')
+```
+
+#### Step 4: Define the Testing Method for the Teacher Model
+
+Define a neural network model as usual
+
+```python
+def test_teacher(model, device, test_loader):
+    model.eval()  # Switch to evaluation mode
+    test_loss = 0
+    correct = 0
+    with torch.no_grad():  # Do not compute gradients, to reduce computation
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)  # Move the data to the CPU/GPU
+            output = model(data)  # Forward pass through the model to get the result
+            test_loss += F.cross_entropy(output, target, reduction='sum').item()  # Compute the total loss
+            pred = output.argmax(dim=1, keepdim=True)  # Get the index of the max log-probability
+            correct += pred.eq(target.view_as(pred)).sum().item()  # pred.eq(target.view_as(pred)) returns a boolean tensor in which each element indicates whether the prediction equals the target. Then .sum().item() adds up all the True elements to give the number of correctly classified samples. 
+
+    test_loss /= len(test_loader.dataset)  # Compute the loss
+
+    print('\nTest: average loss: {:.4f}, accuracy: {}/{} ({:.0f}%)'.format(
+        test_loss, correct, len(test_loader.dataset),
+        100. * correct / len(test_loader.dataset)))
+    return test_loss, correct / len(test_loader.dataset)
+```
+
+#### Step 5: Define the Main Function for the Teacher Model
+
+Overall this is the same as a normal model, but here `teacher_history` is used to keep the data needed for knowledge distillation.
+
+```python
+def teacher_main():
+    epochs = 10
+    batch_size = 64
+    torch.manual_seed(0)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # Device type to use
+    
+	# Load the training set
+    train_loader = torch.utils.data.DataLoader(
+        datasets.MNIST('../data/MNIST', train=True, download=True,
+                       transform=transforms.Compose([
+                           transforms.ToTensor(),
+                           transforms.Normalize((0.1307,), (0.3081,))  # Normalize the data
+                       ])),
+        batch_size=batch_size, shuffle=True)
+    
+    # Load the test set
+    test_loader = torch.utils.data.DataLoader(
+        datasets.MNIST('../data/MNIST', train=False, download=True, transform=transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.1307,), (0.3081,))	# Normalize the data
+        ])),
+        batch_size=1000, shuffle=True)
+
+    model = TeacherNet().to(device)  # Send the teacher model network to the device
+    optimizer = torch.optim.Adadelta(model.parameters())  # Use the Adadelta optimizer
+    
+    teacher_history = []  # Record the history of the teacher's results
+    for epoch in range(1, epochs + 1):
+        train_teacher(model, device, train_loader, optimizer, epoch)  # Start training the model
+        loss, acc = test_teacher(model, device, test_loader)  # Compute the loss and accuracy
+        teacher_history.append((loss, acc))  # Record the history data produced by the teacher model
+
+    torch.save(model.state_dict(), "teacher.pt")  # Save to a weights file
+    return model, teacher_history
+```
+
+#### Step 6: Train the Teacher Model
+
+```python
+# Train the teacher network
+teacher_model, teacher_history = teacher_main()
+```
+
+#### Step 7: Define the Student Model Architecture
+
+The student model's architecture is generally defined to be simpler than the teacher's, so that knowledge distillation achieves its goal of making the model lightweight
+
+```python
+class StudentNet(nn.Module):
+    def __init__(self):
+        super(StudentNet, self).__init__()
+        self.fc1 = nn.Linear(28 * 28, 128)	# Fully connected layer
+        self.fc2 = nn.Linear(128, 64)		# Fully connected layer
+        self.fc3 = nn.Linear(64, 10)		# Fully connected layer
+
+    def forward(self, x):
+        x = torch.flatten(x, 1)		# Flatten the input tensor along the second dimension
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        output = F.relu(self.fc3(x))
+        return output
+```
+
+#### Step 8: Define the Knowledge Distillation Method
+
+Defining knowledge distillation here mainly means implementing its loss function.
+
+```python
+def distillation(y, labels, teacher_scores, temp, alpha):
+    return nn.KLDivLoss()(F.log_softmax(y / temp, dim=1), F.softmax(teacher_scores / temp, dim=1)) * (
+            temp * temp * 2.0 * alpha) + F.cross_entropy(y, labels) * (1. - alpha)
+```
+
+Let's write out this formula:
+$$
+KLDivLoss(log(softmax(\frac{y}{temp})),softmax(\frac{teacher~scores}{temp}))*2\alpha temp^2\\CrossEntropy(y,labels)(1-\alpha)
+$$
+Here $\alpha$ and $1-\alpha$ are coefficients, and $temp^2$ is used to adjust the scale.
+
+#### Step 9: Define the Training and Testing Methods for the Student Model
+
+The student model's training part is basically the same as the teacher's, except for two things.
+
+The first is the line `teacher_output = teacher_output.detach()`, which cuts off backpropagation through the teacher model and deserves special attention.
+
+The second is that the loss function used for training here is the **knowledge distillation loss** defined above
+
+```python
+def train_student_kd(model, device, train_loader, optimizer, epoch):
+    model.train()
+    trained_samples = 0
+    for batch_idx, (data, target) in enumerate(train_loader):
+        data, target = data.to(device), target.to(device)
+        optimizer.zero_grad()
+        output = model(data)  # Forward pass of the student model
+        teacher_output = teacher_model(data)  # Forward pass of the teacher model
+        teacher_output = teacher_output.detach()  # Cut off backpropagation through the teacher network
+        loss = distillation(output, target, teacher_output, temp=5.0, alpha=0.7)  # Compute the total loss; here the knowledge distillation loss is used
+        loss.backward()  # Backpropagation
+        optimizer.step()  # Update the parameters
+
+        trained_samples += len(data)
+        progress = math.ceil(batch_idx / len(train_loader) * 50)
+        print("\rTrain epoch %d: %d/%d, [%-51s] %d%%" %
+              (epoch, trained_samples, len(train_loader.dataset),
+               '-' * progress + '>', progress * 2), end='')
+
+def test_student_kd(model, device, test_loader):
+    model.eval()
+    test_loss = 0
+    correct = 0
+    with torch.no_grad():
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)
+            output = model(data)
+            test_loss += F.cross_entropy(output, target, reduction='sum').item()  # Compute the total loss
+            pred = output.argmax(dim=1, keepdim=True)  # Get the index of the max log-probability
+            correct += pred.eq(target.view_as(pred)).sum().item()  # Compute the accuracy
+    test_loss /= len(test_loader.dataset)
+
+    print('\nTest: average loss: {:.4f}, accuracy: {}/{} ({:.0f}%)'.format(
+        test_loss, correct, len(test_loader.dataset),
+        100. * correct / len(test_loader.dataset)))
+    return test_loss, correct / len(test_loader.dataset)
+```
+
+#### Step 10: Define the Main Function for the Student Model
+
+```python
+def student_kd_main():
+    epochs = 10
+    batch_size = 64
+    torch.manual_seed(0)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+	# Load the training set
+    train_loader = torch.utils.data.DataLoader(
+        datasets.MNIST('../data/MNIST', train=True, download=True,
+                       transform=transforms.Compose([
+                           transforms.ToTensor(),
+                           transforms.Normalize((0.1307,), (0.3081,))
+                       ])),
+        batch_size=batch_size, shuffle=True)
+    # Load the test set
+    test_loader = torch.utils.data.DataLoader(
+        datasets.MNIST('../data/MNIST', train=False, download=True, transform=transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.1307,), (0.3081,))
+        ])),
+        batch_size=1000, shuffle=True)
+	# Load the student model
+    model = StudentNet().to(device)
+    optimizer = torch.optim.Adadelta(model.parameters())
+    
+    student_history = []  # Record the student's training history
+    for epoch in range(1, epochs + 1):
+        train_student_kd(model, device, train_loader, optimizer, epoch)
+        loss, acc = test_student_kd(model, device, test_loader)
+        student_history.append((loss, acc))
+
+    torch.save(model.state_dict(), "student_kd.pt")
+    return model, student_history
+```
+
+
+
+```python
+student_kd_model, student_kd_history = student_kd_main()
+```
+
+#### Summary of Knowledge Distillation Steps
+
+(1) First train the teacher model, defining its training and testing methods
+
+(2) Define the knowledge distillation loss function
+
+(3) Then train the student model, defining its training and testing methods
+
+(4) When training the student model, the data output by the teacher model must be passed through knowledge distillation and used as input, backpropagation through the teacher model must be blocked, and the knowledge distillation loss function is used for backpropagation
+
+(5) After training, the student model is obtained
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+#### 第一步：导入所需要的包
+
+```python
+import math
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torchvision import datasets, transforms
+import torch.utils.data
+
+torch.manual_seed(0)		# 为CPU设置种子
+torch.cuda.manual_seed(0)	# 为GPU设置种子
+```
+
+#### 第二步：定义教师模型
+
+教师模型网络结构（此处仅举一个例子）：卷积层-卷积层-dropout-dropout-全连接层-全连接层
+
+```python
+class TeacherNet(nn.Module):
+    def __init__(self):
+        super(TeacherNet, self).__init__()
+        self.conv1 = nn.Conv2d(1, 32, 3, 1)		# 卷积层
+        self.conv2 = nn.Conv2d(32, 64, 3, 1)	# 卷积层
+        self.dropout1 = nn.Dropout2d(0.3)		# dropout
+        self.dropout2 = nn.Dropout2d(0.5)		# dropout
+        self.fc1 = nn.Linear(9216, 128)			# 全连接层
+        self.fc2 = nn.Linear(128, 10)			# 全连接层
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = F.relu(x)			# 激活函数
+        x = self.conv2(x)
+        x = F.relu(x)
+        x = F.max_pool2d(x, 2)
+        x = self.dropout1(x)
+        x = torch.flatten(x, 1)
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.dropout2(x)
+        output = self.fc2(x)
+        return output
+```
+
+#### 第三步：定义训练教师模型方法
+
+正常的定义一个神经网络模型
+
+```python
+def train_teacher(model, device, train_loader, optimizer, epoch):
+    model.train()
+    trained_samples = 0
+    for batch_idx, (data, target) in enumerate(train_loader):
+        data, target = data.to(device), target.to(device)	# 将数据转移到CPU/GPU
+        optimizer.zero_grad()	# 优化器将梯度全部置为0
+        output = model(data)	# 数据经过模型向前传播
+        loss = F.cross_entropy(output, target)  # 计算损失函数
+        loss.backward()			# 反向传播
+        optimizer.step()		# 更新梯度
+
+        trained_samples += len(data)
+        progress = math.ceil(batch_idx / len(train_loader) * 50) # 计算训练进度
+        print("\rTrain epoch %d: %d/%d, [%-51s] %d%%" %
+              (epoch, trained_samples, len(train_loader.dataset),
+               '-' * progress + '>', progress * 2), end='')
+```
+
+#### 第四步：定义教师模型测试方法
+
+正常的定义一个神经网络模型
+
+```python
+def test_teacher(model, device, test_loader):
+    model.eval()  # 设置为评估模式
+    test_loss = 0
+    correct = 0
+    with torch.no_grad():  # 不计算梯度，减少计算量
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)  # 将数据转移到CPU/GPU
+            output = model(data)  # 经过模型正向传播得到结果
+            test_loss += F.cross_entropy(output, target, reduction='sum').item()  # 计算总的损失函数
+            pred = output.argmax(dim=1, keepdim=True)  # 获取最大对数概率索引
+            correct += pred.eq(target.view_as(pred)).sum().item()  # pred.eq(target.view_as(pred)) 会返回一个布尔张量，其中每个元素表示预测值是否等于目标值。然后，.sum().item() 会将所有为 True 的元素相加，从而得到正确分类的数量。 
+
+    test_loss /= len(test_loader.dataset)  # 计算损失函数
+
+    print('\nTest: average loss: {:.4f}, accuracy: {}/{} ({:.0f}%)'.format(
+        test_loss, correct, len(test_loader.dataset),
+        100. * correct / len(test_loader.dataset)))
+    return test_loss, correct / len(test_loader.dataset)
+```
+
+#### 第五步：定义教师模型主函数
+
+整体也和正常模型一样，但是这里使用了`teacher_history`去保留需要知识蒸馏的数据。
+
+```python
+def teacher_main():
+    epochs = 10
+    batch_size = 64
+    torch.manual_seed(0)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # 使用的设备类型
+    
+	# 导入训练集
+    train_loader = torch.utils.data.DataLoader(
+        datasets.MNIST('../data/MNIST', train=True, download=True,
+                       transform=transforms.Compose([
+                           transforms.ToTensor(),
+                           transforms.Normalize((0.1307,), (0.3081,))  # 数据正则化
+                       ])),
+        batch_size=batch_size, shuffle=True)
+    
+    # 导入测试集
+    test_loader = torch.utils.data.DataLoader(
+        datasets.MNIST('../data/MNIST', train=False, download=True, transform=transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.1307,), (0.3081,))	# 数据正则化
+        ])),
+        batch_size=1000, shuffle=True)
+
+    model = TeacherNet().to(device)  # 传输经过教师模型网络
+    optimizer = torch.optim.Adadelta(model.parameters())  # 使用Adadelta优化器
+    
+    teacher_history = []  # 记录教师得到结果的历史
+    for epoch in range(1, epochs + 1):
+        train_teacher(model, device, train_loader, optimizer, epoch)  # 开始训练模型
+        loss, acc = test_teacher(model, device, test_loader)  # 计算损失函数和准确率
+        teacher_history.append((loss, acc))  # 记录教师模型得到的历史数据
+
+    torch.save(model.state_dict(), "teacher.pt")  # 保存到权重文件
+    return model, teacher_history
+```
+
+#### 第六步：开始训练教师模型
+
+```python
+# 训练教师网络
+teacher_model, teacher_history = teacher_main()
+```
+
+#### 第七步：定义学生模型网络结构
+
+学生模型的网络结构定义时一般要比教师模型简单一些，这样才能达到知识蒸馏轻量化的目的
+
+```python
+class StudentNet(nn.Module):
+    def __init__(self):
+        super(StudentNet, self).__init__()
+        self.fc1 = nn.Linear(28 * 28, 128)	# 全连接层
+        self.fc2 = nn.Linear(128, 64)		# 全连接层
+        self.fc3 = nn.Linear(64, 10)		# 全连接层
+
+    def forward(self, x):
+        x = torch.flatten(x, 1)		# 将输入张量沿着第二维度平
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        output = F.relu(self.fc3(x))
+        return output
+```
+
+#### 第八步：定义知识蒸馏方法
+
+这里定义知识蒸馏主要是实现其损失函数。
+
+```python
+def distillation(y, labels, teacher_scores, temp, alpha):
+    return nn.KLDivLoss()(F.log_softmax(y / temp, dim=1), F.softmax(teacher_scores / temp, dim=1)) * (
+            temp * temp * 2.0 * alpha) + F.cross_entropy(y, labels) * (1. - alpha)
+```
+
+我们这里写一下这个公式：
+$$
+KLDivLoss(log(softmax(\frac{y}{temp})),softmax(\frac{teacher~scores}{temp}))*2\alpha temp^2\\CrossEntropy(y,labels)(1-\alpha)
+$$
+其中$\alpha$和$1-\alpha$为系数，$temp^2$用于调节量纲。
+
+#### 第九步：定义学生模型训练和测试方法
+
+学生模型训练部分和教师模型训练部分基本一样，除了两个部分。
+
+第一个部分是，需要重点关注`teacher_output = teacher_output.detach()`切断教师模型反向传播这一行。
+
+第二个部分是，这里训练使用的损失函数是上面定义的**知识蒸馏的损失函数**
+
+```python
+def train_student_kd(model, device, train_loader, optimizer, epoch):
+    model.train()
+    trained_samples = 0
+    for batch_idx, (data, target) in enumerate(train_loader):
+        data, target = data.to(device), target.to(device)
+        optimizer.zero_grad()
+        output = model(data)  # 学生模型前向传播
+        teacher_output = teacher_model(data)  # 教师模型前向传播
+        teacher_output = teacher_output.detach()  # 切断老师网络的反向传播
+        loss = distillation(output, target, teacher_output, temp=5.0, alpha=0.7)  # 计算总损失函数，这里使用的是知识蒸馏的损失函数
+        loss.backward()  # 反向传播
+        optimizer.step()  # 更新参数
+
+        trained_samples += len(data)
+        progress = math.ceil(batch_idx / len(train_loader) * 50)
+        print("\rTrain epoch %d: %d/%d, [%-51s] %d%%" %
+              (epoch, trained_samples, len(train_loader.dataset),
+               '-' * progress + '>', progress * 2), end='')
+
+def test_student_kd(model, device, test_loader):
+    model.eval()
+    test_loss = 0
+    correct = 0
+    with torch.no_grad():
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)
+            output = model(data)
+            test_loss += F.cross_entropy(output, target, reduction='sum').item()  # 计算总的损失函数
+            pred = output.argmax(dim=1, keepdim=True)  # 获取最大对数概率索引
+            correct += pred.eq(target.view_as(pred)).sum().item()  # 计算准确率
+    test_loss /= len(test_loader.dataset)
+
+    print('\nTest: average loss: {:.4f}, accuracy: {}/{} ({:.0f}%)'.format(
+        test_loss, correct, len(test_loader.dataset),
+        100. * correct / len(test_loader.dataset)))
+    return test_loss, correct / len(test_loader.dataset)
+```
+
+#### 第十步：定义学生模型主函数
+
+```python
+def student_kd_main():
+    epochs = 10
+    batch_size = 64
+    torch.manual_seed(0)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+	# 加载训练集
+    train_loader = torch.utils.data.DataLoader(
+        datasets.MNIST('../data/MNIST', train=True, download=True,
+                       transform=transforms.Compose([
+                           transforms.ToTensor(),
+                           transforms.Normalize((0.1307,), (0.3081,))
+                       ])),
+        batch_size=batch_size, shuffle=True)
+    # 加载测试集
+    test_loader = torch.utils.data.DataLoader(
+        datasets.MNIST('../data/MNIST', train=False, download=True, transform=transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.1307,), (0.3081,))
+        ])),
+        batch_size=1000, shuffle=True)
+	# 加载学生模型
+    model = StudentNet().to(device)
+    optimizer = torch.optim.Adadelta(model.parameters())
+    
+    student_history = []  # 记录学生训练的模型
+    for epoch in range(1, epochs + 1):
+        train_student_kd(model, device, train_loader, optimizer, epoch)
+        loss, acc = test_student_kd(model, device, test_loader)
+        student_history.append((loss, acc))
+
+    torch.save(model.state_dict(), "student_kd.pt")
+    return model, student_history
+```
+
+
+
+```python
+student_kd_model, student_kd_history = student_kd_main()
+```
+
+#### 知识蒸馏步骤总结
+
+（1）先训练教师模型，定义教师模型的训练方法和测试方法
+
+（2）定义知识蒸馏损失函数
+
+（3）再训练学生模型，定义学生模型的训练方法和测试方法
+
+（4）训练学生模型的时候需要将教师模型得到数据输出经过知识蒸馏作为输入，并且要阻断教师模型的反向传播，并利用知识蒸馏损失函数进行反向传播
+
+（5）训练结束后得到学生模型
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

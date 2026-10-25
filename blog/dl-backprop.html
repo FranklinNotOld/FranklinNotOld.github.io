@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deep Feedforward Networks: Backpropagation · Yongkang Li</title>
+<meta name="description" content="Backpropagation (BP for short) is a commonly used method for updating the weight parameters in feedforward neural networks. Its main purpose is to tur…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Deep learning fundamentals</span><span data-l="cn">深度学习基础</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Deep Feedforward Networks: Backpropagation</span><span data-l="cn">深度前馈网络：反向传播</span></h1>
+    <div class="meta"><span data-l="en">5 min read</span><span data-l="cn">约 4 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="dl-output-units.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Deep Feedforward Networks: Output Units</span><span data-l="cn">深度前馈网络：输出单元</span></span></a><a class="pn glass" href="dl-convolution.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">The Convolution Operation</span><span data-l="cn">卷积运算</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+Backpropagation (BP for short) is a commonly used method for updating the weight parameters in feedforward neural networks. Its main purpose is to turn an initial neural network, step by step, into the neural network we want.
+
+Let's not rush to explain the concrete backpropagation algorithm. First, let's understand what backpropagation is for, and to do that we need to lay some groundwork with a few other pieces of knowledge.
+
+### Forward Propagation
+
+The term forward propagation is interesting. Compared with backpropagation, the topic of this article, the two names differ in exactly one word, and those two words are opposites. In fact, forward propagation and backpropagation complement each other and alternate. Only after forward propagation is there data available for backpropagation, and only after backpropagation finishes does forward propagation continue; the figure below illustrates this. Later we will explain why.
+
+![Resource 12](media/dl-backprop/JPG-资源-12.jpg)
+
+For a feedforward neural network, "feedforward" means "forward": when we feed in the input values, they propagate forward through the network, and this is the process of forward propagation. As shown below,
+
+<img src="media/dl-backprop/JPG-资源-11.jpg" alt="Resource 11" style="zoom: 25%;" />
+
+For the neural network above, $h_1$ can be expressed as $h_1=w_{11}^{(1)}x_1+w_{21}^{(1)}x_2$. This is one propagation step $x\to h$. Likewise, $f$ can be expressed as $w_1^{(2)}h_1+w_2^{(2)}h_2+w_3^{(2)}h_3$. So we obtain an expression for forward propagation of the form $x\to h\to f$. At this point it is not hard to guess that backpropagation is a process of the form $f\to h\to x$.
+
+Let's use the following example to understand the concrete process of forward propagation.
+
+<img src="media/dl-backprop/JPG-资源-41.jpg" alt="Resource 41" style="zoom:25%;" />
+
+The weights in this network are marked with pink numbers on the black arrows. Suppose the input values are $x_1=1,x_2=2$; then we can compute:
+$$
+h_1=2*x_1+1*x_2=4
+\\h_2=1*x_1+3*x_2=7
+\\f=h_1*0.5+h_2*0.5=5.5
+$$
+
+### The Chain Rule
+
+The chain rule originally comes from differentiating composite functions. Suppose we have a function $f(x)$, with $x=g(y)$ and $y=h(z)$. Then:
+$$
+\frac{df}{dz}=\frac{df}{dx}*\frac{dx}{dy}*\frac{dy}{dz}=f'(x)g'(y)h'(z)
+$$
+If the function is multivariate, we can also express this with partial derivatives:
+$$
+\frac{\partial f}{\partial z}=\frac{\partial f}{\partial x}*\frac{\partial x}{\partial y}*\frac{\partial y}{\partial z}=f'_x·g'_y·h'_z
+$$
+
+
+So where is the connection between the chain rule and neural networks? Read on to find out.
+
+Take the neural network from our example above. It is not necessarily the network we originally wanted; we simply assigned it random initial weights. To turn these weights into the ones we want, we need to update them. How do we update them? On what basis?
+
+We know that a network has its loss function, and we want the loss to be as small as possible. Suppose the loss function is $L=min_w\sum_x||f_w(x)-y||^2$. We use the gradient descent algorithm and take its partial derivative, $\frac{\partial L}{\partial w}$, whose physical meaning is how fast, at the position $w$, $L$ changes. To make the loss smaller, we need to look, in the direction in which $L$ decreases, for another $w’$, and we use
+$$
+w'=w-\eta·\frac{\partial L}{\partial w}
+$$
+to obtain the updated $w'$. Here $\eta$ is the learning rate, which controls the size of the descent step.
+
+#### Perspective 1:
+
+Let's go back to the figure of the neural network. For convenience, let's name the weights below:
+
+$w_{11}^{(1)}=2,w_{12}^{(1)}=1,w_{21}^{(1)}=1,w_{22}^{(1)}=32,w_{1}^{(2)}=0.5,w_{2}^{(2)}=0.5$
+
+<img src="media/dl-backprop/JPG-资源-41.jpg" alt="Resource 41" style="zoom:25%;" />
+
+We want to update the weights. Suppose we update $w_{11}^{(1)}$ first; then we need to compute $\frac{\partial L}{\partial w_{11}^{(1)}}$. But $L$ is actually a multivariate composite function whose variables include $w_1^{(2)}、w_2^{(2)}$, and $h_1、h_2$ are in turn functions of $w_{11}^{(1)}$. By the chain rule, we get:
+$$
+\frac{\partial L}{\partial w_{11}^{(1)}}=\frac{\partial L}{\partial w_1^{(2)}}*\frac{\partial w_1^{(2)}}{\partial w_{11}^{(1)}}+\frac{\partial L}{\partial w_2^{(2)}}*\frac{\partial w_2^{(2)}}{\partial w_{11}^{(1)}}
+$$
+where:
+$$
+\frac{\partial L}{\partial w_1^{(2)}}=\frac{\partial L}{\partial f}*\frac{\partial f}{\partial w_1^{(2)}}，\frac{\partial L}{\partial w_2^{(2)}}=\frac{\partial L}{\partial f}*\frac{\partial f}{\partial w_2^{(2)}}
+$$
+Now the chain rule shows its role. Since we do not know $$\frac{\partial f}{\partial w_1^{(2)}}$$ (because $h_1$ also needs to be updated), we cannot compute $\frac{\partial L}{\partial w_{11}^{(1)}}$ with the chain rule. So we should first compute $$\frac{\partial f}{\partial w_1^{(2)}}$$ and then compute $\frac{\partial L}{\partial w_{11}^{(1)}}$.
+
+#### Perspective 2:
+
+Let's put it another way to understand the process above more clearly. We still use the neural network in the figure above.
+$$
+\frac{\partial L}{\partial x}=\frac{\partial L}{\partial f}*\frac{\partial f}{\partial h}*\frac{\partial h}{\partial x} (1)
+\\\frac{\partial L}{\partial h}=\frac{\partial L}{\partial f}*\frac{\partial f}{\partial h}(2)
+
+\\\frac{\partial L}{\partial f}=\frac{\partial L}{\partial f}(3)
+$$
+To compute $\frac{\partial L}{\partial x}$, by equation (1) we also need $\frac{\partial L}{\partial h}$; to compute $\frac{\partial L}{\partial h}$, by equation (2) we also need $\frac{\partial L}{\partial f}$. And $\frac{\partial L}{\partial f}$ can be computed directly. So we should first compute $\frac{\partial L}{\partial f}$, i.e., update $f$, then compute $\frac{\partial L}{\partial h}$, i.e., update $h$, and finally compute $\frac{\partial L}{\partial x}$, i.e., update $x$. This update order $f\to h\to x$ is the reverse of the forward order $x\to h\to f$, and that is backpropagation.
+
+### Backpropagation
+
+Earlier we used the chain rule to motivate backpropagation. In essence, backpropagation is the chain rule applied in reverse. Next we work through a concrete example. It is still the example above, with the following weights:
+
+$w_{11}^{(1)}=2,w_{12}^{(1)}=1,w_{21}^{(1)}=1,w_{22}^{(1)}=32,w_{1}^{(2)}=0.5,w_{2}^{(2)}=0.5$
+
+<img src="media/dl-backprop/JPG-资源-41.jpg" alt="Resource 41" style="zoom:25%;" /> 
+
+Suppose we want the value output by this network to be 1, i.e., $y=1$. Let the learning rate be $\lambda=0.01$ and the inputs $x_1=1,x_2=2$.
+
+As computed above, the initial values are $h_1=4,h_2=7,f=5.5$, so $L=\frac{1}{2}(f-y)^2=10.125$
+
+Now we start updating $h_1$. By the chain rule, we have:
+$$
+\frac{\partial L}{\partial w_{1}^{(2)}}=\frac{\partial L}{\partial f}*\frac{\partial f}{\partial w_{1}^{(2)}}
+$$
+We first compute $\frac{\partial L}{\partial f}$:
+$$
+\frac{\partial L}{\partial f}=2*\frac12*(f-y)=4.5
+$$
+Then compute $\frac{\partial f}{\partial w_{1}^{(2)}}$:
+$$
+\frac{\partial f}{\partial w_{1}^{(2)}}=\frac{\partial (w_1^{(2)}h_1+w_2^{(2)}h_2)}{\partial w_{1}^{(2)}}=h_1=4
+$$
+So
+$$
+\frac{\partial L}{\partial w_{1}^{(2)}}=18
+$$
+So we update the weight $w_1^{(2)}$:
+$$
+w_1'^{(2)}=w_1^{(2)}-\lambda \frac{\partial L}{\partial w_{1}^{(2)}}=0.32
+$$
+Similarly, we can obtain:
+$$
+\frac{\partial f}{\partial w_{2}^{(2)}}=7,\frac{\partial L}{\partial w_{2}^{(2)}}=31.5,w_2'^{(2)}=w_2^{(2)}-\lambda \frac{\partial L}{\partial w_{2}^{(2)}}=0.185
+$$
+Then we start updating the four weights $w_{11}^{(1)},w_{12}^{(1)},w_{21}^{(1)},w_{22}^{(1)}$.
+
+By the chain rule, we have:
+$$
+\frac{\partial L}{\partial w_{11}^{(1)}}=\frac{\partial L}{\partial f}*\frac{\partial f}{\partial h_1}*\frac{\partial h_1}{\partial w_{11}^{(1)}}
+$$
+We already know $\frac{\partial L}{\partial f}=4.5$; next we first compute $\frac{\partial f}{\partial h_1}$:
+$$
+\frac{\partial f}{\partial h_1}=\frac{\partial (w_{1}^{(2)}h_1+w_{2}^{(2)}h_2)}{\partial h_1}=w_{1}^{(2)}=0.5
+$$
+Similarly:
+$$
+\frac{\partial f}{\partial h_2}=\frac{\partial (w_{1}^{(2)}h_1+w_{2}^{(2)}h_2)}{\partial h_2}=w_{2}^{(2)}=0.5
+$$
+Then compute $\frac{\partial h_1}{\partial w_{11}^{(1)}}$:
+$$
+\frac{\partial h_1}{\partial w_{11}^{(1)}}=\frac{\partial (w_{11}^{(1)}x_1+w_{21}^{(1)}x_2)}{\partial w_{11}^{(1)}}=x_1=1
+$$
+Similarly:
+$$
+\frac{\partial h_1}{\partial w_{21}^{(1)}}=\frac{\partial (w_{11}^{(1)}x_1+w_{21}^{(1)}x_2)}{\partial w_{21}^{(1)}}=x_2=2\\
+\frac{\partial h_2}{\partial w_{12}^{(1)}}=\frac{\partial (w_{12}^{(1)}x_1+w_{22}^{(1)}x_2)}{\partial w_{12}^{(1)}}=x_1=1\\
+\frac{\partial h_2}{\partial w_{22}^{(1)}}=\frac{\partial (w_{12}^{(1)}x_1+w_{22}^{(1)}x_2)}{\partial w_{22}^{(1)}}=x_2=2
+$$
+We thus obtain:
+$$
+\frac{\partial L}{\partial w_{11}^{(1)}}=4.5*0.5*1=2.25\\
+\frac{\partial L}{\partial w_{21}^{(1)}}=4.5*0.5*2=4.5\\
+\frac{\partial L}{\partial w_{12}^{(1)}}=4.5*0.5*1=2.25\\
+\frac{\partial L}{\partial w_{22}^{(1)}}=4.5*0.5*2=4.5\\
+$$
+Updating the weights gives:
+$$
+w_{11}'^{(1)}=w_{11}^{(1)}-\lambda \frac{\partial L}{\partial w_{11}^{(1)}}=2-0.225=1.775\\
+w_{12}'^{(1)}=w_{12}^{(1)}-\lambda \frac{\partial L}{\partial w_{12}^{(1)}}=1-0.225=0.775\\
+w_{21}'^{(1)}=w_{21}^{(1)}-\lambda \frac{\partial L}{\partial w_{21}^{(1)}}=1-0.45=0.55\\
+w_{22}'^{(1)}=w_{22}^{(1)}-\lambda \frac{\partial L}{\partial w_{22}^{(1)}}=3-0.45=2.55\\
+$$
+With that, the first weight update is complete. Now let's run one forward pass:
+$$
+h_1=w_{11}'^{(1)}x_1+w_{21}'^{(1)}x_2=1.775*1+0.55*2=2.875\\
+h_2=w_{12}'^{(1)}x_1+w_{22}'^{(1)}x_2=0.775*1+2.55*2=5.875\\
+f=w_{1}'^{(2)}h_1+w_{2}'^{(2)}h_2=0.32*2.875+0.185*5.875=2.006875
+$$
+We can see that 2.006875 is closer to the target output of 1 than the original 5.5, which shows that this update was beneficial.
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+​	反向传播(Back Propagation)，简称BP，是前馈神经网络中权重参数更新常用的一种方法。其主要作用就是将一个初始神经网络一步步转化成我们想要的神经网络。
+
+​	我们先不急着讲解反向传播的具体算法，我们先理解一下反向传播存在的作用，为此我们需要一些其它知识的铺垫和引入。
+
+### 正向传播
+
+​	正向传播这个名词很有意思。其余本文想要讲解的反向传播正好有一个字互相相反。事实上，正向传播与反向传播是一个相辅相成的关系，两者交替进行。先进行了正向传播，才能有数据进行反向传播。反向传播完成后，才会继续正向传播，可以用下图来理解。后面我们会讲解这究竟是为什么。
+
+![资源 12](media/dl-backprop/JPG-资源-12.jpg)
+
+​	对于前馈神经网络，“前馈”就是“前向”的意思，当我们输入输入值，输入值会随着神经网络不断向前传播，这就是正向传播的过程。如下图，
+
+<img src="media/dl-backprop/JPG-资源-11.jpg" alt="资源 11" style="zoom: 25%;" />
+
+​	对于上面这个神经网络，$h_1$可以用如下这个表达式进行表达$h_1=w_{11}^{(1)}x_1+w_{21}^{(1)}x_2$。这就是$x\to h$的一个传播过程。同理，$f$也可以用$w_1^{(2)}h_1+w_2^{(2)}h_2+w_3^{(2)}h_3$来表达。所以我们就得到了一个$x\to h\to f$这样一个正向传播的表达式。这时候就不难猜出，反向传播其实是一个$f\to h\to x$的过程。
+
+​	我们用下面这个例子来理解前向传播的具体过程。
+
+<img src="media/dl-backprop/JPG-资源-41.jpg" alt="资源 41" style="zoom:25%;" />
+
+​	该神经网络中的权重值都已经用粉红色数字标注在黑色箭头上面。假设我们输入值为：$x_1=1,x_2=2$，那么可以计算出：
+$$
+h_1=2*x_1+1*x_2=4
+\\h_2=1*x_1+3*x_2=7
+\\f=h_1*0.5+h_2*0.5=5.5
+$$
+
+### 链式法则
+
+​	链式法则最初是来自复合函数的求导。假设现在我们有一个函数$f(x)$，$x=g(y)$，$y=h(z)$，那么：
+$$
+\frac{df}{dz}=\frac{df}{dx}*\frac{dx}{dy}*\frac{dy}{dz}=f'(x)g'(y)h'(z)
+$$
+​	如果函数是多元函数，那么我们也可以用偏导形式来表达：
+$$
+\frac{\partial f}{\partial z}=\frac{\partial f}{\partial x}*\frac{\partial x}{\partial y}*\frac{\partial y}{\partial z}=f'_x·g'_y·h'_z
+$$
+​	
+
+​	那么链式法则与神经网络中的联系在哪里呢？且将下文看完
+
+​	比如上面我们举例的那个神经网络，这个神经网络不一定就是我们最初想要的神经网络，而是我们随机给其附了一个初始权重。为了将这些权重变成我们想要的权重，我们需要对其进行更新。如何更新？根据什么更新？
+
+​	我们知道，损失网络有其损失函数。我们希望损失函数越小越好。我们假设损失函数为$L=min_w\sum_x||f_w(x)-y||^2$。我们会用梯度下降算法对其求偏导，即$\frac{\partial L}{\partial w}$，其物理意义是在$w$这个位置处$L$的变化幅度。为了使损失函数更小，我们需要在$L$的下降方向再找一个$w’$，我们用
+$$
+w'=w-\eta·\frac{\partial L}{\partial w}
+$$
+就可以得到更新后的$w'$。其中$\eta$为学习率，用来控制下降的幅度。
+
+#### 理解方式1：
+
+​	我们重新回到神经网络的那张图。为了方便说明，我们给下面的权重命一下名：
+
+$w_{11}^{(1)}=2,w_{12}^{(1)}=1,w_{21}^{(1)}=1,w_{22}^{(1)}=32,w_{1}^{(2)}=0.5,w_{2}^{(2)}=0.5$
+
+<img src="media/dl-backprop/JPG-资源-41.jpg" alt="资源 41" style="zoom:25%;" />
+
+​	我们想要更新权重。试想，如果我们先更新$w_{11}^{(1)}$，那么我们就需要求出$\frac{\partial L}{\partial w_{11}^{(1)}}$。但是，$L$其实是一个多元复合函数，其中变量就包括$w_1^{(2)}、w_2^{(2)}$，而$h_1、h_2$又是关于$w_{11}^{(1)}$的函数。根据链式法则，我们得到：
+$$
+\frac{\partial L}{\partial w_{11}^{(1)}}=\frac{\partial L}{\partial w_1^{(2)}}*\frac{\partial w_1^{(2)}}{\partial w_{11}^{(1)}}+\frac{\partial L}{\partial w_2^{(2)}}*\frac{\partial w_2^{(2)}}{\partial w_{11}^{(1)}}
+$$
+​	其中：
+$$
+\frac{\partial L}{\partial w_1^{(2)}}=\frac{\partial L}{\partial f}*\frac{\partial f}{\partial w_1^{(2)}}，\frac{\partial L}{\partial w_2^{(2)}}=\frac{\partial L}{\partial f}*\frac{\partial f}{\partial w_2^{(2)}}
+$$
+这下链式法则就体现出来了。由于我们不知道$$\frac{\partial f}{\partial w_1^{(2)}}$$（因为$h_1$也需要进行更新）,所以我们就无法根据链式法则求出$\frac{\partial L}{\partial w_{11}^{(1)}}$。所以我们应该先求$$\frac{\partial f}{\partial w_1^{(2)}}$$，再求$\frac{\partial L}{\partial w_{11}^{(1)}}$。
+
+#### 理解方式2：
+
+​	我们换一种说法再清晰理解一下上述过程。还是上图的神经网络。
+$$
+\frac{\partial L}{\partial x}=\frac{\partial L}{\partial f}*\frac{\partial f}{\partial h}*\frac{\partial h}{\partial x} (1)
+\\\frac{\partial L}{\partial h}=\frac{\partial L}{\partial f}*\frac{\partial f}{\partial h}(2)
+
+\\\frac{\partial L}{\partial f}=\frac{\partial L}{\partial f}(3)
+$$
+​	我们想要求$\frac{\partial L}{\partial x}$，那么根据（1）式我们还需要求$\frac{\partial L}{\partial h}$；为了求$\frac{\partial L}{\partial h}$，根据（2）式我们还需要求$\frac{\partial L}{\partial f}$。而$\frac{\partial L}{\partial f}$是可以直接求出的。所以我们应该先求$\frac{\partial L}{\partial f}$，即更新$f$，再求$\frac{\partial L}{\partial h}$，即更新$h$，最后求$\frac{\partial L}{\partial x}$，即更新$x$。这样一个更新顺序为$f\to h\to x$，与正向$x\to h\to f$是相反的，即为反向传播。
+
+### 反向传播
+
+​	前文我们利用链式法则引出了反向传播，本质上，反向传播就是链式法则的逆向思维。下面我们用一个实际的例子进行演算说明。依然是上文那个例子，权重值如下：
+
+$w_{11}^{(1)}=2,w_{12}^{(1)}=1,w_{21}^{(1)}=1,w_{22}^{(1)}=32,w_{1}^{(2)}=0.5,w_{2}^{(2)}=0.5$
+
+<img src="media/dl-backprop/JPG-资源-41.jpg" alt="资源 41" style="zoom:25%;" /> 
+
+假设我们希望通过这个神经网络得到的值是1，即$y=1$。设学习率$\lambda=0.01$。输入值$x_1=1,x_2=2$。
+
+上文我们计算过，初始的$h_1=4,h_2=7,f=5.5$，则$L=\frac{1}{2}(f-y)^2=10.125$
+
+下面我们要开始更新$h_1$。根据链式法则，有：
+$$
+\frac{\partial L}{\partial w_{1}^{(2)}}=\frac{\partial L}{\partial f}*\frac{\partial f}{\partial w_{1}^{(2)}}
+$$
+我们先求$\frac{\partial L}{\partial f}$：
+$$
+\frac{\partial L}{\partial f}=2*\frac12*(f-y)=4.5
+$$
+再求$\frac{\partial f}{\partial w_{1}^{(2)}}$：
+$$
+\frac{\partial f}{\partial w_{1}^{(2)}}=\frac{\partial (w_1^{(2)}h_1+w_2^{(2)}h_2)}{\partial w_{1}^{(2)}}=h_1=4
+$$
+所以
+$$
+\frac{\partial L}{\partial w_{1}^{(2)}}=18
+$$
+所以更新权重$w_1^{(2)}$：
+$$
+w_1'^{(2)}=w_1^{(2)}-\lambda \frac{\partial L}{\partial w_{1}^{(2)}}=0.32
+$$
+同理可以求得：
+$$
+\frac{\partial f}{\partial w_{2}^{(2)}}=7,\frac{\partial L}{\partial w_{2}^{(2)}}=31.5,w_2'^{(2)}=w_2^{(2)}-\lambda \frac{\partial L}{\partial w_{2}^{(2)}}=0.185
+$$
+然后开始更新$w_{11}^{(1)},w_{12}^{(1)},w_{21}^{(1)},w_{22}^{(1)}$这四个权重。
+
+根据链式法则，有：
+$$
+\frac{\partial L}{\partial w_{11}^{(1)}}=\frac{\partial L}{\partial f}*\frac{\partial f}{\partial h_1}*\frac{\partial h_1}{\partial w_{11}^{(1)}}
+$$
+我们已经知道了$\frac{\partial L}{\partial f}=4.5$，下面先求$\frac{\partial f}{\partial h_1}$：
+$$
+\frac{\partial f}{\partial h_1}=\frac{\partial (w_{1}^{(2)}h_1+w_{2}^{(2)}h_2)}{\partial h_1}=w_{1}^{(2)}=0.5
+$$
+同理：
+$$
+\frac{\partial f}{\partial h_2}=\frac{\partial (w_{1}^{(2)}h_1+w_{2}^{(2)}h_2)}{\partial h_2}=w_{2}^{(2)}=0.5
+$$
+然后求$\frac{\partial h_1}{\partial w_{11}^{(1)}}$：
+$$
+\frac{\partial h_1}{\partial w_{11}^{(1)}}=\frac{\partial (w_{11}^{(1)}x_1+w_{21}^{(1)}x_2)}{\partial w_{11}^{(1)}}=x_1=1
+$$
+同理：
+$$
+\frac{\partial h_1}{\partial w_{21}^{(1)}}=\frac{\partial (w_{11}^{(1)}x_1+w_{21}^{(1)}x_2)}{\partial w_{21}^{(1)}}=x_2=2\\
+\frac{\partial h_2}{\partial w_{12}^{(1)}}=\frac{\partial (w_{12}^{(1)}x_1+w_{22}^{(1)}x_2)}{\partial w_{12}^{(1)}}=x_1=1\\
+\frac{\partial h_2}{\partial w_{22}^{(1)}}=\frac{\partial (w_{12}^{(1)}x_1+w_{22}^{(1)}x_2)}{\partial w_{22}^{(1)}}=x_2=2
+$$
+于是求得：
+$$
+\frac{\partial L}{\partial w_{11}^{(1)}}=4.5*0.5*1=2.25\\
+\frac{\partial L}{\partial w_{21}^{(1)}}=4.5*0.5*2=4.5\\
+\frac{\partial L}{\partial w_{12}^{(1)}}=4.5*0.5*1=2.25\\
+\frac{\partial L}{\partial w_{22}^{(1)}}=4.5*0.5*2=4.5\\
+$$
+更新权重得：
+$$
+w_{11}'^{(1)}=w_{11}^{(1)}-\lambda \frac{\partial L}{\partial w_{11}^{(1)}}=2-0.225=1.775\\
+w_{12}'^{(1)}=w_{12}^{(1)}-\lambda \frac{\partial L}{\partial w_{12}^{(1)}}=1-0.225=0.775\\
+w_{21}'^{(1)}=w_{21}^{(1)}-\lambda \frac{\partial L}{\partial w_{21}^{(1)}}=1-0.45=0.55\\
+w_{22}'^{(1)}=w_{22}^{(1)}-\lambda \frac{\partial L}{\partial w_{22}^{(1)}}=3-0.45=2.55\\
+$$
+这样，第一次权重就更新完毕了。下面我们来进行一次正向传播：
+$$
+h_1=w_{11}'^{(1)}x_1+w_{21}'^{(1)}x_2=1.775*1+0.55*2=2.875\\
+h_2=w_{12}'^{(1)}x_1+w_{22}'^{(1)}x_2=0.775*1+2.55*2=5.875\\
+f=w_{1}'^{(2)}h_1+w_{2}'^{(2)}h_2=0.32*2.875+0.185*5.875=2.006875
+$$
+我们可以看出2.006875要比原来的5.5更接近目标输出值1，说明本次更新是有利的。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

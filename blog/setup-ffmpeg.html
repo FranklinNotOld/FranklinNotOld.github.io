@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Installing ffmpeg · Yongkang Li</title>
+<meta name="description" content="When I called the ffmpeg package, the following error appeared: ffmpeg’ �����ڲ����ⲿ���Ҳ���ǿ����еĳ������������ļ���">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">PyTorch and tools</span><span data-l="cn">PyTorch 与工具</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Installing ffmpeg</span><span data-l="cn">安装 ffmpeg</span></h1>
+    <div class="meta"><span data-l="en">2 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="setup-pytorch3d.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Installing PyTorch3D</span><span data-l="cn">安装 PyTorch3D</span></span></a><span></span></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+### Discovering the Problem
+
+When I called the ffmpeg package, the following error appeared: `ffmpeg’ �����ڲ����ⲿ���Ҳ���ǿ����еĳ������������ļ���`
+
+This is a pile of garbled characters. After searching online, I found that the garbled text actually stands for the following problem: `‘ffmpeg‘ 不是内部或外部命令,也不是可运行的程序` ("'ffmpeg' is not recognized as an internal or external command, operable program or batch file"). Some blogs online say you only need to change the encoding format, but I changed it and it still did not work
+
+
+
+### Solution
+
+I made sure I had already installed ffmpeg in the terminal, but it did not help. Some online posts describe downloading ffmpeg directly ([link][https://blog.csdn.net/qq874455953/article/details/109560175?ops_request_misc=&request_id=&biz_id=102&utm_term=%20%E2%80%98ffmpeg%E2%80%99%20%E4%B8%8D%E6%98%AF%E5%86%85%E9%83%A8%E6%88%96%E5%A4%96%E9%83%A8%E5%91%BD%E4%BB%A4,%E4%B9%9F%E4%B8%8D%E6%98%AF%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%9A%84%E7%A8%8B%E5%BA%8F&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-1-109560175.142^v79^insert_down38,201^v4^add_ask,239^v2^insert_chatgpt&spm=1018.2226.3001.4187]), but I could not find the python file they mention, so, more by accident than by design, I simply downloaded the ffmpeg files again directly through the terminal.
+
+Following the link above, I downloaded ffmpeg.exe and the related files, and then I first installed the ffmpeg package on the command line: `pip install ffmpeg`
+
+Then I got these two folders:
+![image-20230403231849298](media/setup-ffmpeg/ffmpeg-image-20230403231849298.png)
+
+The file path is here: `\anaconda3\Lib\site-packages`
+
+I went into the ffmpeg folder and modified the following code:
+
+- The _probe.py file:
+
+![image-20230403232243949](media/setup-ffmpeg/ffmpeg-image-20230403232243949.png)
+
+Change the path after cmd on line 7 to the path where ffprobe.exe is located (this path is where the ffmpeg package was extracted after downloading)
+
+- The _run.py file:
+
+![image-20230403232905920](media/setup-ffmpeg/ffmpeg-image-20230403232905920.png)
+
+Same as above. After that, I could call the ffmpeg package normally
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+### 问题发现
+
+我在调用ffmpeg包的时候出现了如下的报错：`ffmpeg’ �����ڲ����ⲿ���Ҳ���ǿ����еĳ������������ļ���`
+
+这是一堆乱码，我上网查过了之后说这个乱码其实说的是`‘ffmpeg‘ 不是内部或外部命令,也不是可运行的程序`这个问题。网上有博客说只要改一下编码格式就好了，但是我改了依然没成功
+
+
+
+### 问题解决
+
+我确认过我已经在终端安装过了ffmpeg，但是并没有用。网上有直接下载ffmpeg的方法的（[链接][https://blog.csdn.net/qq874455953/article/details/109560175?ops_request_misc=&request_id=&biz_id=102&utm_term=%20%E2%80%98ffmpeg%E2%80%99%20%E4%B8%8D%E6%98%AF%E5%86%85%E9%83%A8%E6%88%96%E5%A4%96%E9%83%A8%E5%91%BD%E4%BB%A4,%E4%B9%9F%E4%B8%8D%E6%98%AF%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%9A%84%E7%A8%8B%E5%BA%8F&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-1-109560175.142^v79^insert_down38,201^v4^add_ask,239^v2^insert_chatgpt&spm=1018.2226.3001.4187]），但是我并没有找到他说的python文件，于是我误打误撞，干脆直接再用终端下载ffmpeg文件。
+
+我按照上面链接里的下载了ffmpeg.exe等相关文件，然后我先在命令行里安装了ffmpeg这个包：`pip install ffmpeg`
+
+然后我得到了这两个文件夹：
+![image-20230403231849298](media/setup-ffmpeg/ffmpeg-image-20230403231849298.png)
+
+文件路径在这：`\anaconda3\Lib\site-packages`
+
+我点进ffmpeg文件夹，修改了如下代码：
+
+- _probe.py文件：
+
+![image-20230403232243949](media/setup-ffmpeg/ffmpeg-image-20230403232243949.png)
+
+将第七行cmd后面的路径改成ffprobe.exe所在的路径（这个路径就是下载ffmpeg包后解压的路径）
+
+- _run.py文件：
+
+![image-20230403232905920](media/setup-ffmpeg/ffmpeg-image-20230403232905920.png)
+
+同上，之后我就可以正常调用ffmpeg的包了
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

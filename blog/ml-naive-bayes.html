@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Naive Bayes · Yongkang Li</title>
+<meta name="description" content="We live in a world full of probability. One might even say that everything that happens in the world happens with some probability; nothing absolutely…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Machine learning basics</span><span data-l="cn">机器学习基础</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Naive Bayes</span><span data-l="cn">朴素贝叶斯</span></h1>
+    <div class="meta"><span data-l="en">17 min read</span><span data-l="cn">约 13 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="ml-knn.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">k-Nearest Neighbors</span><span data-l="cn">k 近邻算法</span></span></a><a class="pn glass" href="ml-decision-tree.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Decision Trees</span><span data-l="cn">决策树</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+## I. Introducing Naive Bayes
+
+We live in a world full of probability. One might even say that everything that happens in the world happens with some probability; nothing absolutely happens or absolutely fails to happen.
+
+For example, suppose your deskmate scored higher than you on the college entrance exam (gaokao). That his future salary will be higher than yours is only a possible event. In most people's minds, "his future salary will be higher than yours" is a high-probability event, but in my mind it is anything but. For all we know, he went into the notoriously dead-end major of his dreams and can't even find a job after graduating, while you went into a major with good job prospects, in which case that earlier conclusion does not hold for him.
+
+As another example, once we get to university there are many "diligent students" around us who not only attend morning and evening self-study sessions as they did in high school, but also work through the worked examples and end-of-chapter exercises in the textbook three times. Suppose we want to infer whether one of your roommates will get a spot for recommended admission to graduate school (baoyan) from two traits: whether he attends morning and evening self-study, and whether he works through the textbook exercises three times. We would first judge based on the experience of earlier senior students. Suppose there is a senior who attended both morning and evening self-study but worked through the textbook problems only once, and in the end got a baoyan spot. Then you would think that your roommate, who attends both morning and evening self-study and also works through the textbook problems three times, is very likely to get baoyan. "Very likely", but not "certain". If we also have another senior who attended both morning and evening self-study and worked through the textbook problems three times, but did not get baoyan, then your confidence that your roommate can get baoyan drops. By the decision tree algorithm, your roommate would be classified into the "cannot get baoyan" class. If you use the support vector machine (SVM) algorithm, your roommate could still be classified into the "gets baoyan" class. But in fact, what describes your roommate's situation more fittingly is not a definite value of whether he can get baoyan or not, but a probability value of being able or unable to get baoyan. Predicting such a probability is beyond what decision trees or SVMs can do, whereas the algorithm we introduce today, the naive Bayes algorithm, can handle it.
+
+The result of the naive Bayes algorithm is not a definite value, yes or no, but a probability: the probability of yes or the probability of no.
+
+## II. Prerequisites for Naive Bayes
+
+### Introducing the Concepts
+
+- **Conditional probability**:
+
+>Many probabilities in life are probabilities under certain special conditions. For example, if you want to know the probability that you catch COVID at home, it depends on many things, such as whether policies have been relaxed and whether you are in a high-risk area. Only under the restriction of these conditions can we compute the probability you want to know fairly accurately.
+
+The probability that another event occurs given that one event has occurred. The probability that event A occurs given event B is written as $P(B|A)$. The conditional probability formula is as follows:
+$$
+P(A|B)=\frac{P(AB)}{P(B)}
+$$
+Understanding it with a Venn diagram:
+
+ 
+
+> In the figure above, A and B are each an ellipse, representing the range of their events. We want the probability that A occurs given B. Intuitively, the denominator should be P(B), because conditioning on event B means taking event B as the basis; and because of the restriction of event B, the part of event A that does not belong to B should be discarded, since it is not under B's control. So it is also easy to understand that the numerator is the probability of the event that A and B both occur (their intersection).
+
+
+
+- **Prior probability**: The probability judged before an event occurs. That is, the probability of the event occurring is judged from past experience before the event takes place. It corresponds to $P(A)$ in the formula above.
+
+
+
+- **Posterior probability**: The reverse conditional probability after an event occurs. That is, the event has already happened, and given that, the probability of some event occurring. It corresponds to $P(B|A)$ in the formula above, that is, the probability of inferring event B after event A has already occurred.
+
+> For example, we know that being a close contact of a COVID-positive person may cause one to test positive. We can compute the probability of testing positive given that one is a close contact; this is a conditional probability. We can also, after learning that we are positive, compute the probability that we were a close contact; this is the posterior probability, because we know the result and infer the cause backward.
+
+
+
+- **Naive**: In naive Bayes, "naive" means assuming that all input events are independent of one another. After making this assumption, the probabilities among independent events become simpler.
+
+### Multiplication Rule
+
+Above we saw that the conditional probability formula is $P(A|B)=\frac{P(AB)}{P(B)}$. If we now know P(B) and P(A|B) and want P(AB), we can rearrange it into the following formula:
+$$
+P(A|B)P(B)=P(AB)
+$$
+Similarly, we can also obtain:
+
+$$
+P(B|A)P(A)=P(AB)
+$$
+These two formulas are called the multiplication rule. In actual calculations, choose between the two formulas above flexibly according to the problem.
+
+We can also extend it to n events:
+$$
+P(A_1A_2…A_n)=P(A_1)P(A_2|A_1)P(A_3|A_2A_1)…P(A_n|A_n…A_2A_1)
+$$
+
+> We can understand it this way: $P(A_1)$ assumes A1 is true, $P(A_2|A_1)$ assumes A2 is true given that A1 is true, and so on. Since almost all events in life are conditional probabilities, that is, probabilities of occurring under some condition, and conditions may be nested layer upon layer, the multiplication rule arises.
+
+### Law of Total Probability
+
+#### Finite Partition
+
+Basic concept: Let $\Omega$ be the sample space of a random experiment E, and let B~1~, B~2~ , …, B~n~ be a set of events of E. If 
+
+(1) $Bi∩Bj =f ,i ≠ j$
+
+(2) $B_1∪B_2 ∪… ∪B_n=\Omega$
+
+then B~1~, B~2~, …, B~n~ is called a finite partition of $\emptyset$, or a complete event group.
+
+> Note: the partition of a sample space is not unique
+
+To put it simply, a finite partition means cutting a sample space into many small pieces.
+
+#### Law of Total Probability
+
+Basic concept: Let A be the sample space of a random experiment E, let B~1~, B~2~ , …, B~n~ be a finite partition of E, and let P(B~i~)>0. Then
+$$
+P(A)=\sum_{i-1}^nP(B_i)P(A|B_i)
+$$
+
+> In fact this is an enhanced version of the multiplication principle, combining many applications of the multiplication principle
+
+==To sum up, the law of total probability is really an addition formula, which uses addition to combine probabilities under different conditions; the multiplication principle is a multiplication formula, which uses multiplication to combine them when there are chained conditions==
+
+### Bayes' Formula
+
+#### Introducing the Concepts
+
+**Prior probability**: The probability judged before an event occurs. That is, the probability of the event occurring is judged from past experience before the event takes place. It corresponds to $P(A)$ in the formula above.
+
+**Posterior probability**: The reverse conditional probability after an event occurs. That is, the event has already happened, and given that, the probability of some event occurring. It corresponds to $P(A|B)$ in the formula above, that is, the probability of event A occurring after event B has already occurred.
+
+> From our everyday understanding it is not hard to see that the posterior probability is strongly influenced by the prior probability.
+
+#### Bayes' Formula
+
+Let $\Omega$ be the sample space of a random experiment E, let B~1~, B~2~ , …, B~n~ be a finite partition of E, let A$\subset\Omega$, and let P(A)>0 and P(B~i~)>0. Then:
+$$
+P(B_i|A)=\frac{P(B_i)P(A|B_i)}{\sum_{j=1}^nP(B_j)P(A|B_j)}
+$$
+A simple derivation:
+$$
+P(B_i|A)=\frac{P(AB_i)}{P(A)}=\frac{P(B_i)P(A|B_i)}{\sum_{j=1}^nP(B_j)P(A|B_j)}
+$$
+In the numerator and denominator we use the multiplication rule and the law of total probability, respectively.
+
+> P(B|A) is the posterior probability, and P(A|B) is the prior probability.
+
+Through Bayes' formula, after event A has occurred (that is, as the condition), we can compute the probability of event B~i~ occurring, where event B~i~ is part of what drives event A. Here is a very classic example:
+
+Suppose the incidence rate of a disease is 0.0004 (that is, only one person in 2,500 has this disease), and a patient who may have the disease needs to go to the hospital for a test. However, the doctor's test is not 100% correct and makes some errors. It is known that this hospital judges a patient with the disease as disease-free with probability 1%, and judges a person without the disease as having it with probability 0.1%. Now he is found by the test to have the disease. What is the probability that he really has it?
+
+We let A={the person is a patient} and B={the person tests as having the disease}
+
+From the problem, we can obtain the following conditions:
+
+$P(A)=0.0004$: the probability that a person in the population has the disease;
+
+$P(\overline{A})=0.9996$: the probability that a person does not have it;
+
+$P(B|A)=0.99$: the probability that someone who has the disease tests positive;
+
+$P(B|\overline{A})=0.001$: the probability that someone who does not have it tests positive.
+
+Then the probability we want, that of truly having the disease given a positive test, is:
+$$
+P(A|B)=\frac{P(AB)}{P(B)}=\frac{0.0004×0.99}{0.0013956}=0.284
+$$
+This probability is shocking. The hospital tells me I have the disease, but I actually have only about a one-in-four chance of really having it!
+
+So why is that? Let's make the numbers concrete:
+
+Suppose there are 10,000 people. In theory, 9,996 of them do not have the disease and only 4 do. Since the misjudgment rate for healthy people is 0.1%, about 10 people without the disease would be judged as having it. And the probability of misjudging a patient as disease-free is 1%, so among the 4 patients, almost none will be judged as disease-free. Now it is very clear: because the base of people without the disease is so large, even if the misjudgment probability is very low, the number of misjudged people is still high compared with the number of people who actually have the disease.
+
+## II. Naive Bayes
+
+### Basic Principle
+
+Naive Bayes is simply applying Bayes' formula under the "naive" assumption. As mentioned earlier, naive Bayes means applying Bayes' formula under the assumption that the events (attributes) are mutually independent.
+
+> Why assume that the features are independent of one another? The reason is actually simple: if the features are not independent, then each feature cannot take part in the computation on its own as an independent feature; instead we have to consider combinations. Feature A under the influence of feature B is one situation, feature A under the influence of feature C is another, and feature A under the influence of both feature B and feature C is yet another... If there are 5 features and each feature has 10 values, then the number of possible cases is 10 to the 5th power
+
+In the opening example I also mentioned that many things in life cannot be judged in an "absolute" way, but in order to classify, we judge by their probability values.
+
+Suppose we now have an item to be classified $X$, which has many features $\alpha_1,\alpha_2,\alpha_3,…,\alpha_n$, and these features are independent of one another and do not affect each other. We also have a set of classes $C$, and the classes in the set $C$ include $y_1,y_2,y_3,…,y_n$.
+
+Each $P(y_i|\alpha_i)$ represents the probability that class $y_i$ occurs given feature $\alpha_i$. For example, as mentioned earlier, given the feature "attends both morning and evening self-study", the probability of the class "can get baoyan". If this probability is large, the probability that the item to be classified is assigned to $y_i$ is also larger.
+
+However, since there are many classes, it is unreasonable to decide whether to assign the item to a class using just one $P(y_i|\alpha_i)$. We also need to look at the other classes. By comparing the sizes of $P(y_1|\alpha_i)$, $P(y_2|\alpha_i)$, $P(y_3|\alpha_i)$, ..., $P(y_n|\alpha_i)$, we find the largest probability $P(y_k|\alpha_i)$, which says that given feature $\alpha_i$, the item should be assigned to class $y_k$.
+
+But which class to assign it to cannot be decided by looking at only one feature $\alpha_i$, because the item to be classified is made up of multiple features; it is more reasonable to compare the sizes of $P(y_i|X)$. This raises a problem: we can compute the probability $P(y_i|\alpha_i)$, since it is determined by probabilities in the sample dataset, but how do we compute $P(y_i|X)$?
+
+This is where we use the Bayes' formula mentioned above. According to Bayes' formula,
+$$
+P(y_i|X)=\frac{P(X|y_i)P(y_i)}{P(X)}
+$$
+where $X$ is the item to be classified, and $P(X)$ is the probability of the features occurring, which can be treated as a constant when the features are fixed, so $P(y_i|X)\propto P(X|y_i)P(y_i)$. Here,
+$$
+P(X|y_i)=P(\alpha_1,\alpha_2,\alpha_3,…,\alpha_n|y_i)=P(\alpha_1|y_i)P(\alpha_2|y_i)P(\alpha_3|y_i)···P(\alpha_n|y_i)
+$$
+This is determined by the earlier assumption that the features are mutually independent. At this point it is not hard to see that the greatest use of Bayes' formula is that ==it moves X, which sits in the conditioning position, to a non-conditioning position, so that we can expand it using the principle of independence of events==. This lets us compute $P(X|y_i)P(y_i)$. Finally, we only need to compare their sizes.
+
+So we can define the naive Bayes function $classify(X)$,
+
+$$
+classify(X)=argmaxP(y_i)P(\alpha_1|y_i)P(\alpha_2|y_i)P(\alpha_3|y_i)···P(\alpha_n|y_i)
+$$
+that is,
+
+$$
+classify(X)=argmaxP(y_i)\prod_{k=1}^{n}{P(\alpha_k|y_i)}
+$$
+The argmax function selects the largest one among all of them.
+
+
+
+Let us summarize the naive Bayes algorithm:
+
+- Let $X\{\alpha_1,\alpha_2,\alpha_3,…,\alpha_n\}$ be an item to be classified, where each $\alpha_i$ is a feature attribute of $x$, and the attributes are mutually independent. Let $C\{y_1,y_2,y_3,…,y_n\}$ be the set of classes to assign to
+- Compute $P(y_1|X)、P(y_2|X)、···、P(y_n|X)$ with the formula $P(y_i)\prod_{k=1}^{n}{P(\alpha_k|y_i)}$
+- Find the largest $P(y_k|X)$; the corresponding class $y_k$ is the class the item $X$ should be assigned to
+
+## III. Maximum Likelihood Estimation
+
+### Likelihood Function
+
+The likelihood function and the probability function actually have a lot in common. Personally, I think the two are more like complements of each other; put another way, the two simply swap the independent variable and the dependent variable.
+
+We know the conditional probability $P(x|θ)$, where $\theta$ serves as the condition and $x$ is the result of the event. For example, suppose we have a fair coin and toss it three times, getting heads twice. Then $x$ is the outcome of two heads, and $\theta$ is the probability that a coin lands heads, which we can denote $p_H$. We can read $P(x|θ:p_H)$ as the probability of getting two heads in three tosses given that the coin lands heads with probability $p_H$. In this case, we know $\theta$ and want $x$. This is the most common meaning of probability. Now, is there a situation where we know $x$ but don't know $p_H$? In other words, suppose we have learned through some experiments that the probability of getting two heads in three tosses is 0.75 (not from a large number of trials; say we ran four experiments and three of them gave this result), but since this coin is not perfectly fair (in fact real coins are all like this), we don't know what $p_H$ is. But we can work out an expression from the properties of probability:
+$$
+P(x|p_H)=C_3^1×p_H^2×(1-p_H)
+$$
+When $p_H=0.5$ the result is 0.375; when $p_H=0.6$ the result is 0.432. Since the result we actually got from experiments is 0.75, and 0.432 is closer to this result, we can consider that a heads probability of 0.6 is closer to the actual true value. The probability value we computed here is the likelihood, and the expression derived above is the likelihood function.
+
+Summary:
+
+The conditional probability $P(x|θ)$ has two inputs: x denotes a specific piece of data; θ denotes the model parameters.
+
+- If θ is known and fixed and x is the variable, this function is called the probability function, and it describes how likely each different sample point x is to occur.
+
+- If x is known and fixed and θ is the variable, this function is called the likelihood function, and it describes, for different model parameters, how likely the sample point x is to occur.
+
+To make them easier to tell apart, we give the likelihood a new symbol:
+$$
+L(\theta|x)=P(x|\theta)
+$$
+The former is the likelihood, and the latter is the ordinary probability.
+
+> For a detailed article, see Wikipedia: https://zh.m.wikipedia.org/zh-hans/%E4%BC%BC%E7%84%B6%E5%87%BD%E6%95%B0
+
+### Maximum Likelihood Estimation
+
+Above we introduced the likelihood function, and the idea of maximum likelihood estimation is to find the maximum of the likelihood function; the $\theta$ corresponding to the maximum is the most likely value of $\theta$ to have caused event $x$ to occur.
+
+### Maximizing the Posterior Probability
+
+With the groundwork of the likelihood function and maximum likelihood estimation laid, we can return to Bayes' formula.
+
+From above we know:
+$$
+L(\theta|x)=P(x|\theta)
+$$
+Here $\theta$ is the model parameters, corresponding to the set of classes $C$ earlier; $x$ is the sample point, corresponding to the item to be classified $X$. So, similarly, we can obtain the following formula:
+$$
+L(y_i|X)=P(X|y_i)
+$$
+
+
+
+## IV. Bayesian Estimation
+
+**Smoothing:** When using the naive Bayes algorithm, it can happen that the number of samples under some feature in the sample dataset is 0. Then, because of the product, the entire $P(y_i|X)$ becomes 0, which is unreasonable, because we cannot conclude that an event has probability 0 just because it was not observed. So we apply Laplace smoothing to keep this phenomenon from affecting the whole sample.
+
+**Laplace smoothing:**
+$$
+P(x_i|y)=\frac{N_{yi}+\alpha}{N_y+n\alpha}
+$$
+where $N_{yi}$ is the number of samples in class y whose feature is $\alpha_i$, $N_y$ is the number of samples in all of class y, and $\alpha$ is the smoothing value, $\alpha∈[0,1]$. $n$ is the total number of features.
+
+An algorithm that uses Laplace smoothing is called Bayesian estimation.
+
+
+
+Deprecated section below
+
+### Likelihood Function
+
+The likelihood function and the probability function actually have a lot in common. Personally, I think the two are more like complements of each other; put another way, the two simply swap the independent variable and the dependent variable.
+
+We know the conditional probability $P(x|θ)$, where $\theta$ serves as the condition and $x$ is the result of the event. For example, suppose we have a fair coin and toss it three times, getting heads twice. Then $x$ is the outcome of two heads, and $\theta$ is the probability that a coin lands heads, which we can denote $p_H$. We can read $P(x|θ:p_H)$ as the probability of getting two heads in three tosses given that the coin lands heads with probability $p_H$. In this case, we know $\theta$ and want $x$. This is the most common meaning of probability. Now, is there a situation where we know $x$ but don't know $p_H$? In other words, suppose we have learned through some experiments that the probability of getting two heads in three tosses is 0.75 (not from a large number of trials; say we ran four experiments and three of them gave this result), but since this coin is not perfectly fair (in fact real coins are all like this), we don't know what $p_H$ is. But we can work out an expression from the properties of probability:
+$$
+P(x|p_H)=C_3^1×p_H^2×(1-p_H)
+$$
+When $p_H=0.5$ the result is 0.375; when $p_H=0.6$ the result is 0.432. Since the result we actually got from experiments is 0.75, and 0.432 is closer to this result, we can consider that a heads probability of 0.6 is closer to the actual true value. The probability value we computed here is the likelihood, and the expression derived above is the likelihood function.
+
+Summary:
+
+The conditional probability $P(x|θ)$ has two inputs: x denotes a specific piece of data; θ denotes the model parameters.
+
+- If θ is known and fixed and x is the variable, this function is called the probability function, and it describes how likely each different sample point x is to occur.
+
+- If x is known and fixed and θ is the variable, this function is called the likelihood function, and it describes, for different model parameters, how likely the sample point x is to occur.
+
+To make them easier to tell apart, we give the likelihood a new symbol:
+$$
+L(\theta|x)=P(x|\theta)
+$$
+The former is the likelihood, and the latter is the ordinary probability.
+
+> For a detailed article, see Wikipedia: https://zh.m.wikipedia.org/zh-hans/%E4%BC%BC%E7%84%B6%E5%87%BD%E6%95%B0
+
+### Maximum Likelihood Estimation
+
+Above we introduced the likelihood function, and the idea of maximum likelihood estimation is to find the maximum of the likelihood function; the $\theta$ corresponding to the maximum is the most likely value of $\theta$ to have caused event $x$ to occur.
+
+### Maximizing the Posterior Probability
+
+With the groundwork of the likelihood function and maximum likelihood estimation laid, we can return to Bayes' formula.
+
+From above we know:
+$$
+L(\theta|x)=P(x|\theta)
+$$
+Here $\theta$ is the model parameters, corresponding to the set of classes $C$ earlier; $x$ is the sample point, corresponding to the item to be classified $X$. So, similarly, we can obtain the following formula:
+$$
+L(y_i|X)=P(X|y_i)
+$$
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+## 一、朴素贝叶斯引入
+
+​		我们所处在的这个世界是充满概率的一个世界。甚至可以说，世界上所有事情的发生都是有一定概率的，并不存在绝对发生与绝对不发生。
+
+​		比如，你同桌他高考考得分数比你高，他未来工作薪资比你高只是一个可能性事件，在大部分人的认知里，“他未来工作薪资比你高”这个是个大概率事件；但是在我的认知里，绝不是这么一回事。没准他去了他梦想中的天坑专业出来工作都找不到，而你去了一个就业前景好的专业，那么之前那个结论他就不成立。
+
+​		再比如，我们进入大学后身边会存在很多“认真学习的人”，他们不仅像高中一样上早自习和晚自习，而且会将书上的例题和课后习题刷三遍。如果此时我们想根据你一个室友是否上早自习和晚自习、是否刷书上习题三遍这两个特点来推断他是否有保研名额，那么我们会先根据之前学长学姐的经验来判断。假设我们就有这么一个学长，他上早自习也上晚自习，但是只将书上的题刷一遍，最后取得了保研名额，那么此时你就会认为，你那位既上早自习也上晚自习又将书上的题刷三遍的室友很有可能能够保研。是“很有可能”，但并不是“一定”。如果此时我们还有另外一个学长，他上早自习也上晚自习，并且将书上的题刷三遍，但是他并没有保研，那么这时候你会对你室友能够保研的相信程度降低。如果按照决策树算法，你室友会被分类到不能保研一类。如果你使用支持向量机SVM算法，你室友还是有可能被分类到保研一类。但事实上，此时更能贴切描述你室友保研与否的并不是到底能不能保研这一个确定值，而是一个能够保研或者无法保研的一个概率值。这种概率的预测是无法用决策树或者SVM能够解决的，而我们今天要介绍的一个算法——朴素贝叶斯算法，是能够进行解决的。
+
+​		朴素贝叶斯算法所得到的结果并不是一个确定的值，是与否，而是一个概率：是的概率还是否的概率。
+
+## 二、朴素贝叶斯预备知识
+
+### 概念引入
+
+- **条件概率**：
+
+>生活中很多概率都是在某些特殊条件下的概率。比如你想知道你在家感染新冠的概率，这是取决于很多方面的，比如，政策有没有放开、是否位于高风险区等等。只有在这些条件的限制下，我们才能较为准确的求出你想知道的概率。
+
+在一个事件发生的条件下，发生另外一个事件的概率。事件A在事件B的条件下发生的概率写作$P(B|A)$。条件概率的计算公式如下：
+$$
+P(A|B)=\frac{P(AB)}{P(B)}
+$$
+韦恩图理解：
+
+ 
+
+> 上面A、B分别有两个椭圆，代表了他们的事件范围。我们想要求在B的条件下A发生的概率，那么直观上分母应该是P(B)，因为条件是事件B就相当于要以事件B作为基础；而由于事件B的限制，事件A中不属于B的部分应该被舍去，它们不在B的控制之下。所以也很容易理解，分子是A和B的和事件（交集）的概率。
+
+
+
+- **先验概率**：事件发生前预判的概率。即在事件发生前根据之前的经验判断事件发生的概率。对应的是上面公式的$P(A)$。
+
+
+
+- **后验概率**：事件发生后反向条件概率。即事件已经发生了，在事件发生的这个条件之下，发生某个事件的概率。对应的是上面公式的$P(B|A)$，即事件A已经发生后，反推事件B发生的概率。
+
+> 比如，我们知道成为新冠阳性密接者可能会导致自己变成阳性。我们可以求在成为密接的条件下自己变阳的概率，这就是条件概率。我们也可以在知道自己阳了之后求我们是密接的概率，这个就是后验概率，因为我们知道了结果反推原因。
+
+
+
+- **朴素**：在朴素贝叶斯中，“朴素”的意思是假设所有输入事件之间是相互独立的。在这样假设之后，独立事件间的概率会更加简单。
+
+### 乘法公式
+
+在上文我们知道条件概率的公式为：$P(A|B)=\frac{P(AB)}{P(B)}$。那如果我们此时知道P(B)和P(A|B)，相求P(AB)，可以通过移项转化成下列公式：
+$$
+P(A|B)P(B)=P(AB)
+$$
+同理，我们也可以得到：
+
+$$
+P(B|A)P(A)=P(AB)
+$$
+这两个公式我们称其为乘法公式。上面两个式子在实际计算中要根据问题灵活选择。
+
+我们也可以将其拓展到n个事件中：
+$$
+P(A_1A_2…A_n)=P(A_1)P(A_2|A_1)P(A_3|A_2A_1)…P(A_n|A_n…A_2A_1)
+$$
+
+> 我们可以这样理解：$P(A_1)$是假设A1正确，$P(A_2|A_1)$是假设A1正确的情况下A2正确，以此类推。由于生活中几乎所有事件都是条件概率，即在某种条件下发生的概率，而条件有可能层层嵌套，所以才有了乘法公式。
+
+### 全概率公式
+
+#### 有限划分
+
+基本概念：设$\Omega$为随机试验E的样本空间，B~1~，B~2~ ，…，B~n~为E的一组事件，若 
+
+(1) $Bi∩Bj =f ,i ≠ j$
+
+(2) $B_1∪B_2 ∪… ∪B_n=\Omega$
+
+则称B~1~，B~2~，…，B~n~ 为$\emptyset$的一个有限划分，或称完备事件组。
+
+> 注：样本空间的划分不唯一
+
+简单理解下，有限划分的意思就是，将一个样本空间切成许多小份。
+
+#### 全概率公式
+
+基本概念：设A为随机试验E的样本空间，B~1~，B~2~ ，…，B~n~为E的一个有限划分，且P(B~i~)＞0，则
+$$
+P(A)=\sum_{i-1}^nP(B_i)P(A|B_i)
+$$
+
+> 其实这就是乘法原理的加强版，将很多个乘法原理结合起来使用
+
+==总结一下，其实全概率公式就是加法公式，将不同条件下的概率利用加法结合起来；乘法原理就是乘法公式，当出现连环条件时利用乘法结合起来==
+
+### 贝叶斯公式
+
+#### 概念引入
+
+**先验概率**：事件发生前预判的概率。即在事件发生前根据之前的经验判断事件发生的概率。对应的是上面公式的$P(A)$。
+
+**后验概率**：事件发生后反向条件概率。即事件已经发生了，在事件发生的这个条件之下，发生某个事件的概率。对应的是上面公式的$P(A|B)$，即事件B已经发生后，事件A发生的概率。
+
+> 从我们日常生活中的理解不难发现，后验概率受到先验概率的影响很大。
+
+#### 贝叶斯公式
+
+设$\Omega$为随机试验E的样本空间，B~1~，B~2~ ，…，B~n~为E的一个有限划分，A$\subset\Omega$，且P(A)>0，P(B~i~)>0，则：
+$$
+P(B_i|A)=\frac{P(B_i)P(A|B_i)}{\sum_{j=1}^nP(B_j)P(A|B_j)}
+$$
+简单推导：
+$$
+P(B_i|A)=\frac{P(AB_i)}{P(A)}=\frac{P(B_i)P(A|B_i)}{\sum_{j=1}^nP(B_j)P(A|B_j)}
+$$
+分子分母分别使用乘法公式和全概率公式。
+
+> P(B|A)是后验概率，P(A|B)是先验概率。
+
+通过贝叶斯公式，我们可以在事件A发生后（即为条件）求发生事件B~i~的概率，其中事件B~i~是促使事件A发展的一部分。下面举一个十分经典的例子：
+
+假设一个病的发病率是0.0004（即2500人当中才有一个人得了这种病），现在有个可能得了该病的患者需要去医院进行检查。但是，医生检查并不会100%正确，多少会出现失误。已知该医院对该病患者判断没病的概率为1%，对没有该病患者判断有病的概率为0.1%。现在他通过检查发现得了该病，那请问他真正患病的概率有多少？
+
+我们假设A={人是患者}，B={人检验有病}
+
+通过对题目的分析，我们可以得到以下条件：
+
+$人群中得该病的概率为P(A)=0.0004,$
+
+$人群中未得该病的概率为P(\overline{A})=09996,$
+
+$人有病检验出来患病的概率为P(B|A)=0.99,$
+
+$人没有病检验出来患病的概率为P(B|\overline{A})=0.001$
+
+那么我们要求的检验有病，真正患病的概率为：
+$$
+P(A|B)=\frac{P(AB)}{P(B)}=\frac{0.0004×0.99}{0.0013956}=0.284
+$$
+这个概率是让人震惊的。医院给我检查出有病，但是我实际上只有四分之一左右的概率真正患病！
+
+那么这是为什么呢？我们具体化一下数字：
+
+假设现在有10000人。那么理论上不得病的人有9996人，而得病的只有4人。由于对正常人判断失误率为0.1%，那么约有10个没有得该病的人得了该病。而将患病的误判为没得病的概率为1%，4人中近似没有人会被判成没病。这样就很清楚了，因为没得病的人基数太高，所以哪怕误判的概率很低，相比于得病的人来说，其人数依然很高。
+
+## 二、朴素贝叶斯
+
+### 基础原理
+
+​		朴素贝叶斯，就是在“朴素”的假设下，使用贝叶斯公式。前文也提到，朴素贝叶斯就是假设各个事件（属性）相互独立的情况下使用贝叶斯公式。
+
+> 为什么要假设特征之间相互独立呢？原因其实也很简单，因为如果特征之间不相互独立，那么每一个特征其实并不能单独作为一个独立的特征参与计算，而是要考虑到排列组合，特征A在特征B影响下是一种情况，特征A在特征C影响下是另外一种情况，特征A在特征B和特征C影响下又是一种情况······如果有5个特征，每个特征有10个特征值，那么此时可能的情况就要10的5次方种
+
+​		在开头的例子中我也提到，生活中很多事情无法判断一个“绝对”，但是为了能分类，我们会通过其概率值来进行判断。
+
+​		假设现在我们有一个待分类项$X$，这个待分类项有很多的特征$\alpha_1,\alpha_2,\alpha_3,…,\alpha_n$，且这些特征之间相互独立互不影响。我们现在还有一个类别集合$C$，集合$C$中的类别包括$y_1,y_2,y_3,…,y_n$。
+
+​		对于每一个$P(y_i|\alpha_i)$，表示的意思是在特征$\alpha_i$的条件下，$y_i$类别的发生概率。比如前文提到的，在特征“既上早自习又上晚自习”的条件下，“能够保研”类别的发生概率。如果这个概率比较大，这个待分类项被分类到$y_i$的概率也就越大。
+
+​		但是，由于类别有很多，只通过一个$P(y_i|\alpha_i)$就判断是否能分到这个类中是不合理的。我们还需要去观察观察别的类别。通过比较$P(y_1|\alpha_i)$、$P(y_2|\alpha_i)$、$P(y_3|\alpha_i)$、······、$P(y_n|\alpha_i)$的大小，我们找到最大的概率$P(y_k|\alpha_i)$，说明在$\alpha_i$特征条件下，应该被分到$y_k$类。
+
+​		但是，由于分到哪一个类别中不能仅仅看一个特征$\alpha_i$，因为是由待分类项是由多个特征构成的，当我们比较$P(y_i|X)$的大小时才更加合理。这就引出了一个问题，我们可以求出$P(y_i|\alpha_i)$的概率，因为这是样本数据集中的概率决定的，如何求$P(y_i|X)$的概率呢？
+
+​		这时候就要利用到我们上文所说的贝叶斯公式。根据贝叶斯公式，
+$$
+P(y_i|X)=\frac{P(X|y_i)P(y_i)}{P(X)}
+$$
+其中$X$是待分类项，$P(X)$指的是各特征出现的概率，在特征不变的情况下，可以看做常数，所以$P(y_i|X)正比于P(X|y_i)P(y_i)$。其中，
+$$
+P(X|y_i)=P(\alpha_1,\alpha_2,\alpha_3,…,\alpha_n|y_i)=P(\alpha_1|y_i)P(\alpha_2|y_i)P(\alpha_3|y_i)···P(\alpha_n|y_i)
+$$
+这是由于之前的假设，各个特征之间相互独立而决定的。到这一步，我们也不难发现，其实贝叶斯公式最大的作用就是，==将位于条件位置上的X转换到非条件位置上，这样就可以利用事件独立性原理进行展开==。这样我们就可以求出$P(X|y_i)P(y_i)$。最后我们只需要比较其大小即可。
+
+​		所以我们可以定义朴素贝叶斯函数$classify(X)$，
+
+$$
+classify(X)=argmaxP(y_i)P(\alpha_1|y_i)P(\alpha_2|y_i)P(\alpha_3|y_i)···P(\alpha_n|y_i)
+$$
+即
+
+$$
+classify(X)=argmaxP(y_i)\prod_{k=1}^{n}{P(\alpha_k|y_i)}
+$$
+argmax函数就是在所有的当中选取最大的。
+
+
+
+下面我们来总结一下朴素贝叶斯算法：
+
+- 设$X\{\alpha_1,\alpha_2,\alpha_3,…,\alpha_n\}$为一个待分类项，每个$\alpha_i$为$x$的一个特征属性，且属性之间相互独立。设$C\{y_1,y_2,y_3,…,y_n\}$为一个待分类集合
+- 通过公式$P(y_i)\prod_{k=1}^{n}{P(\alpha_k|y_i)}$计算$P(y_1|X)、P(y_2|X)、···、P(y_n|X)$
+- 求出最大的$P(y_k|X)$，对应的$y_k$类即为待分类项$X$应该分得的类
+
+## 三、极大似然估计
+
+### 似然函数
+
+似然函数和概率函数其实有很多的相似之处。个人觉得，这两者更像是一种互相弥补的关系，换一种说法就是，两者就是将自变量和因变量进行了交换。
+
+我们知道条件概率：$P(x|θ)$，其中$\theta$是作为条件，而$x$是作为事件发生的结果。比如现在有一枚均匀的硬币，我们将其投掷三次，有两次正面向上。那么$x$就是两次正面向上的结果，而$\theta$就是一块硬币正面向上的概率，我们可以记作$p_H$。我们可以将$P(x|θ:p_H)$理解成在一块硬币正面向上为$p_H$的条件下，投掷三次硬币两次正面向上的概率。这种情况下，我们已知$\theta$，要求$x$。这是我们最常见的概率的含义。那么有没有一种情况就是，我们已知$x$，但是不知道$p_H$，换句话来说，我们现在通过一些试验，能够知道投掷三次两次正面向上的概率为0.75（不是大量试验，比如做了四次试验三次是这个结果），但是由于这块硬币不是绝对均匀的（事实上真实的硬币也是如此），所以我们不知道$p_H$是多少。但是我们可以根据概率的性质计算出表达式：
+$$
+P(x|p_H)=C_3^1×p_H^2×(1-p_H)
+$$
+当$p_H=0.5$时，结果是0.375；当$p_H=0.6$时，结果是0.432。由于我们实际做实验得到的结果是0.75，而0.432与这个结果更为接近，我们可以认为正面向上的概率为0.6的时候更加接近实际的正确值。而我们求出的这个概率值就是似然概率，上面求出的表达式就是似然函数。
+
+总结：
+
+条件概率$P(x|θ)$的输入有两个：x表示某一个具体的数据；θ表示模型的参数。
+
+- 如果θ是已知确定的，x是变量，这个函数叫做概率函数(probability function)，它描述对于不同的样本点x，其出现概率是多少。
+
+- 如果x是已知确定的，θ是变量，这个函数叫做似然函数(likelihood function), 它描述对于不同的模型参数，出现x这个样本点的概率是多少。
+
+为了方便区分，我们重新给似然概率一个符号：
+$$
+L(\theta|x)=P(x|\theta)
+$$
+前者是似然概率，后者就是普通的概率。
+
+> 详细文章参考维基百科：https://zh.m.wikipedia.org/zh-hans/%E4%BC%BC%E7%84%B6%E5%87%BD%E6%95%B0
+
+### 最大似然估计
+
+​		前文我们介绍了似然函数，而最大似然估计的思想就是，对似然函数求最大值，求出最大值对应的$\theta$就是导致事件$x$发生的最有可能的$\theta$值。
+
+### 后验概率最大化
+
+​		有了似然函数和最大似然估计的铺垫，我们就可以重新回到贝叶斯公式。
+
+上文我们已知：
+$$
+L(\theta|x)=P(x|\theta)
+$$
+​		其中$\theta$是模型参数，相当于前文的类别集合$C$；$x$是样本点，相当于待分类项$X$，所以类似的我们也可以得到下面这个式子：
+$$
+L(y_i|X)=P(X|y_i)
+$$
+
+
+​		
+
+## 四、贝叶斯估计
+
+**平滑处理：**使用朴素贝叶斯算法的时候，有可能数据集样本库中某个特征下的样本为0，那么由于连乘，整个$P(y_i|X)$都是0，这是不合理的。因为我们不能因为一个事件没有被观察到就确认该事件发生概率为0。所以我们要进行拉普拉斯平滑处理，以避免这种现象对整个样本造成影响。
+
+**拉普拉斯平滑处理：**
+$$
+P(x_i|y)=\frac{N_{yi}+\alpha}{N_y+n\alpha}
+$$
+其中，$N_{yi}$表示类y所有样本中特征为$\alpha_i$的样本的数量，$N_y$表示所有类y中样本的数量，$\alpha$是平滑值，$\alpha∈[0,1]$。$n$表示特征总数。
+
+使用拉普拉斯平滑处理的算法称为贝叶斯估计。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+下面废弃部分
+
+### 似然函数
+
+似然函数和概率函数其实有很多的相似之处。个人觉得，这两者更像是一种互相弥补的关系，换一种说法就是，两者就是将自变量和因变量进行了交换。
+
+我们知道条件概率：$P(x|θ)$，其中$\theta$是作为条件，而$x$是作为事件发生的结果。比如现在有一枚均匀的硬币，我们将其投掷三次，有两次正面向上。那么$x$就是两次正面向上的结果，而$\theta$就是一块硬币正面向上的概率，我们可以记作$p_H$。我们可以将$P(x|θ:p_H)$理解成在一块硬币正面向上为$p_H$的条件下，投掷三次硬币两次正面向上的概率。这种情况下，我们已知$\theta$，要求$x$。这是我们最常见的概率的含义。那么有没有一种情况就是，我们已知$x$，但是不知道$p_H$，换句话来说，我们现在通过一些试验，能够知道投掷三次两次正面向上的概率为0.75（不是大量试验，比如做了四次试验三次是这个结果），但是由于这块硬币不是绝对均匀的（事实上真实的硬币也是如此），所以我们不知道$p_H$是多少。但是我们可以根据概率的性质计算出表达式：
+$$
+P(x|p_H)=C_3^1×p_H^2×(1-p_H)
+$$
+当$p_H=0.5$时，结果是0.375；当$p_H=0.6$时，结果是0.432。由于我们实际做实验得到的结果是0.75，而0.432与这个结果更为接近，我们可以认为正面向上的概率为0.6的时候更加接近实际的正确值。而我们求出的这个概率值就是似然概率，上面求出的表达式就是似然函数。
+
+总结：
+
+条件概率$P(x|θ)$的输入有两个：x表示某一个具体的数据；θ表示模型的参数。
+
+- 如果θ是已知确定的，x是变量，这个函数叫做概率函数(probability function)，它描述对于不同的样本点x，其出现概率是多少。
+
+- 如果x是已知确定的，θ是变量，这个函数叫做似然函数(likelihood function), 它描述对于不同的模型参数，出现x这个样本点的概率是多少。
+
+为了方便区分，我们重新给似然概率一个符号：
+$$
+L(\theta|x)=P(x|\theta)
+$$
+前者是似然概率，后者就是普通的概率。
+
+> 详细文章参考维基百科：https://zh.m.wikipedia.org/zh-hans/%E4%BC%BC%E7%84%B6%E5%87%BD%E6%95%B0
+
+### 最大似然估计
+
+​		前文我们介绍了似然函数，而最大似然估计的思想就是，对似然函数求最大值，求出最大值对应的$\theta$就是导致事件$x$发生的最有可能的$\theta$值。
+
+### 后验概率最大化
+
+​		有了似然函数和最大似然估计的铺垫，我们就可以重新回到贝叶斯公式。
+
+上文我们已知：
+$$
+L(\theta|x)=P(x|\theta)
+$$
+​		其中$\theta$是模型参数，相当于前文的类别集合$C$；$x$是样本点，相当于待分类项$X$，所以类似的我们也可以得到下面这个式子：
+$$
+L(y_i|X)=P(X|y_i)
+$$
+
+
+​		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

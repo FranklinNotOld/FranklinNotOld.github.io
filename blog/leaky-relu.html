@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leaky ReLU · Yongkang Li</title>
+<meta name="description" content="The Leaky ReLU activation function was introduced to address the &quot;dead ReLU&quot; problem, where neurons die due to the gradient being zero for x &lt; 0 in th…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Deep Learning from Zero to Kang</span><span data-l="cn">Deep Learning from Zero to Kang</span></span><i>/</i><span><span data-l="en">Activation functions</span><span data-l="cn">激活函数</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Leaky ReLU</span><span data-l="cn">Leaky ReLU 激活函数</span></h1>
+    <div class="meta"><span data-l="en">1 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="relu.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">ReLU</span><span data-l="cn">ReLU 激活函数</span></span></a><a class="pn glass" href="prelu.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">PReLU</span><span data-l="cn">PReLU 激活函数</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+
+The Leaky ReLU activation function was introduced to address the "dead ReLU" problem, where neurons die due to the gradient being zero for $x < 0$ in the ReLU function, preventing parameter updates. Leaky ReLU resolves this by replacing the $x < 0$ part with a small slope linear function.
+
+### Function Expression
+
+$$
+f(x) = \max(\alpha x, x), \text{ where } \alpha << 1
+$$
+
+For $x < 0$, the function value is $f(x) = \alpha x$, such as $f(x) = 0.001x$; for $x > 0$, the function value is $f(x) = x$.
+
+### Function Graph
+
+![Leaky ReLU Graph](media/leaky-relu/1.png)
+
+### Function Characteristics
+
+While Leaky ReLU is an optimization over ReLU, its overall performance in experiments is comparable to or slightly worse than ReLU, particularly when ReLU is well-tuned. If the data is predominantly positive or normalized to (0, 1), Leaky ReLU may not offer significant advantages.
+
+#### Advantages:
+
+- Mitigates the dead ReLU problem to some extent, as the small slope $\alpha$ allows for gradient updates even for $x < 0$.
+
+#### Disadvantages:
+
+- Resembles a linear function, hence it might not perform well for complex classifications.
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+Leaky ReLU激活函数是为了解决ReLU激活函数会出现的dead relu神经元死亡的现象，而这一现象的根本原因是ReLU函数在$x<0$的范围内梯度恒为0，无法更新参数。所以Leaky ReLU将$x<0$的部分换成一个斜率很小的一个线性函数来解决这一问题。
+
+### 函数表达式
+
+$$
+f(x)=max\{\alpha x,x\},其中\alpha<<1
+$$
+
+当$x<0$时，函数值为$f(x)=\alpha x$，比如像$f(x)=0.001x$；当$x>0$时，函数值为$f(x)=x$
+
+### 函数图像
+
+![QQ图片20221224190237](media/leaky-relu/1.png)
+
+### 函数特性
+
+虽然其是ReLU的优化，但是实验中其整体效果不如ReLU（或者说不相上下，但是在ReLU调参合理的情况下，Leaky ReLU优势很弱）。如果数据处理后绝大部分为正数或者归一化到(0,1)，则无需使用Leaky ReLU。
+
+#### 优点：
+
+- 可以在一定程度上解决ReLU出现的dead ReLU问题，虽然斜率$\alpha$的值很小，但是依然存在梯度可以更新
+
+
+
+#### 缺点：
+
+- 由于该函数很像一个线性函数，所以其对复杂分类的效果不是很好
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Knowledge Distillation · Yongkang Li</title>
+<meta name="description" content="The original motivation for knowledge distillation is to make a large model &quot;lightweight&quot;, because large models are inconvenient in every respect: tra…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Deep learning fundamentals</span><span data-l="cn">深度学习基础</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Knowledge Distillation</span><span data-l="cn">知识蒸馏</span></h1>
+    <div class="meta"><span data-l="en">6 min read</span><span data-l="cn">约 4 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="dl-output-units-notes.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Understanding Output Units</span><span data-l="cn">理解输出单元</span></span></a><a class="pn glass" href="dl-distillation-code.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Knowledge Distillation in PyTorch</span><span data-l="cn">知识蒸馏的 PyTorch 实现</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+### Background
+
+The original motivation for knowledge distillation is to make a large model "lightweight", because large models are inconvenient in every respect: training cost, efficiency in actual use, and deployment on mobile devices. Think of the poor memory on your phone, which QQ and WeChat eat into a little more every month. If every one of those apps had a 4 or 5 GB installer (games excepted), your phone would surely need a big memory cleanup, or a replacement, within a few months (retailers rejoice); whereas if an app were only 1 or 2 GB, your phone could hold 3 or 4 times as much software.
+
+So why not just use a lightweight model directly?
+
+Generally speaking, a lightweight model has fewer parameters; although its speed improves, its detection accuracy drops considerably and may well fall short of what real applications require. This leaves us in a dilemma: neither the large model nor the small model can be deployed. So can we use the large model to "pass on" its powerful abilities to the small model? We can draw an analogy with a teacher and a student: the teacher has a lot of knowledge while the student has very little, and the teacher can distill what they know and pass it on to the student, which greatly reduces the student's cost of learning.
+
+By analogy, we can let the large model (the **teacher model**) "pass on" (**distill**) what it has learned (the **knowledge**) to the small model (the **student model**). It turns out that this lets the small model achieve better results.
+
+
+
+### Prerequisites
+
+##### 1. The Softmax Function
+
+The softmax function is usually used for multiclass classification and as a normalization function. Its formula is:
+$$
+softmax(x)=\frac{e^{x_i}}{\sum_{i=1} e^{x_i}}
+$$
+The softmax function has some key properties:
+
+- The outputs of softmax are all greater than 0 and sum to 1, so they **form a probability distribution**. This is easy to understand: the denominator is a sum, so adding up all the numerators gives the denominator
+- **It magnifies the differences in size.** This is caused by the exponential function $e^x$: according to the graph of the exponential function, the larger the independent variable $x$, the faster the dependent variable $y$ grows. See the following example
+
+| x          | 1     | 2     | 3     | 4     |
+| ---------- | ----- | ----- | ----- | ----- |
+| softmax(x) | 0.032 | 0.087 | 0.237 | 0.644 |
+
+This raises a further question: is there a way to make the gaps between the numbers less extreme? Here we use a hyperparameter, the **temperature T**, to control the gap. The formula is:
+$$
+softmax(x,T)=\frac{e^\frac {x_i}t}{\sum_{i=1} e^\frac {x_i}t}
+$$
+Continuing with the previous example, let's set T=0.5, 1, 2, 4 and observe how the numbers change.
+
+| T\x  | 1     | 2     | 3     | 4     |
+| ---- | ----- | ----- | ----- | ----- |
+| 0.5  | 0.002 | 0.016 | 0.117 | 0.865 |
+| 1    | 0.032 | 0.087 | 0.237 | 0.644 |
+| 2    | 0.101 | 0.167 | 0.276 | 0.455 |
+| 4    | 0.165 | 0.212 | 0.272 | 0.350 |
+
+We can see that as $T$ increases, the gaps between different classes get smaller (more attention is paid to the negative labels, i.e., the incorrect labels), but the ordering does not change. The figure below is another plot of the softmax values against temperature.
+
+![image-20230704103509816](media/dl-distillation/笔记用图片-image-20230704103509816.png)
+
+##### 2. The log_softmax Function
+
+The log_softmax function simply feeds the output values of softmax into the logarithm function
+$$
+log(softmax(x))
+$$
+
+##### 3. The NLLloss Function
+
+NLLloss measures the gap between the two. Its formula is:
+$$
+NLLloss(p,q)=-\sum_{i=1} q_ilogp_i
+$$
+The larger the gap between the two, the larger the final value
+
+##### 4. The CrossEntropy Function
+
+The CrossEntropy function, also called the cross-entropy loss function, actually has the same formula as the NLL loss, but the concrete meanings of $p、q$ differ: here $p、q$ have to go through log_softmax [in PyTorch]
+
+»» Difference between NLLloss and CrossEntropy
+
+```python
+#NLLloss
+def forward()
+	x=self.fc2(x)
+	x=F.log_softmax(x,dim=1)
+return x
+
+F.nll_loss()
+
+#CrossEntropy
+def forward()
+	x=self.fc2(x)
+return x
+
+F.cross_entropy()
+```
+
+### Knowledge Distillation in Detail
+
+![image-20230704100831973](media/dl-distillation/笔记用图片-image-20230704100831973.png)
+
+The figure above helps a lot in understanding knowledge distillation. Look first at the student model. Normally, training a model uses the cross-entropy loss, i.e., $Loss_{HARD}(p,q)$. For example, suppose the model outputs a triple $q=(0.4,0.2,0.4)$ while the target triple is $p=(1,0,0)$ (which we call the hard label), then the cross-entropy loss between the two is computed, followed by gradient descent and backpropagation. The same holds for the teacher model: after passing through the model, it outputs a triple $q'$.
+
+> This way of encoding hard labels is also called "one-hot" encoding
+
+The distillation part is that the $q'$ obtained from the teacher model goes through distillation to give $q''$ (which we call the soft label), and this distillation process uses the temperature $T$ described above. Then the cross-entropy loss is also applied between $q''$ and $q$, namely $Loss_{SOFT}(q,q'')$, and finally the total loss is $\alpha Loss_{HARD}(p,q)+\beta Loss_{SOFT}(q,q'')$
+
+> Here, instead of the cross-entropy loss $Loss_{SOFT}(q,q'')$, one can use the KL divergence loss, which measures how well two probability distributions match.
+
+Let me say a bit more about soft labels. Unlike hard labels, which only contain yes/no information, soft labels contain more information. For example, suppose the triple is defined as $(\text{cat},\text{dog},\text{duck})$; then the hard label $(1,0,0)$ can only say that the object is a cat, whereas the soft label $(0.6,0.3,0.1)$ can say that the object is a cat and, at the same time, that it also looks a lot like a cat and not much like a duck.
+
+**Question 1: Why not just train a new model from scratch?**
+
+> The teacher model can help the student model converge better, without the student having to converge from the data all over again, and the information provided by the teacher model is more effective than the original dataset
+
+**Question 2: Why distill the output of the final step?**
+
+> In fact, the intermediate layers of the student model can also learn from the outputs of the intermediate layers of the teacher model, making the student's intermediate outputs fit the teacher's intermediate outputs, as shown in the figure below. It is like a professor teaching a baby: if it cannot be learned all at once, then learn it piece by piece.
+
+![image-20230704152707544](media/dl-distillation/笔记用图片-image-20230704152707544.png)
+
+**Question 3: In theory, with other conditions held fixed, the more parameters a model has the better it performs, so why does the model still perform well after knowledge distillation?**
+
+> In fact, the rough relationship between the number of parameters of many models and the total amount of "knowledge" they contain is shown in panels ② and ③ of the figure below. It is not hard to see that even when the total number of parameters is reduced slightly, the amount of "knowledge" does not drop much, and the model can still achieve good results.
+
+<img src="media/dl-distillation/笔记用图片-image-20230704153216605.png" alt="image-20230704153216605" style="zoom:67%;" />
+
+
+
+### Advantages of Knowledge Distillation
+
+**(1) Reduces overfitting and generalizes very well**
+
+This is a figure from the paper that originally proposed knowledge distillation. We can see that soft targets reduce overfitting well (compared with the baseline, training accuracy is lower, but test accuracy is actually higher)
+
+![image-20230704104835605](media/dl-distillation/笔记用图片-image-20230704104835605.png)
+
+**(2) Makes the model more lightweight, faster and more efficient, and easier to deploy on mobile devices**
+
+**(3) Can improve model performance in some cases**
+
+
+
+### Directions for Knowledge Distillation
+
+(1) Teaching and learning reinforce each other: the student model helps the teacher model. My own understanding is that the student model can learn some areas the teacher does not know about, and thereby improve the teacher's abilities
+
+(2) Knowledge distillation with multiple teachers and teaching assistants
+
+(3) Combining with contrastive learning and transfer learning
+
+(4) Distilling knowledge between intermediate layers of the networks, not just from the final output
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+### 背景引入
+
+​        知识蒸馏最初的动机就是，想要将一个大模型“轻量化”，因为大模型无论是训练成本还是实际投入使用效率亦或是部署在移动端都十分不便。试想你手机里可怜的内存，每个月都会被QQ微信侵蚀一些，如果那些APP每个下载安装包都要4、5个G（游戏除外），想必手机用不了几个月就需要大清一次内存或者更换了（商家狂喜），而如果APP只有1、2G，你手机里就能多容纳3、4倍的软件。
+
+​		那么为什么不直接使用轻量化的模型呢？
+
+​		一般而言，轻量化的模型参数更少，其速率虽然提高，但是检测精度会大大降低，很可能不符合实际应用的标准。这就陷入了一个两难的问题，大模型小模型都部署不了。那么是否可以用大模型向小模型“传授”其强大的能力。对此，我们可以类比老师与学生，老师拥有大量知识，而学生只拥有很少量的知识，老师可以将其知识通过自己的提炼传授给学生，这样学生可以大大降低学习的成本。
+
+​		类比于此，我们可以让大模型（**教师模型**）学习到的内容（**知识**）“传授”（**蒸馏**）给小模型（**学生模型**）。事实证明，这样能使小模型达到更好的效果。
+
+
+
+### 前置知识
+
+##### 1、Softmax函数
+
+softmax函数通常作为多分类以及归一化函数使用，其公式如下：
+$$
+softmax(x)=\frac{e^{x_i}}{\sum_{i=1} e^{x_i}}
+$$
+softmax函数有些重点的特点：
+
+- 所有经过softmax输出数值总和为1且大于0，这**满足一个概率分布**。这点很好理解，因为分母是个求和，所有分式分子加起来就会得到分母
+- **扩大化大小差距**。这是由指数函数$e^x$造成的，根据指数函数图像，自变量值$x$越大，其因变量$y$值增长的越快。可以看下面这个例子
+
+| x          | 1     | 2     | 3     | 4     |
+| ---------- | ----- | ----- | ----- | ----- |
+| softmax(x) | 0.032 | 0.087 | 0.237 | 0.644 |
+
+这就进一步带来一个问题，是否可以通过一个方法，使数之间差距没有那么大呢？这里我们使用了一个超参数**温度T**，来控制差距，公式如下：
+$$
+softmax(x,T)=\frac{e^\frac {x_i}t}{\sum_{i=1} e^\frac {x_i}t}
+$$
+然后接着之前的例子，我们令T=0.5,1,2,4时，观察数据的变化。
+
+| T\x  | 1     | 2     | 3     | 4     |
+| ---- | ----- | ----- | ----- | ----- |
+| 0.5  | 0.002 | 0.016 | 0.117 | 0.865 |
+| 1    | 0.032 | 0.087 | 0.237 | 0.644 |
+| 2    | 0.101 | 0.167 | 0.276 | 0.455 |
+| 4    | 0.165 | 0.212 | 0.272 | 0.350 |
+
+可以发现随着$T$的增大，不同类别之间的差距值越小（对负标签，即非正确标签关注度更高），但是大小关系并不改变。下图是另一个softmax值与温度的关系图。
+
+![image-20230704103509816](media/dl-distillation/笔记用图片-image-20230704103509816.png)
+
+##### 2、log_softmax函数
+
+log_softmax函数就是将softmax得到的输出值作为对数函数的输入值
+$$
+log(softmax(x))
+$$
+
+##### 3、NLLloss函数
+
+NLLloss是衡量两者之间的差距，公式如下：
+$$
+NLLloss(p,q)=-\sum_{i=1} q_ilogp_i
+$$
+如果两者差距越大则最后值越大
+
+##### 4、CrossEntropy函数
+
+CrossEntropy函数又称交叉熵损失函数，其实公式表现形式和NLL损失函数一致，但是$p、q$具体含义不同，这里的$p、q$是要经过log_softmax的【在pytorch中】
+
+》》NLLloss与CrossEntropy区别
+
+```python
+#NLLloss
+def forward()
+	x=self.fc2(x)
+	x=F.log_softmax(x,dim=1)
+return x
+
+F.nll_loss()
+
+#CrossEntropy
+def forward()
+	x=self.fc2(x)
+return x
+
+F.cross_entropy()
+```
+
+### 知识蒸馏具体内容
+
+![image-20230704100831973](media/dl-distillation/笔记用图片-image-20230704100831973.png)
+
+​		上面的一幅图可以很好的帮助理解知识蒸馏。首先看学生模型，正常情况下训练模型会使用交叉熵损失函数，即$Loss_{HARD}(p,q)$，比如现在模型输出了一个$q=(0.4,0.2,0.4)$三元组，而目标三元组是$p=(1,0,0)$（我们称之为硬标签Hard Label），那么就会计算两者的交叉熵损失，再进行梯度下降和反向传播。教师模型也是如此，进过模型会输出一个$q'$的三元组。
+
+> 这种硬标签的编码方式也被称为“one-hot”编码
+
+​		而蒸馏的部分在于，从教师模型得到的$q'$会经过蒸馏得到$q''$（我们称之为软标签Soft Label），这个蒸馏过程就是用上述所讲的温度$T$。然后再$q''$和$q$之间也使用交叉熵损失函数$Loss_{SOFT}(q,q'')$，最后总的损失函数就是$\alpha Loss_{HARD}(p,q)+\beta Loss_{SOFT}(q,q'')$
+
+> 在此处可以不使用交叉熵损失函数$Loss_{SOFT}(q,q'')$，而是使用衡量两个概率分布匹配程度的KL散度损失。
+
+​		这里对软标签多解释一些。软标签并不像硬标签，硬标签只包含是与否的信息，而软标签会包含更多的信息。比如现在三元组定义为$(猫猫,狗狗,鸭鸭)$，那么硬标签$(1,0,0)$只能表示这个对象是猫猫，而软标签$(0.6,0.3,0.1)$可以表示这个对象是只猫的同时，他也十分像猫，而不太像鸭。
+
+**问题1：为什么不重新训练一个新的模型？**
+
+> 教师模型可以帮助学生模型更好地收敛，而不需要学生模型重新根据数据进行收敛，而且教师模型提供的信息比原数据集更加有效
+
+**问题2：为什么要对于最后一步输出结果进行蒸馏？**
+
+> 实际上，学生模型的中间网络层也可以学习教师模型的中间网络层输出结果，让学生模型的中间网络输出结果拟合教师模型的中间网络输出结果，如下图所示。这就好比一个教授教授一个婴儿，一下学不会那就分开学。
+
+![image-20230704152707544](media/dl-distillation/笔记用图片-image-20230704152707544.png)
+
+**问题3：理论上来说，控制其它条件，模型参数量越大效果越好，那么为什么知识蒸馏后的模型效果还依旧很好呢？**
+
+> 其实很多模型的模型参数量与其包含的“知识”总量的大致关系如下图②③，不难发现，即使模型参数总量有少量的降低，“知识”量并不会降低多少，依然能达到很好的效果。
+
+<img src="media/dl-distillation/笔记用图片-image-20230704153216605.png" alt="image-20230704153216605" style="zoom:67%;" />
+
+
+
+### 知识蒸馏的优点
+
+**（1）减少过拟合，泛化能力很强**
+
+这是当年知识蒸馏提出论文中的一张，可以发现soft targets可以很好地减少过拟合（相比于baseline训练准确度降低，但是测试准确度反而提高）
+
+![image-20230704104835605](media/dl-distillation/笔记用图片-image-20230704104835605.png)
+
+**（2）使模型更加轻量化，速度、效率提高，更容易部署在移动端之上**
+
+**（3）一些情况下可以提升模型的效果**
+
+
+
+### 知识蒸馏发展方向
+
+（1）教学相长，学生模型帮助老师模型，个人理解为学生模型可以学一些老师不知道的领域然后从而提升老师的能力
+
+（2）多个老师、助教进行知识蒸馏
+
+（3）结合对比学习、迁移学习
+
+（4）网络中间层之间进行知识蒸馏，而不仅仅是最后结果进行知识蒸馏
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

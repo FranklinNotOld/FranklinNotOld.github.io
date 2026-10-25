@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GoogLeNet · Yongkang Li</title>
+<meta name="description" content="GoogleNet won the ImageNet competition in 2014, bringing the Inception architecture into the spotlight. From another perspective, it inspired and adva…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Deep Learning from Zero to Kang</span><span data-l="cn">Deep Learning from Zero to Kang</span></span><i>/</i><span><span data-l="en">Vision backbones</span><span data-l="cn">视觉骨干网络</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">GoogLeNet</span><span data-l="cn">GoogLeNet</span></h1>
+    <div class="meta"><span data-l="en">7 min read</span><span data-l="cn">约 7 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="vgg.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">VGG</span><span data-l="cn">VGG</span></span></a><a class="pn glass" href="sinusoidal-position-embeds.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Sinusoidal Position Embeddings</span><span data-l="cn">正弦位置编码</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+
+GoogleNet won the ImageNet competition in 2014, bringing the Inception architecture into the spotlight. From another perspective, it inspired and advanced various network architecture modifications in computer vision, expanding the possibilities for innovative approaches. GoogleNet is essentially a large-scale integration of the Inception architecture, but the evolution of Inception goes far beyond that.
+
+This article will detail the history of this development, starting from Inception v1 (GoogleNet) [1] to BN-Inception [2], Inception v2 [3], Inception v3 [3], up to Inception v4 [4], and the derived Xception [5].
+
+### Inception v1
+
+![1](media/googlenet/1.png)
+
+On the left side of the image is Inception v1, the network that uses 1×1 convolutions to reduce the parameter count, known as GoogleNet. In Inception v1, convolutions of different kernel sizes are used to process the data. Intuitively, using convolutions of different sizes allows the network to learn image features from different perspectives and scales.
+
+The diagram below illustrates GoogleNet's architecture in detail. Specifically, Inception is a type of specialized modular structure, and GoogleNet is composed of various Inception modules. Each Inception module uses 1x1 convolutions for dimensionality reduction (specifically, reducing the channel dimension).
+
+![image-20240507170137085](media/googlenet/2.png)
+
+Additionally, to address the issue of vanishing gradients in deep networks, two auxiliary loss functions were used during training, as shown in the image. If the image is not clear enough, the original paper also provides a more comprehensive model architecture diagram (which is quite extensive).
+
+![3](media/googlenet/3.png)
+
+### BN-Inception
+
+As the name suggests, this architecture introduces Batch Normalization (BN) into the Inception structure. The concept of Batch Normalization is quite simple—it involves normalizing each batch. Specifically, we calculate the mean and variance of all the data in each batch:
+
+$$
+\mu = \frac{1}{N} \sum_{i=1}^{N} x_i, \quad \sigma^2 = \frac{1}{N} \sum_{i=1}^{N} (x_i - \mu)^2
+$$
+
+This is akin to assuming all data follow the same normal distribution \( \mathcal{N}(\mu, \sigma) \), and normalization transforms all data into the standard normal distribution \( \mathcal{N}(0, 1) \). The formula is as follows:
+
+$$
+x_i'' = \frac{x_i - \mu}{\sqrt{\sigma^2 + \epsilon}}
+$$
+
+Here, \( \epsilon \) is used to prevent the variance from becoming zero or too small.
+
+### Inception v2
+
+In the VGG blog post, we mentioned that breaking down a 5×5 convolution into two 3×3 convolutions can significantly improve the efficiency of the convolution operation.
+
+<img src="media/googlenet/4.png" alt="image-20240507174704849" style="zoom:50%;" />
+
+The image above shows the original Inception architecture. By replacing the 5×5 convolution with two 3×3 convolutions, it becomes the structure in the image below [figure 5]:
+
+<img src="media/googlenet/5.png" alt="image-20240507175046217" style="zoom:50%;" />
+
+In fact, a 3×3 convolution can be further decomposed into a sequence of 1×3 and 3×1 convolutions, resulting in the following structure [figure 6]:
+
+<img src="media/googlenet/6.png" alt="image-20240507175736725" style="zoom:50%;" />
+
+Additionally, a 3×3 convolution can be decomposed into parallel 1×3 and 3×1 convolutions, leading to the structure below [figure 7]:
+
+<img src="media/googlenet/7.png" alt="image-20240507180026001" style="zoom:50%;" />
+
+The structures in [figures 5-7] represent the main components of Inception v2. The specific structure is shown in the table below:
+
+<img src="media/googlenet/8.png" alt="image-20240507181256624" style="zoom:50%;" />
+
+### Inception v3
+
+Inception v3's convolutional structure is similar to Inception v2, but includes several additional optimizations.
+
+##### 1-RMSProp
+
+RMSProp (Root Mean Square Propagation) is an optimization method commonly used for gradient descent in deep learning. It aims to adjust each parameter's learning rate dynamically to accelerate optimization and improve training stability. RMSProp was first introduced by Geoffrey Hinton. In traditional gradient descent, each parameter has a fixed learning rate, but in RMSProp, the learning rate for each parameter is adjusted based on the moving average of the squared gradients. By tracking the moving average of the squared gradients for each parameter, RMSProp dynamically adjusts the learning rate to speed up the training process and prevent vanishing or exploding gradients.
+
+**RMSProp Calculation:**
+
+- Define a momentum factor (usually denoted as \( \gamma \)) and a small constant (typically \( \epsilon \)) to prevent division by zero.
+- Initialize an accumulation of squared gradients (\( s \)), usually set to a zero matrix of the same shape as the parameters.
+- Calculate the current parameter's gradient at each training step.
+- Calculate the accumulated squared gradient: \( s = \gamma \cdot s + (1 - \gamma) \cdot \text{gradient}^2 \).
+- Adjust the learning rate inversely with \( \sqrt{s + \epsilon} \).
+- Update the parameters based on the adjusted learning rate.
+
+**RMSProp Update Formula:**
+Given the current parameter \( \theta \), the gradient \( g \), the learning rate \( \alpha \), and the accumulated squared gradient \( s \), the RMSProp update formula is:
+
+$$
+s = \gamma \cdot s + (1 - \gamma) \cdot g^2
+$$
+$$
+\theta = \theta - \frac{\alpha}{\sqrt{s + \epsilon}} \cdot g
+$$
+
+- \( \gamma \) is the momentum factor, typically around \( 0.9 \).
+- \( \epsilon \) is a small value to prevent division by zero, usually \( 1e-8 \).
+- \( \alpha \) is the global learning rate.
+
+By dynamically adjusting the learning rate for different parameters, RMSProp helps accelerate convergence and improve model training stability.
+
+##### 2-Label Smoothing
+
+Label smoothing is a regularization technique that improves model training stability and reduces model overconfidence. It introduces random noise to the target labels, smoothing them out and making the model's predictions more cautious and robust.
+
+- **Transforming Target Labels**: In standard classification tasks, true labels are often one-hot encoded (e.g., in a three-class classification problem, the true label for class 2 would be `[0, 0, 1]`). Label smoothing transforms this one-hot encoding. For a given true label \( y \), the target label \( q(k|x) = \delta_{k, y} \) is transformed to the smoothed distribution \( q'(k|x) \):
+
+  $$
+  q'(k|x) = (1 - \epsilon) \cdot \delta_{k, y} + \epsilon \cdot u(k)
+  $$
+  
+  Here, \( \epsilon \) is the smoothing parameter (usually a small value, such as 0.1), representing the proportion of transformation from the true label to the smoothed label. \( u(k) \) is a fixed distribution, such as a uniform distribution \( u(k) = 1/K \) (where \( K \) is the number of classes).
+
+- **Cross-Entropy Loss**: The training objective is to minimize cross-entropy loss. The standard cross-entropy loss calculation is:
+
+  $$
+  \ell = -\sum_{k=1}^{K} q'(k|x) \cdot \log p(k|x)
+  $$
+  
+  Where \( p(k|x) \) is the model's predicted probability for class \( k \), and \( q'(k|x) \) is the smoothed target label.
+
+- **Loss Decomposition**: Cross-entropy loss can be decomposed into two parts:
+
+  - \( (1 - \epsilon) \cdot H(q, p) \): This is the standard cross-entropy loss, where \( q \) is the original one-hot encoded label.
+  - \( \epsilon \cdot H(u, p) \): This is a new loss term that measures the difference between the predicted distribution \( p \) and the fixed distribution \( u \) (usually a uniform distribution).
+
+By introducing a balance between the original labels and a fixed distribution, label smoothing helps prevent the model from becoming overly confident in specific classes, improving model training stability and generalization.
+
+##### 3-Batch Normalization
+
+As mentioned in BN-Inception, this specifically refers to the use of Batch Normalization (BN) for auxiliary classifiers.
+
+##### 4-Decomposing 7×7 Convolution
+
+Decompose the initial 7×7 convolution used in the model into a series of 3×3 convolutions.
+
+### Inception v4 / Inception-ResNet
+
+Inception v4 and Inception-ResNet v1 and Inception-ResNet v2 were proposed in the same paper. Overall, Inception-ResNet v1 and Inception-ResNet v2 add ResNet structure to the Inception architecture. Additionally, Inception v4 builds on Inception v3 with a more complex structure, without introducing many new theoretical concepts. For more details, refer to the paper "Inception-v4, Inception-ResNet and the Impact of Residual Connections on Learning."
+
+### Xception
+
+Xception comes from the paper "Xception: Deep Learning with Depthwise Separable Convolutions," and its name is derived from "Extreme Inception." It is a more extreme version of the Inception architecture that also incorporates depthwise separable convolutions (although depthwise separable convolutions were not introduced in this paper, Xception helped promote their application). The image below shows the basic structure of Xception [the most extreme version]. Each channel is processed with an independent 3×3 convolution, and the results are concatenated. Other Xception structures fall between the Inception and the most extreme version. This approach separates the convolution of channels and spatial features, leading to better performance and reduced parameters.
+
+<img src="media/googlenet/9.png" alt="image-20240509125530191" style="zoom:50%;" />
+
+Xception is not entirely the same as depthwise separable convolution (though the concept is similar). The differences include:
+
+1. In depthwise separable convolution, convolution is applied to the channels first, followed by a 1x1 convolution. In Xception, a 1x1 convolution is applied first, followed by depthwise convolution.
+2. In depthwise separable convolution, there is no activation function between the two convolutions. In Xception, ReLU is applied.
+
+### Code
+
+In PyTorch, you can directly call GoogleNet and Inceptionv3 from the `torchvision` library:
+
+| **Weight**                                                   | **Acc@1** | **Acc@5** | **Params** | **GFLOPS** | **Recipe**                                                   |
+| ------------------------------------------------------------ | --------- | --------- | ---------- | ---------- | ------------------------------------------------------------ |
+| [`GoogLeNet_Weights.IMAGENET1K_V1`](https://pytorch.org/vision/stable/models/generated/torchvision.models.googlenet.html#torchvision.models.GoogLeNet_Weights) | 69.778    | 89.53     | 6.6M       | 1.5        | [link](https://github.com/pytorch/vision/tree/main/references/classification#googlenet) |
+| [`Inception_V3_Weights.IMAGENET1K_V1`](https://pytorch.org/vision/stable/models/generated/torchvision.models.inception_v3.html#torchvision.models.Inception_V3_Weights) | 77.294    | 93.45     | 27.2M      | 5.71       | [link](https://github.com/pytorch/vision/tree/main/references/classification#inception-v3) |
+
+```python
+import torch.nn as nn
+import torchvision.models as models
+from torchvision.models.googlenet import GoogleNet_Weights
+from torchvision.models.inception import Inception_v3_Weights
+
+class GoogleNet(nn.Module):
+    def __init__(self):
+        super(GoogleNet, self).__init__()
+        self.googlenet = models.googlenet(weights=GoogleNet_Weights.IMAGENET1K_V1)
+        self.dim_feat = 1000
+        self.googlenet.classifier[2] = nn.Linear(4096, 1000)
+
+    def forward(self, x):
+        output = self.googlenet(x)
+        return output
+    
+class Inceptionv3(nn.Module):
+    def __init__(self):
+        super(Inceptionv3, self).__init__()
+        self.inception = models.inception(weights=Inception_v3_Weights.IMAGENET1K_V1)
+        self.dim_feat = 1000
+        self.inception.classifier[2] = nn.Linear(4096, 1000)
+
+    def forward(self, x):
+        output = self.inception(x)
+        return output
+```
+
+In the timm library, there are other Inception models available. You can find them on Hugging Face ([Inception v3](https://huggingface.co/docs/timm/en/models/inception-v3)):
+
+```python
+model = timm.create_model('inception_v3', pretrained=True, num_classes=NUM_FINETUNE_CLASSES)
+```
+
+
+
+### Summary
+
+Since the introduction of Inception and up to Xception, both the depth and width of neural networks have continuously increased. In terms of depth, the networks now include submodules composed of multiple convolutional layers, which in turn form main modules. Moreover, the use of residual connections helps mitigate the vanishing gradient problem, enabling the application of deep networks.
+
+In terms of width, the approach leverages different convolutional kernels to process raw features and concatenate the processed features, resulting in richer styles. Overall, while methods like depthwise separable convolution can speed up training when considered at the individual module level, the increased depth of the network can slow down the overall operation speed.
+
+
+
+[1] Szegedy, Christian, et al. "Going deeper with convolutions."  Proceedings of the IEEE conference on computer vision and pattern  recognition. 2015.
+
+[2] Ioffe, Sergey, and Christian Szegedy. "Batch  normalization: Accelerating deep network training by reducing internal  covariate shift." ICML. 2015.
+
+[3] Szegedy, Christian, et al.  "Rethinking the inception architecture for computer vision." Proceedings  of the IEEE conference on computer vision and pattern recognition.  2016.
+
+[4] Szegedy, Christian, et al. "Inception-v4, inception-resnet  and the impact of residual connections on learning." Thirty-First AAAI  Conference on Artificial Intelligence. 2017.
+
+[5] Chollet, François. "Xception: Deep learning with depthwise separable convolutions." *Proceedings of the IEEE conference on computer vision and pattern recognition*. 2017.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+GoogleNet在2014年中的ImageNet夺冠，将Inception这一结构推向了热潮。从另外一个角度来看，CV魔改网络结构也从中得到启发或者说推动，拓宽了各种魔改的方式。GoogleNet其实只是Inception这一结构大规模集成后得到的模型，Inception的发展却远不至于此。本文会详细介绍这一发展历史，从Inception v1(GooglNet) [1]到BN-Inception [2]，Inception v2 [3]，Inception v3 [3]直至Inception v4 [4]以及衍生出来的Xception [5].
+
+### Inception v1
+
+![1](media/googlenet/1.png)
+
+上图左边是Inception v1，有图是利用1×1降维减小参数量后的Inception网络，即为GoogleNet。在Inception v1网络中，使用了不同卷积核大小的卷积进行处理，直观理解上来看，不同卷积核大小的卷积可以从不同尺寸学习图像特征，从更多方面、角度进行学习。
+
+下图很详细地展示了GoogleNet的网络结构。具体来说，Inception相当于一种特殊的模块结构，而GoogleNet是由多种不同的Inception模块组成的，且每个Inception用1x1的卷积进行降维（具体来说是通过减小通道维度）。
+
+![image-20240507170137085](media/googlenet/2.png)
+
+此外，为了解决深层次网络在模型中间出现的梯度消失问题，额外使用了两个辅助损失函数进行训练，如下图中所示。如果上图不够直观，在原论文中也提供了一个清晰完整的模型结构图（比较长）：
+
+![3](media/googlenet/3.png)
+
+### BN-Inception
+
+顾名思义，这一结构是在Inception结构中引入Batch Normalization (BN)这一操作。Batch Normalization其实思想很简单，就是对每个batch进行归一化操作，具体来说，我们分别计算这一个batch中所有数据的均值和方差：
+$$
+\mu=\frac{1}{N}\sum_{i=1}^{N}x_i,\sigma^2=\frac{1}{N}\sum_{i=1}^{N}(x_i-\mu)^2
+$$
+这相当于我们假定所有数据满足同一个正态分布$\N(\mu,\sigma)$，而归一化就是将所有数据变成标准正态分布$\N(0,1)$。公式如下：
+$$
+x_i^{''}=\frac{x_i-\mu}{\sqrt{\sigma^2+\epsilon}}
+$$
+这里$\epsilon$的作用是防止方差变成0或者过小。
+
+### Inception v2
+
+在VGG那篇博客中我们提到，将5×5的卷积分成两个3×3的卷积可以极高地提升卷积的计算效率。
+
+<img src="media/googlenet/4.png" alt="image-20240507174704849" style="zoom:50%;" />
+
+上图是原始的Inception结构，我们将其中5×5的卷积换成两个3×3的卷积就变成了下图【figure 5】：
+
+<img src="media/googlenet/5.png" alt="image-20240507175046217" style="zoom:50%;" />
+
+事实上，3×3的卷积可以进一步被分解成1×3的卷积和3×1的卷积的叠加，这样就可以得到如下的结构【figure 6】：
+
+<img src="media/googlenet/6.png" alt="image-20240507175736725" style="zoom:50%;" />
+
+除此之外，3×3的卷积可以进一步被分解成1×3的卷积和3×1的卷积的并列，就得到了如下的结构【figure 7】：
+
+<img src="media/googlenet/7.png" alt="image-20240507180026001" style="zoom:50%;" />
+
+【figure 5-7】的结构图就是Inception v2组成部分的主要结构，具体结构如下图中的表格所示：
+
+<img src="media/googlenet/8.png" alt="image-20240507181256624" style="zoom:50%;" />
+
+### Inception v3
+
+Inception v3的卷积结构基本与Inception v2相同，但是在其基础上增加了许多优化点。
+
+##### 1-RMSProp
+
+RMSProp（Root Mean Square Propagation）是一种优化方法，常用于深度学习中的梯度下降优化。它的目的是通过调整每个参数的学习率，来加速优化过程并提高模型训练的稳定性。RMSProp最早由Geoffrey Hinton提出。在传统的梯度下降中，每个参数都有一个固定的学习率，但在RMSProp中，每个参数的学习率是根据历史梯度的平方平均值进行调整的。通过跟踪每个参数的历史梯度平方的移动平均值，RMSProp可以动态调整每个参数的学习率，从而加速训练过程并防止梯度消失或爆炸。
+
+**RMSProp的计算过程：**
+- 首先，定义一个动量因子（通常记为 $ \gamma $）和一个非常小的数（通常是 $ \epsilon $）来防止除零错误。
+- 初始化一个累积的平方梯度（记为 $ s $），通常设为与参数相同形状的零矩阵。
+- 在每一步训练中，计算当前参数的梯度。
+- 计算累积平方梯度：$ s = \gamma \cdot s + (1 - \gamma) \cdot \text{gradient}^2 $。
+- 使用累积平方梯度调整学习率：学习率与 $ \sqrt{s + \epsilon} $ 反比。
+- 根据调整后的学习率来更新参数。
+
+**RMSProp的更新公式：**
+假设当前参数为 $ \theta $，梯度为 $ g $，学习率为 $ \alpha $，累积平方梯度为 $ s $，那么RMSProp的更新公式为：
+$$
+s = \gamma \cdot s + (1 - \gamma) \cdot g^2
+$$
+$$
+\theta = \theta - \frac{\alpha}{\sqrt{s + \epsilon}} \cdot g
+$$
+
+其中：
+- $ \gamma $ 是动量因子，通常取值在 $ 0.9 $ 左右。
+- $ \epsilon $ 是一个小值，用于防止除零错误，通常为 $ 1e-8 $。
+- $ \alpha $ 是全局学习率。
+
+通过这种方式，RMSProp可以动态调整学习率以适应不同的参数，这有助于加快收敛速度并提高模型的训练稳定性。
+
+##### 2-Label Smoothing
+
+标签平滑（Label Smoothing）是一种正则化技术，用于改善模型训练过程中的稳定性并减少模型过度自信的问题。它通过在目标标签上引入一些随机噪声来实现。这种方法在目标标签中进行平滑，使得模型在预测时更加谨慎和鲁棒。
+
+- **目标标签的转换**：在标准的分类任务中，真实标签通常是一个one-hot编码（例如，三分类问题中，类别2的真实标签为`[0, 0, 1]`）。标签平滑将这个one-hot编码进行平滑处理。对于给定的真实标签`y`，我们将目标标签`q(k|x) = δk,y`转换为平滑后的分布`q'(k|x)`：
+    $$
+    q'(k|x) = (1 - \epsilon) \cdot δk,y + \epsilon \cdot u(k)
+    $$
+    这里，$ \epsilon $ 是平滑参数（通常是一个小的值，比如0.1），表示将真实标签转变为平滑标签的比例。$ u(k) $ 是一个固定的分布，比如均匀分布`u(k) = 1/K`（这里，$ K $ 是类别数量）。
+
+- **交叉熵损失**：模型训练的目标是最小化交叉熵损失。标准的交叉熵损失计算方式为：
+    $$
+    \ell = -\sum_{k=1}^{K} q'(k|x) \cdot \log p(k|x),
+    $$
+    其中 $ p(k|x) $ 是模型对类别`k`的预测概率，`q'(k|x)`是平滑后的目标标签。
+
+- **损失的分解**：交叉熵损失可以分解为两个部分：
+    - $(1 - \epsilon ) \cdot H(q, p)$：这是标准交叉熵损失，其中`q`是原始的one-hot编码标签。
+    - $ \epsilon  \cdot H(u, p)$：这是一个新损失项，衡量预测分布`p`与固定分布`u`（通常是均匀分布）之间的差异。
+
+通过这种方式，标签平滑在原始标签与固定分布之间引入了一种平衡。这一过程有助于模型在训练过程中不对特定类别过于自信，从而提高模型的稳定性和泛化能力。
+
+##### 3-Batch Normalization
+
+在BN-Inception进行过介绍，这里特指的是对辅助分类器也使用BN归一化。
+
+##### 4-分解7×7卷积
+
+将模型一开始使用的7×7卷积分解成一系列3×3卷积。
+
+### Inception v4 / Inception-ResNet
+
+与Inception v4同一篇论文提出的是Inception-ResNet v1和Inception-ResNet v2。整体上来看，Inception-ResNet v1和Inception-ResNet v2就是在Inception结构中增加了ResNet结构，此外Inception v4在Inception v3基础上结构更加复杂了一些，并没有太多新增的理论，详细可以查阅论文《Inception-v4, inception-resnet  and the impact of residual connections on learning》
+
+### Xception
+
+Xception来自论文《Xception: Deep Learning with Depthwise Separable Convolutions》，取义自Extreme Inception，通俗理解起来就是Inception结构中的极端情况，并结合了深度可分离卷积。（深度可分离卷积并不是这篇论文中提出的，而是Xception助推了其应用）下图是Xception的基本结构图【最极致的版本】，每个通道用一个独立的3×3卷积进行处理，并将结果进行拼接，而Xception其它结构则是位于Inception和这个最极致版本的结构之间。这样做的原理是，卷积时将通道和空间卷积分离会更好。Xception的1x1卷积作用于通道，3x3卷积同时作用于通道和空间，没有做到完全分离。所以Xception让3x3卷积只作用于一个通道的特征图，从而实现了完全分离。此举不仅可以提升性能，而且可以降低参数量。
+
+<img src="media/googlenet/9.png" alt="image-20240509125530191" style="zoom:50%;" />
+
+Xception与深度可分离卷积并不是完全一致的（思想一样），其不同之处在于：
+
+1. 深度可分离卷积先对通道进行卷积再1x1卷积，而Xception先1x1卷积，再对通道卷积。
+2. 深度可分离卷积两个卷积间不带激活函数，Xception会经过ReLU。
+
+### 代码实现
+
+Pytorch中的torchvision库可以直接调用GoogleNet和Inceptionv3：
+
+| **Weight**                                                   | **Acc@1** | **Acc@5** | **Params** | **GFLOPS** | **Recipe**                                                   |
+| ------------------------------------------------------------ | --------- | --------- | ---------- | ---------- | ------------------------------------------------------------ |
+| [`GoogLeNet_Weights.IMAGENET1K_V1`](https://pytorch.org/vision/stable/models/generated/torchvision.models.googlenet.html#torchvision.models.GoogLeNet_Weights) | 69.778    | 89.53     | 6.6M       | 1.5        | [link](https://github.com/pytorch/vision/tree/main/references/classification#googlenet) |
+| [`Inception_V3_Weights.IMAGENET1K_V1`](https://pytorch.org/vision/stable/models/generated/torchvision.models.inception_v3.html#torchvision.models.Inception_V3_Weights) | 77.294    | 93.45     | 27.2M      | 5.71       | [link](https://github.com/pytorch/vision/tree/main/references/classification#inception-v3) |
+
+```python
+import torch.nn as nn
+import torchvision.models as models
+from torchvision.models.googlenet import GoogleNet_Weights
+from torchvision.models.inception import Inception_v3_Weights
+
+class GoogleNet(nn.Module):
+    def __init__(self):
+        super(GoogleNet, self).__init__()
+        self.googlenet = models.googlenet(weights=GoogleNet_Weights.IMAGENET1K_V1)
+        self.dim_feat = 1000
+        self.googlenet.classifier[2] = nn.Linear(4096, 1000)
+
+    def forward(self, x):
+        output = self.googlenet(x)
+        return output
+    
+class Inceptionv3(nn.Module):
+    def __init__(self):
+        super(Inceptionv3, self).__init__()
+        self.inception = models.inception(weights=Inception_v3_Weights.IMAGENET1K_V1)
+        self.dim_feat = 1000
+        self.inception.classifier[2] = nn.Linear(4096, 1000)
+
+    def forward(self, x):
+        output = self.inception(x)
+        return output
+```
+
+在timm库中有其它Inception模型，可以通过huggingface （[Inception v3](https://huggingface.co/docs/timm/en/models/inception-v3)）找到：
+
+```python
+model = timm.create_model('inception_v3', pretrained=True, num_classes=NUM_FINETUNE_CLASSES)
+```
+
+
+
+### 总结
+
+从Inception最初提出到Xception，网络深度和网络宽度都不断增加。深度方面，出现了由多层卷积组成的子模块，多层子模块再构成的主模块，此外还利用残差连接的方式缓解梯度消失，为深层网络的应用提供可能。宽度方面，利用不同卷积核处理原始特征，并将处理后的特征进行拼接，其样式更加丰富。整体来说，虽然从单独一个模块的角度来说利用深度可分离卷积等方法使得训练速度加快，但是由于网络深度加深整体运行速度会变慢。
+
+
+
+[1] Szegedy, Christian, et al. "Going deeper with convolutions."  Proceedings of the IEEE conference on computer vision and pattern  recognition. 2015.
+
+[2] Ioffe, Sergey, and Christian Szegedy. "Batch  normalization: Accelerating deep network training by reducing internal  covariate shift." ICML. 2015.
+
+[3] Szegedy, Christian, et al.  "Rethinking the inception architecture for computer vision." Proceedings  of the IEEE conference on computer vision and pattern recognition.  2016.
+
+[4] Szegedy, Christian, et al. "Inception-v4, inception-resnet  and the impact of residual connections on learning." Thirty-First AAAI  Conference on Artificial Intelligence. 2017.
+
+[5] Chollet, François. "Xception: Deep learning with depthwise separable convolutions." *Proceedings of the IEEE conference on computer vision and pattern recognition*. 2017.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

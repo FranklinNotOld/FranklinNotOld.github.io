@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Common Evaluation Metrics · Yongkang Li</title>
+<meta name="description" content="">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Machine learning basics</span><span data-l="cn">机器学习基础</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Common Evaluation Metrics</span><span data-l="cn">常用评价指标</span></h1>
+    <div class="meta"><span data-l="en">1 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="ml-generalization.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Generalization and Model Selection</span><span data-l="cn">泛化性与模型选择</span></span></a><span></span></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+### TPFN Criteria
+
+<img src="media/ml-metrics/图片记录-image-20220620155437298.png" alt="image-20220620155437298" style="zoom:50%;" /> 
+
+> The above are some common concepts; let me explain them. First, we need to recognize that whether a prediction is positive or negative is different from whether the actual sample is positive or negative. To tell them apart, we use Positive to mean the sample is predicted to be positive and Negative to mean the sample is predicted to be negative; we use True to mean the actual sample is positive and False to mean the actual sample is negative. A positive sample is one that belongs to a given class, and a negative sample is one that does not belong to that class.
+
+> **Precision:** Among all samples predicted to be positive, the proportion that are actually positive.
+
+$$
+Precision=TP÷(FP+TP)
+$$
+
+> **Recall:** Among all samples that are actually positive, the proportion that are predicted to be positive.
+
+$$
+Precision=TP÷(TN+TP)
+$$
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+### TPFN标准
+
+<img src="media/ml-metrics/图片记录-image-20220620155437298.png" alt="image-20220620155437298" style="zoom:50%;" /> 
+
+> ​        以上是一些常见的概念，下面解释一下：首先我们需要认识到，预测的真假和实际样本的真假是有区别的。为了区分，我们将预测样本为正用Prositive来表示，预测样本为负用Negative来表示；将实际样本为正用True来表示，将实际样本为负用False来表示。正样本指的是属于某一类别的样本，负样本指的是不属于这一类别的样本。
+
+> **精确度Precision：**即在所有预测为正的样本中，实际为正的占比。
+
+$$
+Precision=TP÷(FP+TP)
+$$
+
+> **召回率Recall：**即在所有实际为正的样本中，预测为正的占比。
+
+$$
+Precision=TP÷(TN+TP)
+$$
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

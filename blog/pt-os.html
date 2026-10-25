@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The os Module · Yongkang Li</title>
+<meta name="description" content="The os module provides interface functions for most operating system functionality. That is, it lets you do some basic handling of the files and direc…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">PyTorch and tools</span><span data-l="cn">PyTorch 与工具</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">The os Module</span><span data-l="cn">os 模块</span></h1>
+    <div class="meta"><span data-l="en">4 min read</span><span data-l="cn">约 3 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="pt-argparse.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">The argparse Module</span><span data-l="cn">argparse 模块</span></span></a><a class="pn glass" href="pt-gil.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Image Processing with PIL</span><span data-l="cn">PIL 图像处理</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+### I. Introduction
+
+The os module provides interface functions for most operating system functionality. That is, it lets you do some basic handling of the files and directories on a computer.
+
+### II. Usage
+
+- **os.name** — as the word suggests, name means "name", and here it refers to the name of the operating system. Its main purpose is to determine the platform currently in use and return the name of the operating system.
+
+It returns '**nt**' on **Windows**, '**posix**' on **Linux/macOS**, and '**java**' on the Java virtual machine.
+
+> Note that there are no parentheses after name in this command.
+
+```python
+import os
+print(os.name)
+```
+
+Output: `nt`
+
+This shows that the operating system of my computer is Windows
+
+- **os.environ** — environ is short for environment; it refers to the environment variables of the current run
+
+```python
+import os
+print(os.environ)
+```
+
+Output:
+
+```python
+environ({'ALLUSERSPROFILE': 'C:\\ProgramData', 
+		 'APPDATA': 'C:\\Users\\XXXXX\\AppData\\Roaming', 				  
+		 'COMMONPROGRAMFILES': 'C:\\Program Files\\Common Files', 
+		············})
+```
+
+Because the output is too long, I have picked only part of it.
+
+- **os.walk(path)** — takes a path as its argument. The function searches and traverses with that directory as the root node, and then generates a triple made up of `(dirpath, dirnames, filenames)`
+
+`dirpath`: this directory's path (output as a string)
+
+> If "." is used, it refers to the root path where the python file is located; ".." refers to the parent level of the root path where the python file is located
+
+`dirnames`: a list of the names of the subdirectories under dirpath
+
+`filenames`: a list of the names of all non-directory files under dirpath
+
+For example, here is the structure of one of my directories:
+
+>》1 (the 1 is the folder name; the same applies below)
+>
+>​	》1.1
+>
+>​	》1.2
+>
+>​	》1.3
+>
+>​		》1.3.1
+>
+>​	》OS指令.py (this is the python file I am using right now)
+
+```python
+import os
+for item in os.walk("."):
+    print(item)
+```
+
+Output:
+
+```python
+('.', ['1.1', '1.2', '1.3'], ['OS指令.py'])
+('.\\1.1', [], [])
+('.\\1.2', [], [])
+('.\\1.3', [], ['1.3.1'])
+```
+
+From my directory structure it is not hard to infer what gets printed.
+
+```python
+import os
+for item in os.walk(".."):
+    print(item)
+```
+
+Output:
+
+```python
+('..', ['.idea', '1'], ['OS语法.md'])
+('..\\.idea', ['inspectionProfiles'], ['.gitignore', 'misc.xml', 'modules.xml', 'OS语法.iml', 'workspace.xml'])
+('..\\.idea\\inspectionProfiles', [], ['profiles_settings.xml', 'Project_Default.xml'])
+('..\\1', ['1.1', '1.2', '1.3'], ['OS指令.py'])
+('..\\1\\1.1', [], [])
+('..\\1\\1.2', [], [])
+('..\\1\\1.3', [], ['1.3.1'])
+```
+
+Here you can easily see that many other things are printed as well, namely those under the path at the same level as "folder 1"
+
+- **os.getcwd()** — the full name should be 'get current work directory'; it gets the current working directory.
+
+```python
+import os
+print(os.getcwd())
+```
+
+Output:
+
+```
+D:\机器学习自学笔记\深度学习\pytorch语法\OS语法\1
+```
+
+- **os.listdir(path)** — lists the names of all the files and directories under the path directory.
+
+```python
+import os
+print(os.listdir())
+```
+
+Output:
+
+```python
+['1.1', '1.2', '1.3', 'OS指令.py']
+```
+
+> Note the difference from os.work: this one only prints file names and folder names, while os.work prints triples.
+
+- **os.mkdir(path)** — `mkdir` is short for makedirectory, i.e. it creates a new directory specified by path.
+
+This is my original directory structure:
+
+![QQ图片20221009101630](media/pt-os/OS语法-QQ图片20221009101630.png) 
+
+```python
+import os
+print(os.mkdir("D:/机器学习/机器学习自学笔记/深度学习/pytorch语法/OS语法/1.4"))
+```
+
+Output:
+
+```python
+None
+```
+
+After running it, my directory became as shown below:
+
+![QQ图片20221009102944](media/pt-os/OS语法-QQ图片20221009102944.png) 
+
+We can see that the folder now contains an extra folder 1.4 (the QQ images are other things I saved in between)
+
+- **os.remove(path)** — deletes the file specified by path (not a directory).
+
+When I tried to delete a folder instead of a file, the following error appeared:
+
+> PermissionError: [WinError 5] 拒绝访问。 (Access is denied.)
+
+- **os.rmdir(path)** — deletes the directory specified by path.
+
+```python
+import os
+print(os.rmdir("D:/大学/计算机科学/机器学习/机器学习自学笔记/深度学习/pytorch语法/OS语法/1.4"))
+```
+
+Output:
+
+```python
+None
+```
+
+After running it, my directory looks as follows:
+
+![QQ图片20221009103820](media/pt-os/OS语法-QQ图片20221009103820.png) 
+
+- **os.chdir(path)** — `chdir` is short for `change directory`, i.e. it changes the current working directory to the specified directory.
+
+- **os.rename()** — renames a file or path; the general form is `os.name(src,dst)`
+
+`src` points to the corresponding path
+
+`dst` is the new name after renaming
+
+- **os.path.abspath(path)** — gets the absolute path, i.e. it normalizes the given path and returns a string with the corresponding absolute path.
+
+> Note that this operation simply treats the input path as a string and operates on the string; it has no effect on the files themselves
+
+```python
+import os
+print(os.path.abspath("z:/what/a/sha"))
+```
+
+Output:
+
+```python
+z:\what\a\sha
+```
+
+We can see that the original forward slashes became backslashes, which shows that backslashes are what the standard format uses.
+
+- **os.path.basename(path)** — returns the lowest-level directory of the given path (the part after the last separator).
+
+> This function also simply operates on the input string
+
+```python
+import os
+print(os.path.basename("z:/what/a/sha"))
+```
+
+Output:
+
+```python
+sha
+```
+
+Another similar example:
+
+```python
+import os
+print(os.path.basename("z:/what/a/sha/"))
+```
+
+Output:
+
+```python
+
+```
+
+Yes, the output really is empty
+
+- **os.path.dirname(path)** — returns the file path (the path before the last separator)
+
+> This function is exactly the opposite of basename, or rather, it complements it
+
+```python
+import os
+print(os.path.dirname("z:/what/a/sha/"))
+```
+
+Output:
+
+```python
+z:/what/a/sha
+```
+
+-  **os.path.split(path)** — returns the directory and the file name of the path, i.e. it splits the directory and the file name apart into a pair (the last separator divides the directory from the name).
+
+```python
+import os
+print(os.path.split("z:/what/a/sha"))
+```
+
+Output:
+
+```python
+('z:/what/a', 'sha')
+```
+
+- **os.path.join(path, name)** — joins a directory and a file name, the exact opposite of os.path.split(path).
+
+```python
+import os
+print(os.path.join("z:/what/a/sha", "azhe"))
+```
+
+Output:
+
+```python
+z:/what/a/sha\azhe
+```
+
+- **os.path.isabs(path)** — checks whether the given path is an absolute path. Returns True if so, otherwise False.
+
+- **os.path.isfile(path)** — checks whether the given path is a file. Returns True if so, otherwise False.
+
+- **os.path.isdir(path)** — checks whether the given path is a directory. True if so, otherwise False.
+
+- **os.path.exists(path)** — checks whether the given path exists. Returns True if so, otherwise False.
+
+> This function is often used to check whether a folder exists before creating a file
+
+- **os.path.getsize()** — gets the size of a file; returns 0 if the path is a directory
+
+```python
+import os
+print(os.path.getsize("D:\\机器学习自学笔记\\深度学习\\pytorch语法\\OS语法\\1\\os指令.py"))
+```
+
+Output:
+
+```python
+159
+```
+
+<img src="media/pt-os/OS语法-QQ图片20221009113434.png" alt="QQ图片20221009113434" style="zoom:67%;" /> 
+
+We can see that the file **os指令.py** is exactly 159 bytes.
+
+- **os.system(cmd)** — runs a shell command. The return value is the exit status code of the script: 0 means success and 1 means failure.
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+### 一、基本介绍
+
+os模块提供了多数操作系统的功能接口函数。即对对电脑中的文件和目录进行一些基本处理。
+
+### 二、使用方法
+
+- **os.name**——name顾名思义就是'名字'，这里的名字是指操作系统的名字，主要作用是判断目前正在使用的平台，并给出操作系统的名字。
+
+如果是**Windows**就返回 '**nt**'；如果是**Linux/macOS**就返回'**posix**'；如果是java虚拟机就返回'**java**'。
+
+> 注意该命令中name后面不带括号。
+
+```python
+import os
+print(os.name)
+```
+
+输出结果：`nt`
+
+这说明我的电脑的操作系统为windows
+
+- **os.environ**——environ是environment的简写，意思是目前运行的环境变量
+
+```python
+import os
+print(os.environ)
+```
+
+输出结果：
+
+```python
+environ({'ALLUSERSPROFILE': 'C:\\ProgramData', 
+		 'APPDATA': 'C:\\Users\\XXXXX\\AppData\\Roaming', 				  
+		 'COMMONPROGRAMFILES': 'C:\\Program Files\\Common Files', 
+		············})
+```
+
+由于输出内容过长于是我只选取了部分。
+
+- **os.walk(path)**——需要传入一个路径作为参数，该函数的作用就是以该目录为根结点去搜索遍历，然后生成一个由`(dirpath, dirnames, filenames)`三项组成的三元组
+
+`dirpath`：表示这个目录路径（以字符串形式输出）
+
+> 如果使用“.”表示的是python文件所在的根路径；“..”表示的是python文件所在的上一级根路径
+
+`dirnames`：dirpath下面的子目录名组成的列表
+
+`filenames`：是由 dirpath 下所有非目录的文件名组成的列表
+
+举例：下面是我的一个目录中的结构：
+
+>》1（1指的是文件夹名字，下面同理）
+>
+>​	》1.1
+>
+>​	》1.2
+>
+>​	》1.3
+>
+>​		》1.3.1
+>
+>​	》OS指令.py（这个就是我现在使用的python文件）
+
+```python
+import os
+for item in os.walk("."):
+    print(item)
+```
+
+输出结果：
+
+```python
+('.', ['1.1', '1.2', '1.3'], ['OS指令.py'])
+('.\\1.1', [], [])
+('.\\1.2', [], [])
+('.\\1.3', [], ['1.3.1'])
+```
+
+根据我的文件目录不难推断出打印出来的是什么内容。
+
+```python
+import os
+for item in os.walk(".."):
+    print(item)
+```
+
+输出结果：
+
+```python
+('..', ['.idea', '1'], ['OS语法.md'])
+('..\\.idea', ['inspectionProfiles'], ['.gitignore', 'misc.xml', 'modules.xml', 'OS语法.iml', 'workspace.xml'])
+('..\\.idea\\inspectionProfiles', [], ['profiles_settings.xml', 'Project_Default.xml'])
+('..\\1', ['1.1', '1.2', '1.3'], ['OS指令.py'])
+('..\\1\\1.1', [], [])
+('..\\1\\1.2', [], [])
+('..\\1\\1.3', [], ['1.3.1'])
+```
+
+这里不难发现还打印出了很多别的东西，就是与“文件夹1”平级的那一级路径下的
+
+- **os.getcwd()**——全称应该是'get current work directory'，获取当前工作的目录。
+
+```python
+import os
+print(os.getcwd())
+```
+
+输出结果：
+
+```
+D:\机器学习自学笔记\深度学习\pytorch语法\OS语法\1
+```
+
+- **os.listdir(path)**——列出path目录下所有的文件和目录名。
+
+```python
+import os
+print(os.listdir())
+```
+
+输出结果：
+
+```python
+['1.1', '1.2', '1.3', 'OS指令.py']
+```
+
+> 注意这个与os.work的区别，这个只打印出文件名和文件夹名，而os.work打印出的是一个三元组。
+
+- **os.mkdir(path)**——`mkdir`是makedirectory的简写，即创建一个新的path指定的目录。
+
+这是我原来的目录结构：
+
+![QQ图片20221009101630](media/pt-os/OS语法-QQ图片20221009101630.png) 
+
+```python
+import os
+print(os.mkdir("D:/机器学习/机器学习自学笔记/深度学习/pytorch语法/OS语法/1.4"))
+```
+
+输出结果：
+
+```python
+None
+```
+
+运行后我的目录变成了下图：
+
+![QQ图片20221009102944](media/pt-os/OS语法-QQ图片20221009102944.png) 
+
+我们可以发现文件夹中多了1.4这个文件夹（QQ图片是我中间保存的另外的）
+
+- **os.remove(path)**——删除path指定的文件（而不是目录）。
+
+如果我删除的是文件夹而不是文件，出现了如下报错：
+
+> PermissionError: [WinError 5] 拒绝访问。
+
+- **os.rmdir(path)**——删除path指定的目录。
+
+```python
+import os
+print(os.rmdir("D:/大学/计算机科学/机器学习/机器学习自学笔记/深度学习/pytorch语法/OS语法/1.4"))
+```
+
+输出结果：
+
+```python
+None
+```
+
+运行之后我的目录如下：
+
+![QQ图片20221009103820](media/pt-os/OS语法-QQ图片20221009103820.png) 
+
+- **os.chdir(path)**——`chdir`是`change directory`的简写，即改变当前工作目录到指定目录。
+
+- **os.rename()**——将文件和路径重命名，一般格式为`os.name(src,dst)`
+
+`src`指向的是对应路径
+
+`dst`是重命名后的名称
+
+- **os.path.abspath(path)**——获得绝对路径，即将传入的路径规范化，并返回一个相应绝对路径的字符串。
+
+> 注意这个操作单纯是将输入路径看成字符串，并对字符串进行操作，对文件本身没有影响
+
+```python
+import os
+print(os.path.abspath("z:/what/a/sha"))
+```
+
+输出结果：
+
+```python
+z:\what\a\sha
+```
+
+可以发现原来的右斜杠变成了左斜杠，说明左斜杠才是标准格式中使用的。
+
+- **os.path.basename(path)**——返回传入路径的最下级目录（最后一个分隔符后面的内容）。
+
+> 这个函数也是单纯对输入的字符串进行操作
+
+```python
+import os
+print(os.path.basename("z:/what/a/sha"))
+```
+
+输出结果：
+
+```python
+sha
+```
+
+另一个相似的例子：
+
+```python
+import os
+print(os.path.basename("z:/what/a/sha/"))
+```
+
+输出结果：
+
+```python
+
+```
+
+没错输出结果就是空
+
+- **os.path.dirname(path)**——返回文件路径（最后一个分隔符前的路径）
+
+> 这个函数正好和basename相反，或者说互补
+
+```python
+import os
+print(os.path.dirname("z:/what/a/sha/"))
+```
+
+输出结果：
+
+```python
+z:/what/a/sha
+```
+
+-  **os.path.split(path)**——返回路径的目录和文件名，即将目录和文件名分开形成一个二元组（最后一个分隔符将目录前后分开）。
+
+```python
+import os
+print(os.path.split("z:/what/a/sha"))
+```
+
+输出结果：
+
+```python
+('z:/what/a', 'sha')
+```
+
+- **os.path.join(path, name)**——连接目录和文件名，与os.path.split(path)正好相反。
+
+```python
+import os
+print(os.path.join("z:/what/a/sha", "azhe"))
+```
+
+输出结果：
+
+```python
+z:/what/a/sha\azhe
+```
+
+- **os.path.isabs(path)**——判断传入的路径是否是绝对路径。如果是返回True,否则返回False。
+
+- **os.path.isfile(path)**——判断传入的路径是否为文件。如果是返回True,否则返回False。
+
+- **os.path.isdir(path)**——判断传入的路径是否为目录。是True,否则False。
+
+- **os.path.exists(path)**——判断传入的路径是否存在。如果是返回True,否则返回False。
+
+> 创建某个文件之前常用该函数去验证文件夹是否存在
+
+- **os.path.getsize()**——获得文件的大小，如果为目录，返回0
+
+```python
+import os
+print(os.path.getsize("D:\\机器学习自学笔记\\深度学习\\pytorch语法\\OS语法\\1\\os指令.py"))
+```
+
+输出结果：
+
+```python
+159
+```
+
+<img src="media/pt-os/OS语法-QQ图片20221009113434.png" alt="QQ图片20221009113434" style="zoom:67%;" /> 
+
+我们会发现**os指令.py**这个文件正好是159字节。
+
+- **os.system(cmd)**——执行shell命令。返回值是脚本的退出状态码，0代表成功，1代表不成功。
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

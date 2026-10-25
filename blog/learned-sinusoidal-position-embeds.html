@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learned Sinusoidal Position Embeddings · Yongkang Li</title>
+<meta name="description" content="In the blog post on Sinusoidal Positional Embeds, the basic concept and implementation of Sinusoidal Position Embeds were introduced. Here, I&#x27;d like t…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Deep Learning from Zero to Kang</span><span data-l="cn">Deep Learning from Zero to Kang</span></span><i>/</i><span><span data-l="en">Positional embeddings</span><span data-l="cn">位置编码</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Learned Sinusoidal Position Embeddings</span><span data-l="cn">可学习的正弦位置编码</span></h1>
+    <div class="meta"><span data-l="en">1 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="sinusoidal-position-embeds.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Sinusoidal Position Embeddings</span><span data-l="cn">正弦位置编码</span></span></a><span></span></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+
+### Learned Sinusoidal Position Embeds
+
+In the blog post on Sinusoidal Positional Embeds, the basic concept and implementation of Sinusoidal Position Embeds were introduced. Here, I'd like to discuss one of its variants: Random or Learned Sinusoidal Position Embeds.
+
+In Sinusoidal Position Embeds, the transformation is fixed throughout the training process, meaning that parameters like $ \theta $ are set, resulting in a static encoding. However, for different scenarios, a static positional encoding may not be suitable, as it may not align well with the final outcome. Therefore, in Learned Sinusoidal Position Embeds, a weight $ W $ is introduced, which is either random or learnable, and then sine and cosine encoding is applied:
+
+$$
+P(x, y) = (sin(2\pi Wm), cos(2\pi Wm))
+$$
+In the code implementation, the author further combines the encoded result with the input $ m $, creating the concatenation $ [P(x, y), m] $.
+
+### Code
+
+```python
+class RandomOrLearnedSinusoidalPosEmb(nn.Module):
+    """ following @crowsonkb 's lead with random (learned optional) sinusoidal pos emb """
+    """ https://github.com/crowsonkb/v-diffusion-jax/blob/master/diffusion/models/danbooru_128.py#L8 """
+
+    def __init__(self, dim, is_random=False):
+        super().__init__()
+        assert divisible_by(dim, 2)
+        half_dim = dim // 2
+        self.weights = nn.Parameter(torch.randn(half_dim), requires_grad=not is_random)
+        # set learnable weight
+
+    def forward(self, x):
+        x = rearrange(x, 'b -> b 1')
+        freqs = x * rearrange(self.weights, 'd -> 1 d') * 2 * math.pi
+        fouriered = torch.cat((freqs.sin(), freqs.cos()), dim=-1)
+        fouriered = torch.cat((x, fouriered), dim=-1)
+        return fouriered
+```
+
+
+
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+### 可学习正弦位置编码
+
+在位置编码那篇博客中，介绍了位置编码的基本思想以及Sinusoidal Position Embeds的实现。这里要介绍一下其中的一个变体：Random Or Learned Sinusoidal Position Embeds。
+
+在Sinusoidal Position Embeds中，变换在整个模型训练过程中是固定的，即确定了其中$\theta$等参数，最后必然得到一个固定的编码。但是，对于不同场景，一成不变的位置编码可能会导致编码方式与最终结果并不适应，所以在Random Or Learned Sinusoidal Position Embeds中，增加了一个权重$W$，这个权重是随机的或者可学习的，再进行正余弦编码：
+
+$$
+P(x,y)=(sin(2\pi Wm), cos(2\pi Wm))
+$$
+在代码实现中，作者更进一步将编码后的结果与输入m进行了拼接$[P(x,y),m]$
+
+### Pytorch代码实现
+
+```python
+class RandomOrLearnedSinusoidalPosEmb(nn.Module):
+    """ following @crowsonkb 's lead with random (learned optional) sinusoidal pos emb """
+    """ https://github.com/crowsonkb/v-diffusion-jax/blob/master/diffusion/models/danbooru_128.py#L8 """
+
+    def __init__(self, dim, is_random=False):
+        super().__init__()
+        assert divisible_by(dim, 2)
+        half_dim = dim // 2
+        self.weights = nn.Parameter(torch.randn(half_dim), requires_grad=not is_random)
+        # 设置可学习权重
+
+    def forward(self, x):
+        x = rearrange(x, 'b -> b 1')
+        freqs = x * rearrange(self.weights, 'd -> 1 d') * 2 * math.pi
+        fouriered = torch.cat((freqs.sin(), freqs.cos()), dim=-1)
+        fouriered = torch.cat((x, fouriered), dim=-1)
+        return fouriered
+```
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

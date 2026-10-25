@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VGG · Yongkang Li</title>
+<meta name="description" content="It&#x27;s been a decade since the introduction of the VGG network, and it&#x27;s amazing to think about a model that has thrived for ten years in the rapidly ev…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Deep Learning from Zero to Kang</span><span data-l="cn">Deep Learning from Zero to Kang</span></span><i>/</i><span><span data-l="en">Vision backbones</span><span data-l="cn">视觉骨干网络</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">VGG</span><span data-l="cn">VGG</span></h1>
+    <div class="meta"><span data-l="en">3 min read</span><span data-l="cn">约 2 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="alexnet.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">AlexNet</span><span data-l="cn">AlexNet</span></span></a><a class="pn glass" href="googlenet.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">GoogLeNet</span><span data-l="cn">GoogLeNet</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+
+Paper：[1409.1556.pdf (arxiv.org)](https://arxiv.org/pdf/1409.1556.pdf)
+
+### Introduction
+
+It's been a decade since the introduction of the VGG network, and it's amazing to think about a model that has thrived for ten years in the rapidly evolving field of deep learning. Although a plethora of alternatives to VGG now exist, my research in certain areas still witnesses widespread adoption of VGG models. Some argue that VGG pioneered the practice of stacking basic structures like Convolutional (Conv), Linear, and Recurrent Neural Networks (RNN) layers. However, I believe its substantial contribution lies in the study of deep networks and the broad utilization of the concept of feature extractors (though it wasn't the first to introduce them). Beyond the swift advancement of deep learning lies the rapid development of hardware computing power. Utilizing VGG a decade ago is, in a way, similar to using Large Language Models (LLMs) today. The inception of VGG by the luminaries from the Visual Geometry Group (hence the name VGG is quite self-explanatory) marked a significant milestone in the field.
+
+### Model
+
+![1](media/vgg/1.png)
+
+##### 3×3 Conv Kernel
+
+One of the significant contributions of VGG was the adoption of 3x3 convolutional kernels as a replacement for larger kernels such as 5x5 or 7x7. This approach offers two primary advantages:
+
+(1) Utilizing convolutions with a smaller receptive field on images of the same size results in a deeper network. More layers imply a better approximation of non-linearities, akin to how higher-degree polynomials can fit more complex curves closer than linear equations. For instance, while $y=ax+b$ struggles to fit curves, $y=(ax+b)(cx+d)$ can approximate certain curves more effectively.
+
+(2) Employing 3x3 convolutions requires fewer parameters for the same image size. As demonstrated in the author's paper, using 3x3 convolutions for a 7x7 receptive field necessitates $3\times(3^2C^2)=27C^2$ parameters, whereas 7x7 kernels would require $(7^2C^2)=49C^2$ parameters, where $C$ represents the number of channels.
+
+> Additional Explanation: The parameter count for a single 3x3 convolutional kernel is $3^2$. If the original features have $C$ channels, and the output features also have $C$ channels, then multiplying each corresponding channel results in $C^2$. For a 7x7 receptive field, employing 3x3 convolutions in three stages multiplies the parameter count by 3.
+
+##### Different Depth of VGG
+
+VGG has four commonly used model architectures: VGG11, VGG13, VGG16, and VGG19. The structures of these models are as follows:
+
+![2](media/vgg/2.png)
+
+The author validated that deeper networks can effectively improve model performance by experimenting with these four different depth models.
+
+
+
+### Code
+
+One of the most convenient ways to work with deep learning models is by using the torchvision library in PyTorch.
+
+Taking VGG16 as an example, here is the official code provided:
+
+```python
+from torchvision.io import read_image
+from torchvision.models import vgg16, VGG16_Weights
+
+img = read_image("image.jpg")
+
+# Step 1: Initialize model with the best available weights
+weights = VGG16_Weights.DEFAULT
+model = vgg16(weights=weights)
+model.eval()
+
+# Step 2: Initialize the inference transforms
+preprocess = weights.transforms()
+
+# Step 3: Apply inference preprocessing transforms
+batch = preprocess(img).unsqueeze(0)
+
+# Step 4: Use the model and print the predicted category
+prediction = model(batch).squeeze(0).softmax(0)
+class_id = prediction.argmax().item()
+score = prediction[class_id].item()
+category_name = weights.meta["categories"][class_id]
+print(f"{category_name}: {100 * score:.1f}%")
+```
+
+To encapsulate it into a class and control the output dimensions, you can utilize the following code. 
+
+```python
+import torch.nn as nn
+import torchvision.models as models
+from torchvision.models.vgg import VGG16_Weights
+
+class VGG16(nn.Module):
+    def __init__(self):
+        super(VGG16, self).__init__()
+        self.vgg = models.vgg16(weights=VGG16_Weights.IMAGENET1K_V1)
+        self.dim_feat = 4096
+        self.vgg.classifier[6] = nn.Linear(4096, self.dim_feat)
+
+    def forward(self, x):
+        output = self.vgg(x)
+        return output
+```
+
+However, it's worth noting that VGG architecture isn't limited to VGG16 alone. Below, you'll find the table provided by PyTorch:
+
+| **Weight**                                                   | **Acc@1** | **Acc@5** | **Params** | **GFLOPS** | **Recipe**                                                   |
+| ------------------------------------------------------------ | --------- | --------- | ---------- | ---------- | ------------------------------------------------------------ |
+| [`VGG11_BN_Weights.IMAGENET1K_V1`](https://pytorch.org/vision/stable/models/generated/torchvision.models.vgg11_bn.html#torchvision.models.VGG11_BN_Weights) | 70.37     | 89.81     | 132.9M     | 7.61       | [link](https://github.com/pytorch/vision/tree/main/references/classification#alexnet-and-vgg) |
+| [`VGG11_Weights.IMAGENET1K_V1`](https://pytorch.org/vision/stable/models/generated/torchvision.models.vgg11.html#torchvision.models.VGG11_Weights) | 69.02     | 88.628    | 132.9M     | 7.61       | [link](https://github.com/pytorch/vision/tree/main/references/classification#alexnet-and-vgg) |
+| [`VGG13_BN_Weights.IMAGENET1K_V1`](https://pytorch.org/vision/stable/models/generated/torchvision.models.vgg13_bn.html#torchvision.models.VGG13_BN_Weights) | 71.586    | 90.374    | 133.1M     | 11.31      | [link](https://github.com/pytorch/vision/tree/main/references/classification#alexnet-and-vgg) |
+| [`VGG13_Weights.IMAGENET1K_V1`](https://pytorch.org/vision/stable/models/generated/torchvision.models.vgg13.html#torchvision.models.VGG13_Weights) | 69.928    | 89.246    | 133.0M     | 11.31      | [link](https://github.com/pytorch/vision/tree/main/references/classification#alexnet-and-vgg) |
+| [`VGG16_BN_Weights.IMAGENET1K_V1`](https://pytorch.org/vision/stable/models/generated/torchvision.models.vgg16_bn.html#torchvision.models.VGG16_BN_Weights) | 73.36     | 91.516    | 138.4M     | 15.47      | [link](https://github.com/pytorch/vision/tree/main/references/classification#alexnet-and-vgg) |
+| [`VGG16_Weights.IMAGENET1K_V1`](https://pytorch.org/vision/stable/models/generated/torchvision.models.vgg16.html#torchvision.models.VGG16_Weights) | 71.592    | 90.382    | 138.4M     | 15.47      | [link](https://github.com/pytorch/vision/tree/main/references/classification#alexnet-and-vgg) |
+| [`VGG16_Weights.IMAGENET1K_FEATURES`](https://pytorch.org/vision/stable/models/generated/torchvision.models.vgg16.html#torchvision.models.VGG16_Weights) | nan       | nan       | 138.4M     | 15.47      | [link](https://github.com/amdegroot/ssd.pytorch#training-ssd) |
+| [`VGG19_BN_Weights.IMAGENET1K_V1`](https://pytorch.org/vision/stable/models/generated/torchvision.models.vgg19_bn.html#torchvision.models.VGG19_BN_Weights) | 74.218    | 91.842    | 143.7M     | 19.63      | [link](https://github.com/pytorch/vision/tree/main/references/classification#alexnet-and-vgg) |
+| [`VGG19_Weights.IMAGENET1K_V1`](https://pytorch.org/vision/stable/models/generated/torchvision.models.vgg19.html#torchvision.models.VGG19_Weights) | 72.376    | 90.876    | 143.7M     | 19.63      | [link](https://github.com/pytorch/vision/tree/main/references/classification#alexnet-and-vgg) |
+
+
+
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+提出论文：[1409.1556.pdf (arxiv.org)](https://arxiv.org/pdf/1409.1556.pdf)
+
+### 引入
+
+距离VGG网络的提出已经约十年，很难想象在深度学习高速发展的今天，一个模型能够历经十年而不衰。虽然如今已经有VGG的大量替代品，但是笔者研究的一些领域仍然有大量工作选择使用VGG。有人说VGG开创了基于一些基础结构（如Conv，Linear，RNN）进行模型堆叠的开端，但笔者更以为是其对深层次网络的研究和特征提取器这一概念的广泛使用作出了巨大贡献（但并不是首次提出）。深度学习高速发展之外，是硬件算力的高速发展。10年前使用VGG某种意义上也可以看成现如今使用LLM。VGG是由Visual Geometry Group中的两位大佬提出（VGG名字的由来就显而易见了）
+
+
+
+### 模型介绍
+
+![1](media/vgg/1.png)
+
+##### 3×3卷积核
+
+在VGG中，很大的贡献之一是使用了3×3卷积核以替代5×5卷积核、7×7卷积核等。这样的优点有两个：
+
+（1）对相同大小的图像使用更小感受野的卷积，就会导致卷积的层数更多，层数更多意味着对非线性的拟合更好。这一点可以类比于高次函数可以拟合的曲线更多、更逼近。比如$y=ax+b$就难以拟合曲线，而$y=(ax+b)(cx+d)$就可以拟合部分曲线。
+
+（2）对相同大小的图像使用3×3的卷积所需要的参数量更少。如图，如果用作者论文中举的例子就是，对一个7×7的感受野使用3×3的卷积总共需要$3\times(3^2C^2)=27C^2$的参数，而使用7×7的卷积核则需要$(7^2C^2)=49C^2$的参数，其中$C$代表通道数。
+
+补充解释：一个3×3的卷积核参数量是$3^2$，如果原始特征有$C$个通道，输出特征也相应有$C$个通道，那么每个通道对应相乘就得到$C^2$，而对于一个7×7的感受野，需要分成三个阶段使用3×3的卷积，所以再乘以3。
+
+##### 不同深度的VGG
+
+VGG最常见的有四种模型结构，分别是VGG11，VGG13，VGG16，VGG19，其模型结构分别如下：
+
+![2](media/vgg/2.png)
+
+作者也是通过这四种不同深度的模型验证了更深的网络可以有效提高模型的效果。
+
+
+
+### 代码实现
+
+目前最便捷的方法是使用Pytorch中的torchvision库。
+
+以VGG16举例：
+
+下面是官方给的代码：
+
+```python
+from torchvision.io import read_image
+from torchvision.models import vgg16, VGG16_Weights
+
+img = read_image("image.jpg")
+
+# Step 1: Initialize model with the best available weights
+weights = VGG16_Weights.DEFAULT
+model = vgg16(weights=weights)
+model.eval()
+
+# Step 2: Initialize the inference transforms
+preprocess = weights.transforms()
+
+# Step 3: Apply inference preprocessing transforms
+batch = preprocess(img).unsqueeze(0)
+
+# Step 4: Use the model and print the predicted category
+prediction = model(batch).squeeze(0).softmax(0)
+class_id = prediction.argmax().item()
+score = prediction[class_id].item()
+category_name = weights.meta["categories"][class_id]
+print(f"{category_name}: {100 * score:.1f}%")
+```
+
+如果要封装成一个类，并控制输出的维度，可以使用如下代码：
+
+```python
+import torch.nn as nn
+import torchvision.models as models
+from torchvision.models.vgg import VGG16_Weights
+
+class VGG16(nn.Module):
+    def __init__(self):
+        super(VGG16, self).__init__()
+        self.vgg = models.vgg16(weights=VGG16_Weights.IMAGENET1K_V1)
+        self.dim_feat = 4096
+        self.vgg.classifier[6] = nn.Linear(4096, self.dim_feat)
+
+    def forward(self, x):
+        output = self.vgg(x)
+        return output
+```
+
+当然，VGG并不止VGG16可以调用，下面是Pytorch官方给出的表格：
+
+| **Weight**                                                   | **Acc@1** | **Acc@5** | **Params** | **GFLOPS** | **Recipe**                                                   |
+| ------------------------------------------------------------ | --------- | --------- | ---------- | ---------- | ------------------------------------------------------------ |
+| [`VGG11_BN_Weights.IMAGENET1K_V1`](https://pytorch.org/vision/stable/models/generated/torchvision.models.vgg11_bn.html#torchvision.models.VGG11_BN_Weights) | 70.37     | 89.81     | 132.9M     | 7.61       | [link](https://github.com/pytorch/vision/tree/main/references/classification#alexnet-and-vgg) |
+| [`VGG11_Weights.IMAGENET1K_V1`](https://pytorch.org/vision/stable/models/generated/torchvision.models.vgg11.html#torchvision.models.VGG11_Weights) | 69.02     | 88.628    | 132.9M     | 7.61       | [link](https://github.com/pytorch/vision/tree/main/references/classification#alexnet-and-vgg) |
+| [`VGG13_BN_Weights.IMAGENET1K_V1`](https://pytorch.org/vision/stable/models/generated/torchvision.models.vgg13_bn.html#torchvision.models.VGG13_BN_Weights) | 71.586    | 90.374    | 133.1M     | 11.31      | [link](https://github.com/pytorch/vision/tree/main/references/classification#alexnet-and-vgg) |
+| [`VGG13_Weights.IMAGENET1K_V1`](https://pytorch.org/vision/stable/models/generated/torchvision.models.vgg13.html#torchvision.models.VGG13_Weights) | 69.928    | 89.246    | 133.0M     | 11.31      | [link](https://github.com/pytorch/vision/tree/main/references/classification#alexnet-and-vgg) |
+| [`VGG16_BN_Weights.IMAGENET1K_V1`](https://pytorch.org/vision/stable/models/generated/torchvision.models.vgg16_bn.html#torchvision.models.VGG16_BN_Weights) | 73.36     | 91.516    | 138.4M     | 15.47      | [link](https://github.com/pytorch/vision/tree/main/references/classification#alexnet-and-vgg) |
+| [`VGG16_Weights.IMAGENET1K_V1`](https://pytorch.org/vision/stable/models/generated/torchvision.models.vgg16.html#torchvision.models.VGG16_Weights) | 71.592    | 90.382    | 138.4M     | 15.47      | [link](https://github.com/pytorch/vision/tree/main/references/classification#alexnet-and-vgg) |
+| [`VGG16_Weights.IMAGENET1K_FEATURES`](https://pytorch.org/vision/stable/models/generated/torchvision.models.vgg16.html#torchvision.models.VGG16_Weights) | nan       | nan       | 138.4M     | 15.47      | [link](https://github.com/amdegroot/ssd.pytorch#training-ssd) |
+| [`VGG19_BN_Weights.IMAGENET1K_V1`](https://pytorch.org/vision/stable/models/generated/torchvision.models.vgg19_bn.html#torchvision.models.VGG19_BN_Weights) | 74.218    | 91.842    | 143.7M     | 19.63      | [link](https://github.com/pytorch/vision/tree/main/references/classification#alexnet-and-vgg) |
+| [`VGG19_Weights.IMAGENET1K_V1`](https://pytorch.org/vision/stable/models/generated/torchvision.models.vgg19.html#torchvision.models.VGG19_Weights) | 72.376    | 90.876    | 143.7M     | 19.63      | [link](https://github.com/pytorch/vision/tree/main/references/classification#alexnet-and-vgg) |
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

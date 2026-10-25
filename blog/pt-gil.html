@@ -1,0 +1,837 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Image Processing with PIL · Yongkang Li</title>
+<meta name="description" content="[Yue Tai][https://blog.csdn.net/SeptemberC/article/details/113701210?opsrequestmisc=&amp;requestid=&amp;bizid=102&amp;utmterm=PIL%E6%A8%A1%E5%9D%97&amp;utmmedium=dist…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">PyTorch and tools</span><span data-l="cn">PyTorch 与工具</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Image Processing with PIL</span><span data-l="cn">PIL 图像处理</span></h1>
+    <div class="meta"><span data-l="en">5 min read</span><span data-l="cn">约 4 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="pt-os.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">The os Module</span><span data-l="cn">os 模块</span></span></a><a class="pn glass" href="setup-pytorch3d.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Installing PyTorch3D</span><span data-l="cn">安装 PyTorch3D</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+References:
+
+[Yue Tai][https://blog.csdn.net/September_C/article/details/113701210?ops_request_misc=&request_id=&biz_id=102&utm_term=PIL%E6%A8%A1%E5%9D%97&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-0-113701210.142^v53^pc_rank_34_2,201^v3^control_1&spm=1018.2226.3001.4187]
+
+### I. Basic Concepts of PIL
+
+> PIL (Python Image Library) is a library for basic image processing; it can perform a number of basic image operations.
+
+#### 1. Channels
+
+The concept of a channel seems rather abstract (for a long time I could not grasp what a channel really means, even though I saw the term often), but we can simply think of channels as the number of features, or variables. For example, for a grayscale image the only thing that varies is the "degree of blackness". We commonly use 0~255 to express different degrees of blackness, which we call the grayscale value. This one feature (variable), the grayscale value, is all we need to describe every pixel of a grayscale image. For an RGB image (roughly, the color images we see every day), there are three features (variables): red R (red), green G (green) and blue B (blue). Like the grayscale value, each of these three can vary between 0 and 255, and it is by changing these three values that the rich and colorful pictures on a computer are made.
+
+The figure below shows the RGB color adjustment panel in Ai, a software product from Adobe:
+
+![QQ图片20221012153514](media/pt-gil/GIL语法-QQ图片20221012153514.png)  
+
+We can clearly see that R, G and B can each be adjusted between 0 and 255
+
+#### 2. Modes
+
+`image·mode`
+
+Once we understand the concept of channels, we find that different numbers of channels, together with different ways of defining them, make up different color systems, which we call "modes". Different modes have different characteristics and different application scenarios. For example, the RGB mentioned above is in fact a color mode, often used in photographs and in images and videos meant for display. CMYK is also a common color mode, used mainly in printing.
+
+Common color modes include:
+
+(1) L: 8-bit pixels, representing black and white.
+
+(2) RGB: 3x8-bit pixels, true color.
+
+(3) RGBA: 4x8-bit pixels, true color with a transparency channel.
+
+(4) CMYK: 4x8-bit pixels, color separation.
+
+(5) YCbCr: 3x8-bit pixels, a color video format.
+
+Of course, PIL supports more modes than these, including RGBX (true color with padding) and RGBa (true color with premultiplied alpha).
+
+#### 3. Size
+
+`image·size`
+
+This is the number of pixels in the horizontal and vertical directions of the image (which can be understood simply as length and width). PIL can obtain the size of an image.
+
+#### 4. Palette
+
+A palette can be used to define a specific color value for each pixel.
+
+#### 5. Coordinates
+
+The PIL module can perform some coordinate operations on images.
+
+PIL uses a Cartesian pixel coordinate system, in which the top-left corner is by default the point (0,0) and the unit length is the pixel. If the bottom-right corner of an image has coordinates (100,80), the image is 100×80 pixels.
+
+In PIL a rectangle is stored as four values: the coordinates of the top-left corner and the coordinates of the bottom-right corner. For example, (0,0,100,80), where (0,0) and (100,80) are the origin and the bottom-right corner respectively.
+
+#### 6. Filters
+
+Filters are essentially convolution operations that can "combine" several input pixels into one pixel. PIL has the following filters:
+
+1) NEAREST: nearest-neighbor filter. Picks the nearest pixel from the input image as the output pixel. It ignores all other pixels.
+
+2) BILINEAR: bilinear filter. Performs linear interpolation over a 2x2 matrix of the input image. Note: in the current version of PIL, this filter uses a fixed input template when downsampling.
+
+3) BICUBIC: bicubic filter. Performs cubic interpolation over a 4x4 matrix of the input image. Note: in the current version of PIL, this filter uses a fixed input template when downsampling.
+
+4) ANTIALIAS: smoothing filter. This is a new filter in PIL version 1.1.3. It performs high-quality resampling filtering over all input pixels that can affect an output pixel, in order to compute the output pixel value. In the current version of PIL, this filter is used only by the resize and thumbnail methods.
+
+> Note: in the current version of PIL, the ANTIALIAS filter is the only correct filter for downsampling (for example, converting a large image into a small one). The BILIEAR and BICUBIC filters use fixed input templates and are best for geometric transformations at a fixed scale and for upsampling.
+
+### II. Code Implementations of PIL Operations
+
+#### Basic Operations
+
+##### 1. Opening an image file
+
+> Image.open()
+
+```python
+from PIL import Image
+a = Image.open('Avengers.jpeg')
+a.show()
+```
+
+Output:
+
+> Automatically opens the image below
+
+![Avengers](media/pt-gil/GIL语法-Avengers.jpeg) 
+
+##### 2. Displaying image file information
+
+> Image.mode;Image.size;Image.format
+
+```python
+from PIL import Image
+a = Image.open('Avengers.jpeg')
+print(a.mode, a.size, a.format)
+```
+
+Output: `RGBA (600, 299) PNG`
+
+`mode` is the color mode of the image, `size` is the size of the image in pixels, and `format` is the file format of the image
+
+##### 3. Saving as an image file
+
+> Image.save()
+
+```python
+from PIL import Image
+a = Image.open('Avengers.jpeg')
+a.save("Avengers.png")
+```
+
+Output:
+
+![QQ图片20221012164903](media/pt-gil/GIL语法-QQ图片20221012164903.png) 
+
+We can see that the folder now contains an extra Avengers image in png format.
+
+##### 4. Creating a new image file
+
+> Image.new()
+
+```python
+from PIL import Image
+a = Image.new("RGB", (720, 480), (120, 120, 180))
+# "RGB" is the color mode, (720, 480) is the image size, (120, 120, 180) are the values of the RGB triple
+a.save("Pure_colour.png")
+a.show()
+```
+
+Output: a rather unattractive solid purple rectangular image is generated
+
+<img src="media/pt-gil/GIL语法-Pure_colour.png" alt="Pure_colour" style="zoom:50%;" /> 
+
+##### 5. Pasting images
+
+> Image.paste()
+
+```python
+from PIL import Image
+a = Image.open('Avengers.jpeg')
+print(a.size)
+c = a.resize((200, 150))  # set the image size
+a.paste(c, (200, 100))  # the position the image is pasted to
+a.show()
+```
+
+Output: `(600, 299)`
+
+<img src="media/pt-gil/GIL语法-QQ图片20221016151401.png" alt="QQ图片20221016151401" style="zoom: 50%;" /> 
+
+#### Image Operations
+
+##### 6. Splitting image channels
+
+> Image.split()
+
+```python
+from PIL import Image
+from pylab import subplot, imshow, show
+a = Image.open('Avengers.jpeg')
+ra, ga, ba, aa = a.split()  # split the image into three channel images R, G, B
+subplot(221)
+imshow(ra)
+subplot(222)
+imshow(ga)
+subplot(223)
+imshow(ba)
+subplot(224)
+imshow(aa)
+show()
+```
+
+This code splits the image into four channels (R, G, B and the transparency layer)
+
+##### 7. Merging image channels
+
+> Image.merge()
+
+```python
+from PIL import Image
+from pylab import subplot, imshow, show
+a = Image.open('Avengers.jpeg')
+ra, ga, ba, aa = a.split()  # split the image into four channel images R, G, B, A
+c = Image.merge('RGBA', (ra, ga, ba,aa))  # merge the three channels into one color image
+subplot(221)
+imshow(c)
+show()
+```
+
+Output:
+
+<img src="media/pt-gil/GIL语法-QQ图片20221016145624.png" alt="QQ图片20221016145624" style="zoom:50%;" /> 
+
+##### 8. Reading and modifying the pixel at a given position
+
+>Image.getpixel()/Image.putpixel
+
+```python
+from PIL import Image
+from numpy import array
+a = Image.open('Avengers.jpeg')
+p = (150, 200)
+b1 = a.getpixel(p)
+a.putpixel(p, tuple(array(b1)//2))  # convert the list to a tuple, so that the values can be modified
+# p is the position of the pixel to modify, and tuple(array(b1)//2) gives the new channel values
+print(b1)  # print the pixel value before
+print(a.getpixel(p))  # print the pixel value after
+```
+
+Output:
+
+```python
+(18, 24, 31, 255)
+(9, 12, 15, 127)
+```
+
+##### 9. Resizing an image
+
+> Image.resize()
+
+```python
+from PIL import Image
+a = Image.open('Avengers.jpeg')
+img = a.resize((a.width*3, a.height*4), Image.ANTIALIAS)  # ANTIALIAS is an anti-aliasing operation
+a.show()
+img.show()
+```
+
+Output:
+
+<img src="media/pt-gil/GIL语法-QQ图片20221016213824.png" alt="QQ图片20221016213824" style="zoom: 33%;" /> 
+
+We can clearly see that the image has been stretched
+
+##### 10. Brightness enhancement
+
+> ImageEnhance.Brightness()
+>
+> Image.enhance()
+
+```python
+from PIL import Image
+from PIL import ImageEnhance
+a = Image.open('Avengers.jpeg')
+img = ImageEnhance.Brightness(a)
+bri = 5
+img_bri = img.enhance(bri)
+a.show()
+img.show()
+```
+
+Output:
+
+<img src="media/pt-gil/GIL语法-QQ图片20221016215537.png" alt="QQ图片20221016215537" style="zoom:50%;" /> 
+
+We can clearly see that the image on the right is brighter
+
+##### 11. Contrast enhancement
+
+> ImageEnhance.Contrast()
+>
+> Image.enhance()
+
+```python
+from PIL import Image
+from PIL import ImageEnhance
+a = Image.open('Avengers.jpeg')
+img = ImageEnhance.Contrast(a)
+con = 5
+img_bri = img.enhance(con)
+a.show()
+img_bri.show()
+```
+
+Output:
+
+<img src="media/pt-gil/GIL语法-QQ图片20221016220023.png" alt="QQ图片20221016220023" style="zoom: 50%;" /> 
+
+We can see that, compared with the original image (left), the color contrast of the image on the right (whites whiter, blacks blacker) is much stronger
+
+##### 12. Chroma enhancement
+
+>ImageEnhance.Color()
+>
+>Image.enhance()
+
+```python
+from PIL import Image
+from PIL import ImageEnhance
+a = Image.open('Avengers.jpeg')
+img = ImageEnhance.Color(a)
+con = 15
+img_bri = img.enhance(con)
+a.show()
+img_bri.show()
+```
+
+Output:
+
+<img src="media/pt-gil/GIL语法-QQ图片20221016220407.png" alt="QQ图片20221016220407" style="zoom:50%;" /> 
+
+##### 13. Rotating an image
+
+> Image.rotate(degree)  # rotates counterclockwise by degree degrees
+
+```python
+from PIL import Image
+a = Image.open('Avengers.jpeg')
+img = a.rotate(60)
+a.show()
+img.show()
+```
+
+Output:
+
+<img src="media/pt-gil/GIL语法-QQ图片20221016221240.png" alt="QQ图片20221016221240" style="zoom:50%;" /> 
+
+##### 14. Overlaying two images
+
+> Image.blend(img1,img2,p)
+
+Overlaying two images is essentially adding up pixel values, calculated by the formula:
+$$
+img=img_1*(1-p)+img_2*p
+$$
+
+```python
+from PIL import Image
+a = Image.open('Avengers.png')
+a = a.convert('RGBA')
+r = Image.open('R.png')
+r = r.convert('RGBA')
+img = Image.blend(a, r, 0.3)
+a.show()
+r.show()
+img.show()
+```
+
+Output:
+
+<img src="media/pt-gil/GIL语法-QQ图片20221016224246.png" alt="QQ图片20221016224246" style="zoom: 45%;" />
+
+The vividness of the colors in the rightmost image lies between that of the left image and that of the middle image, which also shows how color blending works.
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+参考资料：
+
+[越太][https://blog.csdn.net/September_C/article/details/113701210?ops_request_misc=&request_id=&biz_id=102&utm_term=PIL%E6%A8%A1%E5%9D%97&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-0-113701210.142^v53^pc_rank_34_2,201^v3^control_1&spm=1018.2226.3001.4187]
+
+### 一、PIL基础概念
+
+> PIL(Python Image Library)是用来实现基本的图像处理的库，能够实现一些基本的图像操作。
+
+#### 1、通道
+
+​        通道这个概念看上去比较抽象(很长一段时间我并不能理解通道的内涵虽然经常看到)，不过我们可以简单将通道理解为特征数或者变量数。比如：对于灰度图像来说，其变化就是“黑色程度”的变化。我们常常用0~255来表示不同的“黑色程度”——我们称为灰度值。我们只需要灰度值这一个特征（变量）就能描述灰度图的每个像素点。而对于RGB图像（大致理解为我们日常看到的彩色图像），有三个特征（变量），分别是红色R(red)、绿色G(green)、蓝色B(blue)这三者。同灰度值相似，这三者也可以在0-255之间变化，改变这三个值，才组成了计算机上丰富多彩的图片。
+
+下图是Adobe旗下软件Ai中RGB颜色的调节界面：
+
+![QQ图片20221012153514](media/pt-gil/GIL语法-QQ图片20221012153514.png)  
+
+我们可以明显看出RGB分别可以在0-255调节
+
+#### 2、模式 
+
+`image·mode`
+
+我们理解了通道的概念之后，我们会发现，不同的通道数与通道定义方式会组成不同的颜色系统，我们称之为“模式”。不同的模式有不同的特点以及不同的应用场景。比如上文提到的RGB其实就是一种颜色模式，经常运用在摄影与展现的图片、视频中。CMYK也是一种常见的颜色模式，它主要运用在印刷中。
+
+常见的有颜色模式有：
+
+(1) L：8位像素，表示黑和白。
+
+(2) RGB：3x8位像素，为真彩色。
+
+(3) RGBA：4x8位像素，有透明通道的真彩色。
+
+(4) CMYK：4x8位像素，颜色分离。
+
+(5) YCbCr：3x8位像素，彩色视频格式。
+
+当然PIL支持的模式也不止这些，包括RGBX（有padding的真彩色）和RGBa（有自左乘alpha的真彩色）。
+
+#### 3、尺寸
+
+`image·size`
+
+就是图像的水平与竖直方向的像素数（可简单理解为长宽）。PIL可以获得图片的尺寸。
+
+#### 4、调色板
+
+使用调色板可以为每个像素定义具体的颜色值。
+
+#### 5、坐标
+
+PIL模块可以对图像进行一些坐标操作。
+
+PIL使用的是笛卡尔像素坐标系统，默认左上角为(0,0)点，单位长度为像素。假如一个图片右下角的坐标为(100,80)，则说明这个图像的像素为100×80。
+
+在PIL中我们保存一个长方形是由四个值来保存，分别是左上角坐标和右下角坐标。比如：(0,0,100,80)，其中(0,0)和(100,80)分别为原点坐标和右下角坐标。
+
+#### 6、滤波器
+
+滤波器本质是卷积操作，可以将多个输入像素"组合"成一个像素。在PIL中有以下几种滤波：
+
+1) NEAREST：最近滤波。从输入图像中选取最近的像素作为输出像素。它忽略了所有其他的像素。
+
+2) BILINEAR：双线性滤波。在输入图像的2x2矩阵上进行线性插值。注意：PIL的当前版本，做下采样时该滤波器使用了固定输入模板。
+
+3) BICUBIC：双立方滤波。在输入图像的4x4矩阵上进行立方插值。注意：PIL的当前版本，做下采样时该滤波器使用了固定输入模板。
+
+4) ANTIALIAS：平滑滤波。这是PIL 1.1.3版本中新的滤波器。对所有可以影响输出像素的输入像素进行高质量的重采样滤波，以计算输出像素值。在当前的PIL版本中，这个滤波器只用于改变尺寸和缩略图方法。
+
+> 注意：在当前的PIL版本中，ANTIALIAS滤波器是下采样（例如，将一个大的图像转换为小图）时唯一正确的滤波器。BILIEAR和BICUBIC滤波器使用固定的输入模板，用于固定比例的几何变换和上采样是最好的。
+
+### 二、PIL相关代码操作实现
+
+#### 基础操作相关
+
+##### 1、打开图像文件
+
+> Image.open()
+
+```python
+from PIL import Image
+a = Image.open('Avengers.jpeg')
+a.show()
+```
+
+运行结果：
+
+> 自动打开下面一张图片
+
+![Avengers](media/pt-gil/GIL语法-Avengers.jpeg) 
+
+##### 2、显示图像文件信息
+
+> Image.mode;Image.size;Image.format
+
+```python
+from PIL import Image
+a = Image.open('Avengers.jpeg')
+print(a.mode, a.size, a.format)
+```
+
+输出结果：`RGBA (600, 299) PNG`
+
+`mode`指的是图像的颜色模式，`size`指的是图像像素，`format`指的是图像的文件格式
+
+##### 3、另存为图像文件
+
+> Image.save()
+
+```python
+from PIL import Image
+a = Image.open('Avengers.jpeg')
+a.save("Avengers.png")
+```
+
+运行结果：
+
+![QQ图片20221012164903](media/pt-gil/GIL语法-QQ图片20221012164903.png) 
+
+我们可以发现文件夹中多了一个png格式的Avengers图片。
+
+##### 4、创建新图像文件
+
+> Image.new()
+
+```python
+from PIL import Image
+a = Image.new("RGB", (720, 480), (120, 120, 180))
+# "RGB"是颜色模式，(720, 480)是图像尺寸，(120, 120, 180)是RGB三元组的值
+a.save("Pure_colour.png")
+a.show()
+```
+
+运行结果：生成了一个不怎么好看的纯紫色长方形图片
+
+<img src="media/pt-gil/GIL语法-Pure_colour.png" alt="Pure_colour" style="zoom:50%;" /> 
+
+##### 5、图像的粘贴
+
+> Image.paste()
+
+```python
+from PIL import Image
+a = Image.open('Avengers.jpeg')
+print(a.size)
+c = a.resize((200, 150))  # 设置图像尺寸
+a.paste(c, (200, 100))  # 粘贴图像到的位置
+a.show()
+```
+
+运行结果：`(600, 299)`
+
+<img src="media/pt-gil/GIL语法-QQ图片20221016151401.png" alt="QQ图片20221016151401" style="zoom: 50%;" /> 
+
+#### 图像操作相关
+
+##### 6、分离图像通道
+
+> Image.split()
+
+```python
+from PIL import Image
+from pylab import subplot, imshow, show
+a = Image.open('Avengers.jpeg')
+ra, ga, ba, aa = a.split()  # 把图像分割为R,G,B三个通道图像
+subplot(221)
+imshow(ra)
+subplot(222)
+imshow(ga)
+subplot(223)
+imshow(ba)
+subplot(224)
+imshow(aa)
+show()
+```
+
+这段代码的作用就是将图片分成四个通道（分别是R、G、B和透明层）
+
+##### 7、合并图像通道
+
+> Image.merge()
+
+```python
+from PIL import Image
+from pylab import subplot, imshow, show
+a = Image.open('Avengers.jpeg')
+ra, ga, ba, aa = a.split()  # 把图像分割为R,G,B,A四个通道图像
+c = Image.merge('RGBA', (ra, ga, ba,aa))  # 三个通道合成一张彩色图像
+subplot(221)
+imshow(c)
+show()
+```
+
+运行结果：
+
+<img src="media/pt-gil/GIL语法-QQ图片20221016145624.png" alt="QQ图片20221016145624" style="zoom:50%;" /> 
+
+##### 8、读取修改指定位置像素
+
+>Image.getpixel()/Image.putpixel
+
+```python
+from PIL import Image
+from numpy import array
+a = Image.open('Avengers.jpeg')
+p = (150, 200)
+b1 = a.getpixel(p)
+a.putpixel(p, tuple(array(b1)//2))  # 将列表转换成元祖，这样才可以修改数值
+# p是修改像素的位置，tuple(array(b1)//2)是赋予新的通道值
+print(b1)  # 打印之前的像素值
+print(a.getpixel(p))  # 打印之后的像素值
+```
+
+运行结果：
+
+```python
+(18, 24, 31, 255)
+(9, 12, 15, 127)
+```
+
+##### 9、改变图像尺寸
+
+> Image.resize()
+
+```python
+from PIL import Image
+a = Image.open('Avengers.jpeg')
+img = a.resize((a.width*3, a.height*4), Image.ANTIALIAS)  # ANTIALIAS是抗锯齿化操作
+a.show()
+img.show()
+```
+
+运行结果：
+
+<img src="media/pt-gil/GIL语法-QQ图片20221016213824.png" alt="QQ图片20221016213824" style="zoom: 33%;" /> 
+
+可以很清楚发现图像发生了拉伸
+
+##### 10、亮度增强
+
+> ImageEnhance.Brightness()
+>
+> Image.enhance()
+
+```python
+from PIL import Image
+from PIL import ImageEnhance
+a = Image.open('Avengers.jpeg')
+img = ImageEnhance.Brightness(a)
+bri = 5
+img_bri = img.enhance(bri)
+a.show()
+img.show()
+```
+
+运行结果：
+
+<img src="media/pt-gil/GIL语法-QQ图片20221016215537.png" alt="QQ图片20221016215537" style="zoom:50%;" /> 
+
+可以很明显看出右边图片亮度增强了
+
+##### 11、对比度增强
+
+> ImageEnhance.Contrast()
+>
+> Image.enhance()
+
+```python
+from PIL import Image
+from PIL import ImageEnhance
+a = Image.open('Avengers.jpeg')
+img = ImageEnhance.Contrast(a)
+con = 5
+img_bri = img.enhance(con)
+a.show()
+img_bri.show()
+```
+
+运行结果：
+
+<img src="media/pt-gil/GIL语法-QQ图片20221016220023.png" alt="QQ图片20221016220023" style="zoom: 50%;" /> 
+
+可以发现相比原图像(左)，右图颜色对比(白的更白，黑的更黑)明显强烈了很多
+
+##### 12、色度增强
+
+>ImageEnhance.Color()
+>
+>Image.enhance()
+
+```python
+from PIL import Image
+from PIL import ImageEnhance
+a = Image.open('Avengers.jpeg')
+img = ImageEnhance.Color(a)
+con = 15
+img_bri = img.enhance(con)
+a.show()
+img_bri.show()
+```
+
+运行结果：
+
+<img src="media/pt-gil/GIL语法-QQ图片20221016220407.png" alt="QQ图片20221016220407" style="zoom:50%;" /> 
+
+##### 13、图像旋转
+
+> Image.rotate(degree)  # 逆时针旋转degree度
+
+```python
+from PIL import Image
+a = Image.open('Avengers.jpeg')
+img = a.rotate(60)
+a.show()
+img.show()
+```
+
+运行结果：
+
+<img src="media/pt-gil/GIL语法-QQ图片20221016221240.png" alt="QQ图片20221016221240" style="zoom:50%;" /> 
+
+##### 14、两张图片叠加
+
+> Image.blend(img1,img2,p)
+
+两张图片的叠加本质上是像素值的叠加，其计算公式为：
+$$
+img=img_1*(1-p)+img_2*p
+$$
+
+```python
+from PIL import Image
+a = Image.open('Avengers.png')
+a = a.convert('RGBA')
+r = Image.open('R.png')
+r = r.convert('RGBA')
+img = Image.blend(a, r, 0.3)
+a.show()
+r.show()
+img.show()
+```
+
+运行结果：
+
+<img src="media/pt-gil/GIL语法-QQ图片20221016224246.png" alt="QQ图片20221016224246" style="zoom: 45%;" />
+
+最右边一张图的颜色鲜艳程度位于左图和中图之间，这也能说明颜色叠加是如何运作的。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tanh · Yongkang Li</title>
+<meta name="description" content="The hyperbolic tangent function (tanh) is closely related to the sigmoid function, serving as an amplified version of it. In practical usage, the tanh…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Deep Learning from Zero to Kang</span><span data-l="cn">Deep Learning from Zero to Kang</span></span><i>/</i><span><span data-l="en">Activation functions</span><span data-l="cn">激活函数</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Tanh</span><span data-l="cn">Tanh 激活函数</span></h1>
+    <div class="meta"><span data-l="en">1 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="sigmoid.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Sigmoid</span><span data-l="cn">Sigmoid 激活函数</span></span></a><a class="pn glass" href="relu.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">ReLU</span><span data-l="cn">ReLU 激活函数</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+
+The hyperbolic tangent function (tanh) is closely related to the sigmoid function, serving as an amplified version of it. In practical usage, the tanh function is preferred over the sigmoid function.
+
+### Function Expression
+
+$$
+\tanh(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}}
+$$
+
+Defined over the entire real domain, its range is between $(-1, 1)$.
+
+### Function Graph
+
+![Tanh Function Graph](media/tanh/1.png)
+
+### Function Characteristics
+
+Since the tanh activation function is highly similar to the sigmoid activation function, they share many characteristics.
+
+==In fact, the tanh activation function is essentially a translation of the sigmoid function: $\tanh(x) = 2\sigma(2x) - 1$==
+
+#### Advantages:
+
+- Symmetric about the origin, tanh converges faster than sigmoid, thereby improving the efficiency of weight updates.
+  
+- Partially mitigates the vanishing gradient problem due to its larger derivative values.
+
+  > Comparison of tanh and sigmoid derivative values:
+  >
+  > ![Derivative Values Comparison](media/tanh/2.png)
+  >
+  > A comparison reveals that the derivative values of tanh are significantly larger than those of sigmoid.
+
+#### Disadvantages:
+
+- Like sigmoid, the tanh function suffers from saturation, failing to address the vanishing gradient problem.
+- Higher computational complexity due to the involvement of exponential operations.
+</script>
+<script type="text/markdown" data-lang="cn">
+
+双曲正切1函数(tanh)，其图像与sigmoid函数十分相近，相当于sigmoid函数的放大版。在实际的使用中，tanh函数要优先于sigmoid函数。
+
+### 函数表达式
+
+$$
+tanh=\frac{e^x-e^{-x}}{e^x+e^{-x}}
+$$
+
+其定义域为$R$，值域为$(-1,1)$
+
+### 函数图像
+
+![QQ图片20221225172350](media/tanh/1.png)
+
+### 函数特性
+
+由于tanh激活函数与sigmoid激活函数十分相似，所以两者在特性方面有很多共同点
+
+==实际上，tanh激活函数相当于sigmoid函数的平移：$tanh(x)=2sigmoid(2x)−2$==
+
+#### 优点：
+
+- 以0位对称中心，收敛速度快于sigmoid，提高了权重更新的效率
+
+- 部分解决了梯度消失的问题，因为其导数值更大
+
+   > tanh导数值与sigmoid导数值对比：
+   >
+   > ![QQ图片20221225175526](media/tanh/2.png)
+   >
+   > 通过对比不难发现，tanh的导数值要远远大于sigmoid的导数值
+
+#### 缺点：
+
+- 与sigmoid一样，tanh函数具有容易饱和的特点，没有根治梯度消失的问题
+- 计算复杂度较高，幂运算更加复杂
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

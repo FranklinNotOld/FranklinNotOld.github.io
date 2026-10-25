@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deep Feedforward Networks: Output Units · Yongkang Li</title>
+<meta name="description" content="In MLP 1.1 we gained a preliminary understanding of neural networks, but we only touched on activation functions superficially. In the next two posts…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Deep learning fundamentals</span><span data-l="cn">深度学习基础</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Deep Feedforward Networks: Output Units</span><span data-l="cn">深度前馈网络：输出单元</span></h1>
+    <div class="meta"><span data-l="en">5 min read</span><span data-l="cn">约 4 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="dl-mlp-basics.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Deep Feedforward Networks: Basic Concepts</span><span data-l="cn">深度前馈网络：基础概念</span></span></a><a class="pn glass" href="dl-backprop.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Deep Feedforward Networks: Backpropagation</span><span data-l="cn">深度前馈网络：反向传播</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+In MLP 1.1 we gained a preliminary understanding of neural networks, but we only touched on activation functions superficially. In the next two posts I will cover activation functions for output units and for hidden units, respectively.
+
+
+
+### Understanding the Role of Output Units
+
+In a multilayer perceptron, the role of the output unit is to finally convert the network's output into the output the task requires. Suppose we have a binary classification problem where we need to decide whether a picture contains a "cat". Our input, however, is a high-dimensional matrix converted from a color image. After the network's computation, this high-dimensional matrix ends up as another high-dimensional matrix at the output layer, but that matrix is not the answer we want, "yes" or "no" ("0" or "1"). So we need to add an activation function at the end of the output layer to turn the generated high-dimensional matrix into the answer we want.
+
+As we can see, the output unit carries an extremely important task and is the final key step of a neural network model. As for the choice of its activation function, it depends on the situation.
+
+
+
+### Types of Output Units
+
+#### Linear Units for Gaussian Output Distributions
+
+The traditional perceptron has a problem: when the dataset is not linearly separable, it may fail to converge. This is because the traditional perceptron uses a step function, namely:
+$$
+sign(x)=\begin{cases}
++1,&x>0\\
+-1,&x<0
+\end{cases}
+$$
+Such a discontinuous function easily causes the descent point to jump back and forth during gradient descent, so that it fails to converge, as shown below:
+
+<img src="media/dl-output-units/JPG-资源-10.jpg" alt="Resource 10" style="zoom: 25%;" /> 
+
+To solve this problem, we replace the step function with a continuous linear unit. Because the linear unit is continuous, even when the dataset is not separable it can still help the model reach a best approximation, which solves the convergence problem. That is, the activation function $f$ is
+$$
+f(\hat y)=W^Th+b
+$$
+It can be understood as simply multiplying by the weights and adding the bias. After switching to a linear unit, the network can no longer handle classification and can only handle regression. Classification will be addressed later in the article.
+
+So what does this have to do with the Gaussian output distribution?
+
+For input data, as long as it does not follow some specific distribution, we assume it follows a normal/Gaussian distribution (by the central limit theorem). Moreover, if we feed an $x$ into the unit and obtain the output $\hat{y} $, then we assume $p(y|x) $ follows a Gaussian distribution with mean $\hat{y} $ and standard deviation I. That is:
+$$
+p(\boldsymbol{y} \mid \boldsymbol{x})=\mathcal{N}(\boldsymbol{y} ; \hat{\boldsymbol{y}}, \boldsymbol{I})
+$$
+Under a Gaussian distribution, maximizing the likelihood (minimizing the negative log-likelihood) is equivalent to minimizing the mean squared error, so linear output units can use the mean squared error loss function
+
+$L(y, \hat{y})=\frac{1}{N} \sum \limits _{n=1}^{N}\left\|\hat{y}^{(n)}-y^{(n)}\right\|^{2}$
+
+where $y^{(n)}$ is the true value, $\hat{y}^{(n)}$ is the predicted value, and $N$  is the number of samples.
+
+
+
+#### Sigmoid Units for Bernoulli Output Distributions
+
+The Bernoulli distribution is the binomial distribution, whose probabilities are as follows:
+$$
+\begin{array}{l} P(X=1)=\phi \\ P(X=0)=1-\phi \\ P(X=a)=\phi^{a}(a-\phi)^{(1-a)}\end{array}
+$$
+Its mean and variance are:
+$$
+\begin{array}{l} E[x]=\phi \\\operatorname{Var}(x)=\phi(1-\phi) \end{array}
+$$
+Simply put, the Bernoulli distribution is mainly a probability distribution over two opposing events, and a dataset that follows it is a binary classification problem. For binary classification, we use sigmoid (logistic) regression as the activation function. The sigmoid function is:
+$$
+\hat{y}=\sigma\left(\boldsymbol{w}^{\mathrm{T}} \boldsymbol{h}+b\right)=\frac{1}{1+e^ {-\left(\boldsymbol{w}^{\mathrm{T}} \boldsymbol{h}+b\right)}}
+$$
+Its graph is:![QQ picture 20221223204224](media/dl-output-units/笔记图片-QQ图片20221223204224.png)
+
+From the properties and graph of the function, it is easy to see that when $x>3$ the function is very close to 1; when $x<-3$ it is very close to 0; and when $x=0$ the function value is exactly 0.5. We can treat the function value as a probability (since it always lies in (0,1)) and use it for binary classification: for one class, as long as its input is greater than 0, its probability is greater than 0.5 and we classify it as "1"; if the input is less than 0, its probability is less than 0.5 and we classify it as "0".
+
+In addition, because logistic regression is continuous, unlike traditional binary classification functions, which are basically all jump discontinuities, it is convenient to compute with during gradient descent; moreover, the function is defined over the entire real line and its gradient is never 0, which is very beneficial for training.
+
+For these reasons, the sigmoid function is well suited to binary classification problems.
+
+The sigmoid output unit can use the cross-entropy loss function
+
+$L(y, \hat{y})=-\frac{1}{N} \sum \limits _{n=1}^{N}\left(y^{(n)} \log \hat{y}^{(n)}+\left(1-y^{(n)}\right) \log \left(1-\hat{y}^{(n)}\right)\right)$
+where $y^{(n)}$  is the true label, $\hat{y}^{(n)}$ is the predicted label, and $ N$ is the number of samples. 
+
+
+
+#### Softmax Units for Multiclass Classification
+
+We can use the sigmoid function for binary classification, but we still need a function for multiclass problems.
+
+For example, suppose the network outputs a multidimensional vector $\left[\begin{matrix}
+4\\
+7\\
+2
+\end{matrix}
+\right]$, whose three entries are the values the network produces for the inputs of class 1, class 2 and class 3. We could assign the input to whichever class has the largest value, but that makes it inconvenient to apply a loss function afterwards, so we still need to convert them into "probabilities". We can use the following formula:
+$$
+p_i=\frac{i}{\sum_{i=1}^k{i}}
+$$
+to turn the values into probabilities whose sum is 1, which guarantees that the classification result is one of these three. Computing: $p_1=\frac{4}{4+7+2}=0.308,p_2=\frac{7}{4+7+2}=0.538,p_3=\frac{2}{4+7+2}=0.154$ we find that $p_2$ has the highest probability, so in theory the input should be assigned to class 2. This simple way of computing probabilities seems fine, but there is actually a better approach, the softmax function.
+
+Above, we directly used the network's output values as probability weights; we can also use their exponentials as the weights, as follows:
+$$
+p_i=\frac{e^i}{\sum_{i=1}^k{e^i}}
+$$
+Computing:
+
+$p_1=\frac{e^4}{e^4+e^7+e^2}=0.047,p_2=\frac{e^7}{e^4+e^7+e^2}=0.946,p_3=\frac{e^2}{e^4+e^7+e^2}=0.007$
+
+Comparing this set of values with the earlier ones: $[0.308,0.538,0.154]$ and $[0.047,0.538,0.154]$, we clearly see that the softmax function "penalizes" wrong class values well, i.e., it makes the probabilities of wrong classes extremely small. This is because the growth rate of the exponential function increases astonishingly fast. This is actually beneficial for our classification, and it is one of the reasons we use the softmax function.
+
+For multiclass problems we also use the cross-entropy loss function. However, since the softmax function contains exponentials, the values may become too large and cause numerical overflow when computing the loss, so we can further improve softmax:
+$$
+softmax(z')=softmax(z-maxz_i)
+$$
+After this treatment the values no longer grow too large, while the properties that the probabilities sum to 1 and that misclassified data is penalized still hold.
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+在MLP1.1中，我们对神经网络有了一些初步的了解，但是对激活函数这一块其实涉猎较浅，下面两篇博客我将会分别讲解输出单元和隐藏单元的激活函数相关知识。
+
+
+
+### 输出单元作用理解
+
+​	在多层感知机中，输出单元承担的作用是最后将神经网络的输出转化成任务所需要的输出。比如我们现在有一个二分类的问题，需要判断图片中是否有“猫”。但是我们的输入是一张彩色图片转化而来的高维矩阵，这个高维矩阵经过神经网络的计算最终向输出层输出了一个高维矩阵，但是这个高维矩阵其实并不是我们想要得到的答案“是”或者“否”（“0”或者“1”），我们就需要在输出层最后加一个激活函数，去将这个生成的高维矩阵最终转化成我们想要的答案。
+
+​	由此可见，输出单元承担着极其重要的任务，是神经网络模型最后的关键一步。至于其激活函数的选择，这需要根据不同情况进行选择。
+
+
+
+### 输出单元类型
+
+#### 用于高斯输出分布的线性单元
+
+​	传统的感知机存在一个问题，就是当数据集不是线性可分的时候，可能无法收敛。这是因为传统感知机用的是阶跃函数，即：
+$$
+sign(x)=\begin{cases}
++1,&x>0\\
+-1,&x<0
+\end{cases}
+$$
+这种不连续的函数很容易导致在梯度下降过程中下降点来回跳跃而导致无法收敛，如下图：
+
+<img src="media/dl-output-units/JPG-资源-10.jpg" alt="资源 10" style="zoom: 25%;" /> 
+
+​	为了解决这个问题于是我们将阶跃函数换成连续的线性单元。因为线性单元其连续性，所以即使数据集不可分，线性单元也能够帮助其到达一个最佳的近似上，这就解决了无法收敛的问题。即激活函数$f$为
+$$
+f(\hat y)=W^Th+b
+$$
+​	可以理解为直接进行权重相乘并加上偏置函数即可得到。替换成线性单元之后，该神经网络就无法完成分类问题而只能完成回归的问题了。至于分类问题，后文会阐述到。
+
+​	那么这个和高斯输出分布有什么关系呢？
+
+​	对于输入的数据，只要其不满足特定分布，我们就会认为其满足正态分布/高斯分布(中心极限定理)，而且如果我们向单元输入 一个$x$、得到输出 $\hat{y} $，那么我们会认为 $p(y|x) $ 符合均值为 $\hat{y} $ 标准差为I的高斯分布。即：
+$$
+p(\boldsymbol{y} \mid \boldsymbol{x})=\mathcal{N}(\boldsymbol{y} ; \hat{\boldsymbol{y}}, \boldsymbol{I})
+$$
+​	基于高斯分布，最大化似然（最小化负对数似然）等价于最小化均方误差，因此线性输出单元可采用均方误差损失函数
+
+　　　　$L(y, \hat{y})=\frac{1}{N} \sum \limits _{n=1}^{N}\left\|\hat{y}^{(n)}-y^{(n)}\right\|^{2}$
+
+　其中 $y^{(n)}$ 为真实值, $\hat{y}^{(n)}$ 为预测值， $N$  为样本数。
+
+
+
+#### 用于伯克利输出分布的sigmoid单元
+
+​	伯克利分布即为二项分布，其分布概率如下：
+$$
+\begin{array}{l} P(X=1)=\phi \\ P(X=0)=1-\phi \\ P(X=a)=\phi^{a}(a-\phi)^{(1-a)}\end{array}
+$$
+其均值和方差为：
+$$
+\begin{array}{l} E[x]=\phi \\\operatorname{Var}(x)=\phi(1-\phi) \end{array}
+$$
+​	简单来说，伯克利分布主要是针对两个对立事件的概率分布，满足该分布的数据集属于二分类问题。对于二分类问题，我们会用sigmoid(logistic)回归作为激活函数。sigmoid函数表达式如下：
+$$
+\hat{y}=\sigma\left(\boldsymbol{w}^{\mathrm{T}} \boldsymbol{h}+b\right)=\frac{1}{1+e^ {-\left(\boldsymbol{w}^{\mathrm{T}} \boldsymbol{h}+b\right)}}
+$$
+图像为：![QQ图片20221223204224](media/dl-output-units/笔记图片-QQ图片20221223204224.png)
+
+​	根据函数性质和图像不难发现，当$x>3$时，函数十分趋近于1；当$x<-3$时，函数十分趋近于0；而当函数$x=0$时，函数值正好等于0.5。我们可以将函数值作为概率值（因为函数值始终在(0,1)），并利用此进行二分类：其中一类只要它的值大于0，其概率值就大于0.5，我们就可以将其归类为“1”，如果它小于0，其概率值就小于0.5，我们就可以将其归类为“0”。
+
+​	此外，由于逻辑回归具有连续性，不像传统的二分类函数基本都是跳跃的，在进行梯度下降的时候方便计算；而且该函数在实数域上都有定义，且梯度不为0，这样十分有利于训练。
+
+​	综上几个原因，sigmoid函数很适合用于二分类问题。
+
+​	sigmoid输出单元可以采用交叉熵损失函数
+
+　　　　$L(y, \hat{y})=-\frac{1}{N} \sum \limits _{n=1}^{N}\left(y^{(n)} \log \hat{y}^{(n)}+\left(1-y^{(n)}\right) \log \left(1-\hat{y}^{(n)}\right)\right)$
+　其中 $y^{(n)}$  为真实标签, $\hat{y}^{(n)}$ 为预测标签， $ N$ 为样本数。 
+
+
+
+#### 用于多分类的softmax单元
+
+​	我们可以用sigmoid函数处理二分类问题，但是我们仍然需要一个函数去处理多分类的问题。
+
+​	比如我们现在通过神经网络输出了一个多维向量$\left[\begin{matrix}
+4\\
+7\\
+2
+\end{matrix}
+\right]$，这三个数值分别表示类别1、类别2、类别3的输入经过神经网络所得到的值。我们可以根据哪个数值最大就将其归于哪一类，但是这样做并不方便后续使用损失函数，我们仍需要将其转换成“概率”。我们可以通过下面式子：
+$$
+p_i=\frac{i}{\sum_{i=1}^k{i}}
+$$
+将数值转化成概率，且这三者的概率和为1，即保证了该分类结果必定是这三者的其中一个。我们通过计算：$p_1=\frac{4}{4+7+2}=0.308,p_2=\frac{7}{4+7+2}=0.538,p_3=\frac{2}{4+7+2}=0.154$发现$p_2$的概率最大，所以理论上应该归属于第二类。用这种简单的概率求值方法看上去是没有问题的，但是我们其实有一种更好的方案，即softmax函数。
+
+​	上面我们求概率值是直接把神经网络输出值当做概率权重值，我们也可以把其指数函数当做权重值，如下：
+$$
+p_i=\frac{e^i}{\sum_{i=1}^k{e^i}}
+$$
+通过计算：
+
+$p_1=\frac{e^4}{e^4+e^7+e^2}=0.047,p_2=\frac{e^7}{e^4+e^7+e^2}=0.946,p_3=\frac{e^2}{e^4+e^7+e^2}=0.007$
+
+​	我们将这一组值和之前的值进行对比：$[0.308,0.538,0.154]$和$[0.047,0.538,0.154]$，我们会明显地发现，softmax函数可以很好的“惩罚”错误的分类值，即将错误的分类值概率变得极小。这是因为指数函数的增长率会惊人的增加。这对我们的分类其实是有利的，这也是我们使用softmax函数的原因之一。
+
+​	多分类问题下我们也使用交叉熵损失函数。但是由于softmax函数中存在指数，有可能会使数值过大而造成损失函数计算时出现数值溢出的情况，所以我们还可以对softmax进行进一步的改进：
+$$
+softmax(z')=softmax(z-maxz_i)
+$$
+这样处理之后，数值就不会变得过大，但是依然满足概率和为1、惩罚误分类数据等特点。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

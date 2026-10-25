@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Work Zone Risk Prediction · Yongkang Li</title>
+<meta name="description" content="A roadside system that predicts which vehicles are about to intrude into a highway work zone: a 4 s time-to-collision screen and an attention-LSTM trajectory predictor, field-tested in Indiana. Purdue University with INDOT.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/project.css?v=3">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="projects" data-root="../">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<main class="page">
+<div class="wrap">
+
+  <nav class="crumbs"><a href="../index.html#projects">Projects</a><i>/</i><span>Work Zone Risk Prediction</span></nav>
+
+  <header class="p-hero solo">
+    <div>
+      <div class="eyebrow">Research project · Purdue University · 2025 – present</div>
+      <h1>Work Zone <b class="grad">Risk Prediction</b></h1>
+      <p class="lede">A roadside system that watches traffic approaching a highway lane closure and <strong>predicts, a few seconds ahead, which vehicles are about to cut into the work zone</strong> — in real time, on an edge computer next to the road.</p>
+      <div class="tags">
+        <span class="badge" style="--c: var(--c1)"><i></i>Roadside radar</span>
+        <span class="badge" style="--c: var(--c2)"><i></i>Trajectory prediction</span>
+        <span class="badge" style="--c: var(--c3)"><i></i>Edge computing</span>
+        <span class="badge" style="--c: #fb923c"><i></i>Field tests</span>
+      </div>
+      <p class="role"><b>My role:</b> I designed and built the two-stage risk-prediction system and its real-time runtime. Lane estimation and camera–radar fusion come from teammates.</p>
+    </div>
+  </header>
+
+  <figure class="cover">
+    <div class="stage">
+      <img class="poster" src="../assets/projects/workzone/replay-poster.jpg" alt="">
+      <div id="wz-replay" role="img"
+        aria-label="3D replay of real radar tracks approaching a lane closure: most cars leave the closing lane early; cars still in it within 4 seconds of the closure are flagged for Stage 2"></div>
+    </div>
+    <figcaption>24 s of real radar tracks from an Indiana work zone, replayed in real time at true scale. Cars in the closing lane are outlined in cyan with their 4-second reach drawn ahead of them; when the reach crosses the closure front, the car turns red and is handed to Stage 2. Track fragments of the same vehicle are joined and lateral radar jitter is smoothed; the drum layout is reconstructed from where traffic actually drove.</figcaption>
+  </figure>
+
+  <div class="kpis">
+    <div class="kpi glass"><b class="grad">6</b><span>field datasets from work zones in Indiana and Texas</span></div>
+    <div class="kpi glass"><b class="grad">≈ 11 ms</b><span>per prediction, Stage 1 + Stage 2, on a GPU</span></div>
+    <div class="kpi glass"><b class="grad">≤ 0.3%</b><span>of passing cars rated high risk by Stage 2 in field tests</span></div>
+    <div class="kpi glass"><b class="grad">4 s</b><span>time-to-collision gate, grounded in stopping distance</span></div>
+  </div>
+
+  <section class="block">
+    <div class="kicker">The problem</div>
+    <h2>Late mergers are the danger <b>at a lane closure</b></h2>
+    <div class="prose">
+      <p>A highway work zone closes one or more lanes and puts crews on foot a few feet from live traffic. Most drivers merge out of the closed lane early. The ones who don't — who stay in the closing lane at speed, or swerve back into it — are the ones who end up inside the closure.</p>
+      <p>Roadside sensors can see those vehicles coming. The hard part is deciding, a few seconds ahead and at highway speed, <strong>which of thousands of passing vehicles is actually a threat</strong>, without raising so many alarms that drivers and workers stop listening.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="kicker">How it works</div>
+    <h2>Sense, screen, <b>predict</b></h2>
+    <div class="pipe glass">
+      <svg viewBox="0 0 1000 150" role="img" aria-label="Pipeline: roadside sensing, fusion and lane estimation, Stage 1 time-to-collision screen, Stage 2 trajectory prediction, risk level, digital twin">
+        <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk" d="M0 0 10 5 0 10z"/></marker></defs>
+        <text class="g" x="0" y="18">ON THE ROADSIDE EDGE COMPUTER</text>
+        <rect class="bx" x="0" y="34" width="150" height="96" rx="14"/><text class="t" x="14" y="68">Roadside sensing</text><text class="s" x="14" y="92">radar at ~10 Hz</text><text class="s" x="14" y="110">+ camera</text>
+        <rect class="bx" x="170" y="34" width="150" height="96" rx="14"/><text class="t" x="184" y="68">Fusion &amp; lanes</text><text class="s" x="184" y="92">tracks, vehicle type,</text><text class="s" x="184" y="110">lane of each vehicle</text>
+        <rect class="bx s1" x="340" y="34" width="150" height="96" rx="14"/><text class="t" x="354" y="68">Stage 1 · screen</text><text class="s" x="354" y="92">time to the closure</text><text class="s" x="354" y="110">≤ 4 s ?</text>
+        <rect class="bx s2" x="510" y="34" width="150" height="96" rx="14"/><text class="t" x="524" y="68">Stage 2 · predict</text><text class="s" x="524" y="92">2 s history → 4 s path;</text><text class="s" x="524" y="110">crosses the closure?</text>
+        <rect class="bx hot" x="680" y="34" width="150" height="96" rx="14"/><text class="t" x="694" y="68">Risk level</text><text class="s" x="694" y="92">Low · Medium · High,</text><text class="s" x="694" y="110">with predicted path</text>
+        <rect class="bx" x="850" y="34" width="150" height="96" rx="14"/><text class="t" x="864" y="68">Digital twin</text><text class="s" x="864" y="92">of the work zone,</text><text class="s" x="864" y="110">every vehicle's risk</text>
+        <path class="ar" d="M150 82h18"/><path class="ar" d="M320 82h18"/><path class="ar" d="M490 82h18"/><path class="ar" d="M660 82h18"/><path class="ar" d="M830 82h18"/>
+      </svg>
+    </div>
+    <p class="note">From the digital twin, warnings travel to drivers over C-V2X — that part is its own project: <a href="connected-vehicles.html" style="color:var(--fg); border-bottom:1px solid var(--c2)">Connected Vehicles →</a></p>
+
+    <div class="split">
+      <div class="card glass">
+        <div class="k">Stage 1 · physics</div>
+        <h3>A cheap, explainable screen</h3>
+        <p>Every tracked vehicle in the closing lane gets a <b>time-to-collision with the closure front</b>, from its distance, speed and acceleration. Only vehicles under the threshold go on to Stage 2, so the expensive model runs on a small fraction of traffic.</p>
+        <p>Trucks that weave across lanes near the closure (two or more lane changes) are escalated directly.</p>
+      </div>
+      <div class="card glass">
+        <div class="k" style="color: var(--c2)">Stage 2 · learning</div>
+        <h3>Where will it be in four seconds?</h3>
+        <p>A spatio-temporal attention LSTM reads the last <b>2 s (20 radar frames)</b> of a vehicle's track and predicts the next <b>4 s (40 steps)</b>. If the predicted path crosses the closure front inside the closed lane, the vehicle is flagged high risk; otherwise medium.</p>
+        <p>A Monte Carlo variant samples many futures and warns when more than half of them end in the work zone.</p>
+      </div>
+    </div>
+
+    <figure class="fig glass">
+      <img src="../assets/projects/workzone/monte-carlo-rollout.png" alt="A vehicle's history and predicted trajectory crossing into the shaded work-zone area; label COLLISION @ 2.8s">
+      <figcaption>Stage 2 in action: the predicted trajectory of one vehicle reaches the shaded work-zone area 2.8 s ahead.</figcaption>
+    </figure>
+
+    <div class="card glass" style="margin-top:22px">
+      <div class="k" style="color: var(--c3)">How it got here</div>
+      <h3>From a statistical screen to a physical one</h3>
+      <p>The first Stage 1 (autumn 2025) was statistical: a Gaussian copula over each vehicle's distance, speed and acceleration, flagging the tail of the joint distribution, with <b>conjugate-prior (Normal–Inverse-Gamma) updates</b> so a model built in Indianapolis could adapt to a new site — it converged on Dallas data within fewer than 50 samples. It worked, but a percentile is hard to explain to a traffic engineer. In June 2026 I replaced it with the time-to-collision gate: the same job, in seconds anyone can check.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="kicker">Choosing the threshold</div>
+    <h2>Why <b>four seconds</b></h2>
+    <div class="prose">
+      <p>A driver needs about 1.5 s to react (AASHTO designs for 2.5 s) and brakes comfortably at roughly 0.35 g. With 4 s left, only a driver going about 38 mph or slower can still stop comfortably; at 65 mph it takes 6–7 s. So the gate flags exactly the vehicles that are running out of room. Calibrating a threshold per site gave values between 0.5 s and 2.6 s across six sites — all below 4 s — so <strong>one fixed threshold works everywhere</strong>.</p>
+      <p>Congestion takes care of itself: in slower traffic fewer vehicles cross the gate, so the system does not need a separate congestion mode.</p>
+    </div>
+    <div class="figs2">
+      <figure class="fig glass"><img src="../assets/projects/workzone/ttc-stopping-time.png" alt="Time needed to stop comfortably versus speed, with lines at TTC 4, 6 and 6.8 seconds"><figcaption>Time needed to stop comfortably vs. speed; the 4 s line crosses at 38 mph.</figcaption></figure>
+      <figure class="fig glass"><img src="../assets/projects/workzone/per-site-ttc.png" alt="Per-site calibrated TTC thresholds between 0.52 and 2.60 seconds, all below the recommended fixed 4 seconds"><figcaption>Per-site calibrated thresholds would all be shorter than a human reaction; the fixed 4 s gate sits above all six.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="kicker">Field results</div>
+    <h2>Three field tests, <b>spring 2026</b></h2>
+    <div class="prose"><p>The system was trained and evaluated on radar data recorded at live Indiana work zones. Prediction error is in feet over the 40-step horizon; trigger rates count cars on the work-zone lane and trucks on all lanes.</p></div>
+    <div class="split">
+      <div class="tablecard glass">
+        <h3>Trajectory prediction error</h3>
+        <table class="data">
+          <tr><th>Field test</th><th>ADE (ft)</th><th>FDE (ft)</th></tr>
+          <tr><td>Kokomo, Apr 22</td><td>11.98</td><td>23.94</td></tr>
+          <tr><td>Indianapolis, Apr 29</td><td>6.88</td><td>12.61</td></tr>
+          <tr><td>Indianapolis, May 8</td><td class="hl">6.04</td><td class="hl">10.93</td></tr>
+        </table>
+        <p class="note">ADE: average displacement error; FDE: error at the 40th predicted frame. Kokomo's radar reports frames less often, so its 40 steps cover a longer time (≈ 5.6 s vs 4.3 s).</p>
+      </div>
+      <div class="tablecard glass">
+        <h3>Share of vehicles flagged</h3>
+        <table class="data">
+          <tr><th></th><th>Kokomo</th><th>Indy 4/29</th><th>Indy 5/8</th></tr>
+          <tr><td>Stage 1, cars</td><td>2.49%</td><td>1.08%</td><td>1.36%</td></tr>
+          <tr><td>Stage 1, trucks</td><td>4.06%</td><td>1.13%</td><td>0.96%</td></tr>
+          <tr><td>Stage 2, cars</td><td class="hl">0.27%</td><td class="hl">0%</td><td class="hl">0.12%</td></tr>
+          <tr><td>Stage 2, trucks</td><td>4.06%</td><td>1.13%</td><td>0.96%</td></tr>
+        </table>
+        <p class="note">Trucks that pass Stage 1 go straight to high risk, so their two rows match.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="kicker">Engineering</div>
+    <h2>Built to run <b>unattended</b> on the roadside</h2>
+    <div class="eng">
+      <div class="card glass"><div class="k">Runtime</div><h3>Real time at the edge</h3><p>Reads live radar and camera–radar fusion streams over UDP and runs on an on-site computer with a handful of dependencies; every vehicle is re-evaluated about once a second.</p></div>
+      <div class="card glass"><div class="k">Reliability</div><h3>Fails safe</h3><p>A state machine (boot → calibration → operation → failsafe) and a watchdog that notices when sensor data stops arriving.</p></div>
+      <div class="card glass"><div class="k">Portability</div><h3>A new site is a config file</h3><p>Lane layout, closure position and sensor placement live in one YAML file per site; six closure layouts (flush, setback, taper, left or right) are supported.</p></div>
+      <div class="card glass"><div class="k">Traceability</div><h3>Black-box logging</h3><p>Raw packets, features and decisions are logged at three levels, so any warning can be replayed and explained after the fact.</p></div>
+      <div class="card glass"><div class="k">Speed</div><h3>Fast offline replay</h3><p>Recorded field days replay through the full pipeline at about a million radar frames in 10–25 s, which makes threshold studies cheap.</p></div>
+      <div class="card glass"><div class="k">Operations</div><h3>An engineer's dashboard</h3><p>A React dashboard on a FastAPI and WebSocket backend for monitoring sessions, alerts and individual vehicles.</p></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="kicker">Timeline</div>
+    <h2>One year, <b>step by step</b></h2>
+    <div class="tl glass">
+      <div class="row"><span class="when">Sep 2025</span><div><b>Two-stage warning design.</b> <span>Statistical Stage 1 on Indianapolis radar data; kinematic collision check.</span></div></div>
+      <div class="row"><span class="when">Oct 2025</span><div><b>Adapting to a new site.</b> <span>Conjugate-prior updates move the Indianapolis model to Dallas data.</span></div></div>
+      <div class="row"><span class="when">Nov 2025</span><div><b>Learned Stage 2.</b> <span>Attention-LSTM trajectory predictor: a few seconds of history in, 4 s of trajectory out.</span></div></div>
+      <div class="row"><span class="when">Dec 2025</span><div><b>Uncertainty and interfaces.</b> <span>Monte Carlo rollouts; outputs (risk level, probability, predicted path) defined for the digital twin.</span></div></div>
+      <div class="row"><span class="when">Jan 2026</span><div><b>A real-time system.</b> <span>Four modules with control modes and a watchdog; live radar data received end to end.</span></div></div>
+      <div class="row"><span class="when">Apr – May 2026</span><div><b>Field tests.</b> <span>Kokomo and two Indianapolis work zones; models retrained on field data; latency measured.</span></div></div>
+      <div class="row"><span class="when">Jun 2026</span><div><b>A physical Stage 1.</b> <span>The statistical screen replaced by the 4 s time-to-collision gate.</span></div></div>
+      <div class="row"><span class="when">Aug – Sep 2026</span><div><b>Second Kokomo site and a threshold study.</b> <span>One fixed 4 s gate validated across six sites: no per-site calibration, no congestion mode.</span></div></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="card glass">
+      <div class="k">Context</div>
+      <h3>Part of a larger smart-work-zone effort</h3>
+      <p>This work is part of the Integrated Smart Work Zone project with INDOT at Purdue University, which brings together roadside sensing, a work-zone digital twin, worker alerts and <a href="connected-vehicles.html" style="color:var(--fg); border-bottom:1px solid var(--c2)">connected vehicles</a>. I work on it in <a href="https://engineering.purdue.edu/CARTLab/" style="color:var(--fg); border-bottom:1px solid var(--c2)">Prof. Yiheng Feng's CART Lab</a>.</p>
+    </div>
+  </section>
+
+  <div class="backnext">
+    <a class="btn" href="../index.html#projects">← All projects</a>
+    <a class="btn main" href="connected-vehicles.html">Next: Connected Vehicles →</a>
+  </div>
+
+  <footer class="site"><span>© 2026 Yongkang Li</span><span>Drawn in the style of Aurora</span></footer>
+</div>
+</main>
+<script src="../assets/site.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/shaders/GammaCorrectionShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/postprocessing/MaskPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="../assets/projects/workzone/replay-data.js?v=3"></script>
+<script src="../assets/wz-replay.js?v=3"></script>
+</body>
+</html>

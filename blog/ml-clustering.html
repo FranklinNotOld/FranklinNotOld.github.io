@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clustering · Yongkang Li</title>
+<meta name="description" content="Clustering, as the name suggests, means gathering the sample points in a dataset into different &quot;clusters&quot;. The sample points in each cluster share ce…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Machine learning basics</span><span data-l="cn">机器学习基础</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Clustering</span><span data-l="cn">聚类</span></h1>
+    <div class="meta"><span data-l="en">7 min read</span><span data-l="cn">约 5 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="ml-svm.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Support Vector Machines (SVM)</span><span data-l="cn">支持向量机（SVM）</span></span></a><a class="pn glass" href="ml-generalization.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Generalization and Model Selection</span><span data-l="cn">泛化性与模型选择</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+### Basic Concepts of Clustering
+
+Clustering, as the name suggests, means gathering the sample points in a dataset into different "clusters". The sample points in each cluster share certain similar features. For example, a library sorts hundreds or thousands of books into different categories, such as popular science books, comic books, and science fiction books, to make them easy to find. The books in each category have something in common: for instance, the books in the popular science category are basically all about spreading some scientific knowledge, and that is what they have in common. Clustering can be understood as "the process of sorting a pile of books into different categories".
+
+I have to point out the difference between "clustering" and "classification" here:
+
+- Clustering is like having just founded a library and obtained a pile of books through various channels. I do not know in advance which categories they can be divided into, but as the sorting proceeds, they gradually end up in different categories. This is a kind of **unsupervised learning**.
+- Classification is like having a pile of books that need to be placed on the library's shelves by category. The categories are all determined in advance, such as popular science, literature, and history, and you just place each book in its category. This is a kind of **supervised learning**.
+
+There are many clustering methods for data, as shown below:
+
+<img src="media/ml-clustering/笔记图片-聚类方法.jpg" alt="Clustering methods"  />
+
+In the rest of this article I will mainly introduce **k-means clustering** and **agglomerative clustering**, one of the hierarchical clustering algorithms.
+
+The clustering algorithms above share some common steps:
+
+- **Data preparation**: Standardize the features of the data and reduce its dimensionality. This is like stacking the books you have prepared neatly, one by one
+- **Feature selection/extraction**: Select the most effective features from the original ones, transform them to form new, more salient features, and store them in vectors. This is like discarding the books that are badly worn or of poor quality and storing the rest in a place dedicated to storing books
+- **Clustering**: Measure similarity based on some distance function and form clusters. This is like grouping books according to some rule (titles that contain the same word): all the books whose titles contain "encyclopedia" go into one group, all the books whose titles contain "autumn" go into another, and so on...
+- **Result evaluation**: Evaluate the clustering result and judge how good the clustering is. This is like, after the books have been clustered, pulling out some books and flipping through their contents to check whether their categories are correct
+
+### Similarity Measures
+
+Among the steps of the clustering algorithm above, the "similarity measure" appears in the "Clustering" step, and it is the most important point in a clustering algorithm. For example, when I used the book analogy, my description of the "Clustering" step was very vague, because I could not find a suitable standard for measuring how similar books are to one another.
+
+In clustering algorithms, we measure similarity by computing a "distance". Once the features have been turned into numbers, whether features are similar simply means whether their numerical values are close in size. Note that the "distance" here is a generalized distance, not just the kind of distance we usually think of, such as $d_1-d_2$. Let's look at several common distances:
+
+#### 1. Minkowski Distance
+
+**① Euclidean Distance**
+
+Euclidean distance is the most common distance measure, namely the shortest distance between two points.
+
+Suppose the coordinates of two points are $x_1(x_{11}，x_{12}，x_{13}，···，x_{1n})$ and $x_2(x_{21}，x_{22}，x_{23}，···，x_{2n})$ (we also call $x_{11}，x_{12}，x_{13}，···，x_{1n}$ the features of $x_1$). Then the Euclidean distance between the two points is:
+$$
+L(x_1,x_2)=\sqrt{\sum_{i=1}^n{(x_{1i}-x_{2i})^2}}
+$$
+**② Manhattan Distance**
+
+Suppose the coordinates of two points are $x_1(x_{11}，x_{12}，x_{13}，···，x_{1n})$ and $x_2(x_{21}，x_{22}，x_{23}，···，x_{2n})$. Then the Manhattan distance between the two points is:
+$$
+L(x_1,x_2)=\sum_{i=1}^n|x_{1i}-x_{2i}|
+$$
+**③ Chebyshev Distance**
+
+Suppose the coordinates of two points are $x_1(x_{11}，x_{12}，x_{13}，···，x_{1n})$ and $x_2(x_{21}，x_{22}，x_{23}，···，x_{2n})$. Then the Chebyshev distance between the two points is:
+$$
+L(x_1,x_2)=(\sum_{i=1}^n|x_{1i}-x_{2i}|^p)^{\frac{1}{p}}
+$$
+where p tends to positive infinity.
+
+> In fact, the three calculation methods above can be unified, which is the subheading of this part: Minkowski distance. Euclidean distance is the result of Minkowski distance $L(x_1,x_2)=(\sum_{i=1}^n|x_{1i}-x_{2i}|^p)^{\frac{1}{p}}$ with $p=2$, Manhattan distance is the result of this formula with $p=1$, and Chebyshev distance is the result with $p=+\infin$
+
+#### 2. Mahalanobis Distance
+
+This is the Mahalanobis distance, given here by its full name. Different features of a sample can differ in scale. For example, the two values of feature 1 might be 10000 and 20000, while the two values of feature 2 are 1 and 2. If we only look at the raw distance, the gap between 10000 and 12000 is certainly larger than the gap between 1 and 2, but this does not necessarily mean the former pair is less similar than the latter, because their scales differ and they are hard to compare. Using the Mahalanobis distance avoids this problem:
+$$
+d_{ij}=[(x_i-x_j)^TS^{-1}(x_i-x_j)]^\frac{1}{2}
+$$
+where $x_i$ is the feature matrix of sample $i$, $x_j$ is the feature matrix of sample $j$, and $S$ is the covariance matrix of the sample set $X$.
+
+#### 3. Correlation Coefficient
+
+The correlation coefficient is defined by the following expression:
+$$
+r_{ij}=\frac{\sum_{k=1}^{m}(x_{ki}-\overline x_i)(x_{kj}-\overline x_j)}{[\sum_{k=1}^{m}(x_{ki}-\overline x_i)^2\sum_{k=1}^{m}(x_{kj}-\overline x_j)^2]^\frac12}
+$$
+The closer the correlation coefficient is to 1, the more similar the samples are; the closer it is to 0, the less similar the samples are.
+
+#### 4. Cosine Similarity
+
+Cosine similarity is defined by the following expression:
+$$
+s_{ij}=\frac{\sum_{k=1}^{m}x_{ki}x_{kj}}{[\sum_{k=1}^{m}x_{ki}^2\sum_{k=1}^{m}x_{kj}^2]^\frac12}
+$$
+The closer the cosine similarity is to 1, the more similar the samples are; the closer it is to 0, the less similar the samples are.
+
+
+
+The distances above are distances between sample points. In clustering algorithms, we also need a way to measure the distance between clusters. There are four common ones:
+
+**(1) Shortest distance / single-link:**
+
+The distance between two clusters is defined as the shortest distance between their samples.
+
+Disadvantage: it easily produces clusters that cover an especially large range, because there is no limit on the maximum distance between the two clusters.
+
+**(2) Longest distance / complete-link:**
+
+The distance between two clusters is defined as the longest distance between their samples.
+
+Disadvantage: it is easily affected by outlier sample points and can produce unreasonable clusters, because outliers can easily distort the longest distance.
+
+**(3) Centroid distance (UPGMA):**
+
+The distance between two clusters is defined as the distance between the centers of their samples.
+
+**(4) Average distance (WPGMA):**
+
+The distance between two clusters is defined as the average of the distances between arbitrary pairs of their samples.
+
+
+
+### Agglomerative Clustering
+
+Agglomerative clustering is a hierarchical clustering algorithm, and it falls into two main kinds: agglomerative clustering and divisive clustering. Agglomerative clustering starts by putting each sample in its own cluster, then merges the two closest clusters, until a single cluster is finally produced; divisive clustering is exactly the opposite: it first puts all samples into one cluster, then splits off the samples that are farthest apart into two new clusters. Only agglomerative clustering is introduced here.
+
+**Algorithm steps:**
+
+- (1) Compute the **Euclidean distance** between every pair of samples and build the distance matrix
+- (2) Make each sample its own cluster: $G_1,G_2,···,G_n$
+- (3) Define the **shortest distance (single-link)** as the inter-cluster distance, find the two clusters with the smallest distance, and merge them into a new cluster
+- (4) If only one cluster remains, stop; otherwise keep repeating (3) and (4)
+
+Algorithm complexity: $O(n^3m)$, where $n$ is the number of samples and $m$ is the sample dimensionality
+
+
+
+### K-Means Clustering
+
+In k-means clustering, we know the original data samples are to be divided into k clusters, but we do not know what these k clusters actually are. At the start, we randomly choose k points as the initial center points of the samples, and each of these k points belongs to its own cluster. Then, by comparing distances, the remaining points are assigned to the clusters corresponding to these k points.
+
+**Algorithm steps:**
+
+- (1) Initialization: randomly choose k points as the initial cluster centers; each of these k points belongs to its own cluster
+- (2) Compute the distance from each sample to the cluster centers and assign it to the cluster whose center is nearest
+- (3) Compute each cluster's new center by taking the mean of its samples (since new points have been added), and repeat the operation in (2)
+- (4) If two consecutive iterations produce the same assignment, stop. Otherwise keep repeating (2) and (3)
+
+Algorithm complexity: $O(nmk)$, where $n$ is the number of samples, $m$ is the sample dimensionality, and $k$ is the number of clusters
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+### 聚类的基本概念
+
+聚类，顾名思义，就是将一个数据集中各个样本点聚集成不同的“类”。每个类中的样本点都有某些相似的特征。比如图书馆中，会把成百上千的书分成不同的类别：科普书、漫画书、科幻书等等，方便人们查找。每一种类别的书都有相似之处：比如科普书类别中的书基本上都是普及一些科学知识，这就是他们的相似之处。而聚类可以理解为“将一堆图书分为不同的类别的过程”。
+
+这里不得不说明一下“聚类”和“分类”的区别：
+
+- 聚类是刚创立一个图书馆，通过各种渠道获得了一堆图书，事先我不知道可以分为哪些类，但是随着分类的进行，逐渐被分为不同的类。这是一种**无监督学习**。
+- 分类是现在有一堆图书，要将其按类别放入图书馆的书架上，这些类别都是事先确定的，比如科普类、文学类、历史类等等，按类别放入即可。这是一种**监督学习**。
+
+数据的聚类方法有很多，如下图：
+
+<img src="media/ml-clustering/笔记图片-聚类方法.jpg" alt="聚类方法"  />
+
+本文之后会主要介绍**k-means(k均值聚类)**和层次聚类算法中的**聚合聚类**。
+
+上面这些聚类算法有一些共同步骤：
+
+- **数据准备**：对数据进行特征标准化和降维处理。就像将事先准备好的一本本图书一本本堆叠规整放好
+- **特征选择/提取**：从最初的特征中选择最有效的特征，进行转换形成新的突出特征，并将其存储在向量中。就像将图书中十分破烂或者不良的剔除，并存储在专门存储图书的地方
+- **进行聚类**：基于某种距离函数进行相似度度量，并形成聚簇。就像按照某种规律（书名出现相同的字）将图书之间归类（都出现百科归一类、都出现秋天归一类······）
+- **结果评估**：对聚类的分类结果进行评估，判断聚类进行的优劣。就像将图书聚类完之后，抽取图书并翻看内容来判断其类别是否正确
+
+### 相似度度量
+
+在上面的聚类算法的步骤中，“进行聚类”这一步骤中出现了“相似度度量”，这也是聚类算法中最重要的点。比如像我用图书的例子进行类比时，在“进行聚类”这一步说得就十分不清楚，因为我没法找到一个合适的标准去衡量图书之间的相似程度。
+
+在聚类算法中，我们会通过计算“距离”去衡量相似度。当我们将特征数字化之后，特征之间是否相似也就是特征数字之间是否大小接近。需要注意的是，这里的“距离”是广义距离，并不仅仅是我们通常理解的$d_1-d_2$这种距离。下面我们来看几种比较常见的距离：
+
+#### 1、闵可夫斯基距离
+
+**① 欧式距离**
+
+欧式距离就是我们最常见的距离度量方法，就是两点之间的最短距离。
+
+假设两个点的坐标分别为$x_1(x_{11}，x_{12}，x_{13}，···，x_{1n})$，$x_2(x_{21}，x_{22}，x_{23}，···，x_{2n})$，（我们也称$x_{11}，x_{12}，x_{13}，···，x_{1n}$为$x_1$的特征）则这两个点的欧式距离为：
+$$
+L(x_1,x_2)=\sqrt{\sum_{i=1}^n{(x_{1i}-x_{2i})^2}}
+$$
+**② 曼哈顿距离**
+
+假设两个点的坐标分别为$x_1(x_{11}，x_{12}，x_{13}，···，x_{1n})$，$x_2(x_{21}，x_{22}，x_{23}，···，x_{2n})$，则这两个点的曼哈顿距离为：
+$$
+L(x_1,x_2)=\sum_{i=1}^n|x_{1i}-x_{2i}|
+$$
+**③ 切比雪夫距离**
+
+假设两个点的坐标分别为$x_1(x_{11}，x_{12}，x_{13}，···，x_{1n})$，$x_2(x_{21}，x_{22}，x_{23}，···，x_{2n})$，则这两个点的切比雪夫距离为：
+$$
+L(x_1,x_2)=(\sum_{i=1}^n|x_{1i}-x_{2i}|^p)^{\frac{1}{p}}
+$$
+其中p趋于正无穷。
+
+> 其实，上面三种计算方法可以进行一个统一，这就是这一部分的小标题——闵可夫斯基距离。欧氏距离是闵可夫斯基距离$L(x_1,x_2)=(\sum_{i=1}^n|x_{1i}-x_{2i}|^p)^{\frac{1}{p}}$中$p=2$的结果，曼哈顿距离是该式$p=1$的结果，而切比雪夫距离是$p=+\infin$的结果
+
+#### 2、马氏距离
+
+马氏距离全称马哈拉诺比斯距离。样本不同的特征之间大小尺寸可能会不同，比如特征1两个数据为10000和20000，特征2两个数据为1和2。如果只考虑其距离，那么10000与12000之间相差的数字肯定要比1与2之间相差的数字要大，但这并不意味着前者的相似度一定要比后者更小，因为他们的尺寸不同难以比较，所以使用马氏距离可以避免这种问题：
+$$
+d_{ij}=[(x_i-x_j)^TS^{-1}(x_i-x_j)]^\frac{1}{2}
+$$
+其中$x_i$是样本$i$的特征矩阵，$x_j$是样本$j$的特征矩阵，$S$是样本集合$X$的协方差矩阵。
+
+#### 3、相关系数
+
+相关系数的定义表达式为：
+$$
+r_{ij}=\frac{\sum_{k=1}^{m}(x_{ki}-\overline x_i)(x_{kj}-\overline x_j)}{[\sum_{k=1}^{m}(x_{ki}-\overline x_i)^2\sum_{k=1}^{m}(x_{kj}-\overline x_j)^2]^\frac12}
+$$
+相关系数越接近1，表示样本越相似；相关系数越接近0，表示样本越不相似。
+
+#### 4、夹角余弦
+
+夹角余弦的定义表达式为：
+$$
+s_{ij}=\frac{\sum_{k=1}^{m}x_{ki}x_{kj}}{[\sum_{k=1}^{m}x_{ki}^2\sum_{k=1}^{m}x_{kj}^2]^\frac12}
+$$
+夹角余弦越接近1，表示样本越相似；夹角余弦越接近0，表示样本越不相似。
+
+
+
+上面的这些距离是样本点之间的距离，在聚类算法中，我们还需要一种衡量类与类之间的距离方法，常见的有以下四种：
+
+**（1）最短距离/单链接(Single-link)：**
+
+定义两个类的样本之间的最短距离为两类之间的距离。
+
+缺点：容易出现包含范围特别大的类，因为并没有对两个类的最大距离进行限制。
+
+**（2）最长距离/完全链接(Complete-link)：**
+
+定义两个类的样本之间的最长距离为两类之间的距离。
+
+缺点：容易受到异常样本点的影响而造成不合理的聚类，因为异常样本点很容易干扰最长距离。
+
+**（3）中心距离(UPGMA)：**
+
+定义两个类的样本中心之间的距离为两类之间的距离。
+
+**（4）平均距离(WPGMA)：**
+
+定义两个类任意样本之间的距离的平均为两类之间的距离。
+
+
+
+### 聚合聚类
+
+聚合聚类是一种层次聚类算法，主要分为两种：聚合聚类和分类聚类。聚合聚类开始将每个样本各自分到一个类之中，之后再讲相距最近的两个类合并，最终生成一个类；而分裂聚类正好相反，先将所有样本分到一个类之中，再将样本中距离最远的分到两个新的类。这里只介绍聚合聚类。
+
+**算法步骤：**
+
+- （1）计算样本两两之间的**欧式距离**，构造距离矩阵
+- （2）将每个样本都变成一个类：$G_1,G_2,···,G_n$
+- （3）定义**最短距离(Single-link)**为类间距离，找出距离最小的两个类归为一个新的类
+- （4）如果只剩下一个类，那么停止运算，否则继续重复(3)(4)
+
+算法复杂度：$O(n^3m)$，$n$是样本个数，$m$是样本维数
+
+
+
+### K均值聚类
+
+K均值聚类是已知要将原数据样本分成k个类，但是并不知道这k个类具体是什么。刚开始要随机选取k个点作为样本的初始中心点，这k个点各自属于一个类别。再通过比较距离大小将剩余的点分到这k个点对应的类别之中。
+
+**算法步骤：**
+
+- （1）初始化，随机选取k个点作为初始的聚类中心，这k个点各属于一个类别
+- （2）计算每个样本到聚类中心的距离，并将其归类到与其距离最近的类之中
+- （3）通过对每个样本取均值计算每个类新的聚类中心（因为加入了新的点），重复（2）的操作
+- （4）如果两次操作所得到的分类相同，则停止操作。否则继续重复(2)(3)的操作
+
+算法的复杂度：$O(nmk)$，$n$是样本个数，$m$是样本维数，$k$是类别个数
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

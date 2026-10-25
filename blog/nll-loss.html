@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NLL Loss · Yongkang Li</title>
+<meta name="description" content="Negative Log-Likelihood Loss (NLL Loss) measures the difference between predicted and true distributions. In some tasks, we aim not to predict a speci…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Deep Learning from Zero to Kang</span><span data-l="cn">Deep Learning from Zero to Kang</span></span><i>/</i><span><span data-l="en">Loss functions</span><span data-l="cn">损失函数</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">NLL Loss</span><span data-l="cn">NLL 损失函数</span></h1>
+    <div class="meta"><span data-l="en">1 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="elu.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">ELU</span><span data-l="cn">ELU 激活函数</span></span></a><a class="pn glass" href="binll-loss.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Bivariate Gaussian NLL Loss</span><span data-l="cn">双变量高斯负对数似然损失</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+
+
+Negative Log-Likelihood Loss (NLL Loss) measures the difference between predicted and true distributions. In some tasks, we aim not to predict a specific label, but rather to generate data following a particular distribution, such as generating specific types of images. In such cases, using Mean Squared Error (MSE) as the loss function is less suitable because it focuses solely on the fit between predictions and labels, limiting the diversity of generated content. NLL, on the other hand, emphasizes the overall distribution of generated content.
+
+Let's use the Gaussian Negative Log-Likelihood Loss as an example, represented by the formula:
+$$
+\text{loss} = \frac{1}{2} [\log(\max(\sigma^2, \epsilon)) + \frac{(input - target)^2}{\max(\sigma^2, \epsilon)}] + \text{const.}
+$$
+In PyTorch, the `torch.nn.GaussianNLLLoss(*, full=False, eps=1e-06, reduction='mean')` function can be used. The `eps` parameter ensures stability. Without it, the formula becomes:
+$$
+\text{loss} = \frac{1}{2} [\log(\sigma^2) + \frac{(input - target)^2}{\sigma^2}] + \text{const.}
+$$
+
+The derivation of this formula can be outlined as follows:
+1. First, we have the Gaussian distribution (normal distribution) formula:
+    $$N(y; \mu, \sigma) = \frac{1}{\sigma \sqrt{2\pi}} e^{-\frac{1}{2} \left(\frac{y - \mu}{\sigma}\right)^2}$$
+2. For the loss function, we typically take the logarithm, avoiding exponentiation:
+    $$\log N(y; \mu, \sigma) = \log\left[\frac{1}{\sigma \sqrt{2\pi}} e^{-\frac{1}{2} \left(\frac{y - \mu}{\sigma}\right)^2}\right] = -\log \sigma - \log \sqrt{2\pi} - \frac{1}{2} \left(\frac{y - \mu}{\sigma}\right)^2$$
+3. We can simplify further:
+    $$-\log \sigma - \log \sqrt{2\pi} - \frac{1}{2} \left(\frac{y - \mu}{\sigma}\right)^2 = -\frac{1}{2} [\log \sigma^2 + \log 2\pi + \left(\frac{y - \mu}{\sigma}\right)^2]$$
+4. When summing multiple loss functions, we combine them (removing the negative sign to satisfy the loss function properties):
+    $$\text{Loss} = \frac{1}{2} [\log \sigma^2 + \log 2\pi + \left(\frac{y - \mu}{\sigma}\right)^2]$$
+    Here, \( \log 2\pi \) is approximately 1.837.
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+NLL损失函数的全称是负对数似然损失（Negative Log-Likelihood Loss），是用来衡量预测分布与真实分布的一种损失函数。在有些任务中，我们并不是要预测某个特定的标签，而是希望我们生成的数据符合某种特定的分布，比如生成特定类型的图片等等。在这种情况下使用MSE作为损失函数就不那么合适了，因为MSE单纯关注的是预测与标签的拟合效果，这样会限制生成内容的多样性，而NLL关注的是生成内容的分布这一大方向。
+
+这里我们以高斯负对数似然函数为例进行介绍，其公式如下：
+$$
+loss=\frac12​[log(max(\sigma^2, eps))+\frac{(input−target)^2​}{max(\sigma^2, eps)}]+const.
+$$
+在 pytorch 里面有现成的包可以调用，`torch.nn.GaussianNLLLoss (*,full=False,eps=1e-06,reduction='mean')`。这里的 `eps` 是为了保证稳定性。如果将其去掉，就可以得到如下的公式：
+$$
+loss=\frac12​[log(\sigma^2)+\frac{(input−target)^2​}{\sigma^2}]+const.
+$$
+其推导原理如下：
+（1）首先我们有一个高斯分布（正态分布）公式：
+$$
+N(y;\mu,σ)=\frac{1}{σ\sqrt{2π}}e^{−\frac{1}{2}(\frac{y−μ}{σ})^2}
+$$
+（2）对于损失函数，我们一般会取对数处理，这样就不需要计算指数：
+$$
+logN(y;\mu,σ)=log[\frac{1}{σ\sqrt{2π}}e^{−\frac{1}{2}(\frac{y−μ}{σ})^2}]=-log\sigma-log{\sqrt{2\pi}}-\frac{1}{2}(\frac{y−μ}{σ})^2
+$$
+（3）我们可以进一步进行数学变换：
+$$
+-log\sigma-log{\sqrt{2\pi}}-\frac{1}{2}(\frac{y−μ}{σ})^2=-\frac12[log\sigma^2+log{2\pi}+(\frac{y−μ}{σ})^2]
+$$
+（4）如果有很多损失函数，则需要将其进行叠加 (这里去掉负号是为了满足损失函数的特性)：
+$$
+Loss=\frac12[log\sigma^2+log{2\pi}+(\frac{y−μ}{σ})^2]
+$$
+其中 $log2\pi$ 记为 1.837。
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

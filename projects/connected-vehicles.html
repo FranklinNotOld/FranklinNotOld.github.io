@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connected Vehicles · Yongkang Li</title>
+<meta name="description" content="Getting work-zone warnings into the car: a work-zone digital twin feeds a roadside unit that broadcasts over C-V2X to an onboard unit and an in-vehicle display. Purdue University with INDOT.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/project.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="projects" data-root="../">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<main class="page">
+<div class="wrap">
+
+  <nav class="crumbs"><a href="../index.html#projects">Projects</a><i>/</i><span>Connected Vehicles</span></nav>
+
+  <header class="p-hero">
+    <div>
+      <div class="eyebrow">Research project · Purdue University · 2026 – present</div>
+      <h1>Connected <b class="grad">Vehicles</b></h1>
+      <p class="lede">The vehicle side of the smart work zone. A digital twin of the work zone feeds a roadside unit, which broadcasts over C-V2X to an onboard unit that drives an in-vehicle display — so <strong>drivers learn about the closure, the workers and the speed limit before they can see them</strong>.</p>
+      <div class="tags">
+        <span class="badge" style="--c: var(--c1)"><i></i>C-V2X</span>
+        <span class="badge" style="--c: var(--c2)"><i></i>SAE J2735</span>
+        <span class="badge" style="--c: var(--c3)"><i></i>Edge devices</span>
+        <span class="badge" style="--c: #f472b6"><i></i>HMI design</span>
+      </div>
+      <p class="role"><b>My role:</b> I designed and built the in-vehicle display and the digital-twin console, and integrated the roadside-to-vehicle message link.</p>
+    </div>
+    <figure class="shot">
+      <img src="../assets/projects/workzone/hmi-work-zone-ahead.jpg" alt="In-vehicle display: WORK ZONE AHEAD, 2,600 ft, I-65 N; 67 mph against a 55 mph limit">
+      <figcaption>The in-vehicle display: distance to the work zone, current speed against the work-zone limit (simulated approach).</figcaption>
+    </figure>
+  </header>
+
+  <div class="kpis">
+    <div class="kpi glass"><b class="grad">1 Hz</b><span>work-zone messages broadcast from the roadside unit</span></div>
+    <div class="kpi glass"><b class="grad">≈ 14 ms</b><span>roadside-to-vehicle latency in bench tests</span></div>
+    <div class="kpi glass"><b class="grad">97.7%</b><span>of messages decoded over an hour-long bench run</span></div>
+    <div class="kpi glass"><b class="grad">Oct 2026</b><span>first runs in a test vehicle, with INDOT</span></div>
+  </div>
+
+  <section class="block">
+    <div class="kicker">Field test</div>
+    <h2>On the road, <b>October 2026</b></h2>
+    <div class="video" aria-label="Field-test video, coming soon">
+      <span class="play" aria-hidden="true"></span>
+      <span class="cap">FIELD-TEST VIDEO · COMING SOON</span>
+    </div>
+    <p class="note">A C-V2X work-zone test with INDOT, filmed from the roadside and from inside the test vehicle.</p>
+  </section>
+
+  <section class="block">
+    <div class="kicker">Why</div>
+    <h2>A warning only helps <b>if it reaches the driver</b></h2>
+    <div class="prose">
+      <p>The roadside <a href="workzone.html" style="color:var(--fg); border-bottom:1px solid var(--c2)">risk-prediction system</a> knows which vehicles are heading for trouble, and the digital twin knows where the work zone is and whether crews are present. None of that matters unless it shows up in the car in time for the driver to react.</p>
+      <p>Connected-vehicle radio solves the last few hundred feet: a roadside unit at the work zone talks directly to an onboard unit in each equipped vehicle, with no cellular network in between.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="kicker">How it works</div>
+    <h2>Digital twin → roadside → <b>vehicle</b></h2>
+    <div class="pipe glass">
+      <svg viewBox="0 0 1000 200" role="img" aria-label="Pipeline: risk prediction and work-zone information feed the digital twin, which sends to the roadside unit, which broadcasts over C-V2X to the onboard unit, which drives the in-vehicle display; the vehicle's Basic Safety Messages flow back">
+        <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk" d="M0 0 10 5 0 10z"/></marker></defs>
+        <text class="g" x="0" y="18">INFRASTRUCTURE</text><text class="g" x="690" y="18">VEHICLE</text>
+        <rect class="bx" x="0" y="34" width="160" height="96" rx="14"/><text class="t" x="14" y="68">Work zone</text><text class="s" x="14" y="92">layout, workers,</text><text class="s" x="14" y="110">vehicle risk levels</text>
+        <rect class="bx s1" x="200" y="34" width="160" height="96" rx="14"/><text class="t" x="214" y="68">Digital twin</text><text class="s" x="214" y="92">one live model</text><text class="s" x="214" y="110">of the work zone</text>
+        <rect class="bx" x="400" y="34" width="160" height="96" rx="14"/><text class="t" x="414" y="68">Roadside unit</text><text class="s" x="414" y="92">C-V2X broadcast,</text><text class="s" x="414" y="110">SAE J2735 messages</text>
+        <rect class="bx" x="660" y="34" width="160" height="96" rx="14"/><text class="t" x="674" y="68">Onboard unit</text><text class="s" x="674" y="92">receives and decodes</text><text class="s" x="674" y="110">in the vehicle</text>
+        <rect class="bx s2" x="840" y="34" width="160" height="96" rx="14"/><text class="t" x="854" y="68">In-vehicle HMI</text><text class="s" x="854" y="92">"work zone ahead",</text><text class="s" x="854" y="110">workers, speed limit</text>
+        <path class="ar" d="M160 72h38"/><path class="ar" d="M360 72h38"/><path class="ar" d="M820 72h18"/>
+        <path class="air" d="M572 58c10 8 10 20 0 28M588 50c16 12 16 32 0 44M604 42c22 16 22 44 0 60"/>
+        <path class="ar" d="M560 72h98"/>
+        <path class="ar" d="M740 130v36H280v-34" style="stroke: var(--c3)"/>
+        <text class="s" x="420" y="186">Basic Safety Messages from the vehicle (position, speed, heading) flow back to the twin</text>
+      </svg>
+    </div>
+
+    <div class="eng">
+      <div class="card glass"><div class="k">Infrastructure</div><h3>Digital-twin console</h3><p>Set up a work zone — location, speed limit, closed side, workers present — and push it to the roadside unit using the same UDP/JSON format the real digital twin uses, or replay a vehicle's approach to test the chain end to end.</p></div>
+      <div class="card glass"><div class="k">Radio</div><h3>Roadside and onboard units</h3><p>Message encoders and decoders run on small edge devices next to each unit. Work-zone information goes out to vehicles; each vehicle's Basic Safety Messages come back so the twin knows who is approaching.</p></div>
+      <div class="card glass"><div class="k" style="color: var(--c2)">Vehicle</div><h3>In-vehicle display</h3><p>Distance to the work zone, worker presence and guidance, and current speed against the work-zone limit, with a map view and light and dark modes. Packaged as a desktop app for the in-vehicle screen.</p></div>
+    </div>
+
+    <div class="figs2">
+      <figure class="fig glass"><img src="../assets/projects/workzone/digital-twin-console.jpg" alt="Digital twin console: work-zone settings on the left, live vehicle view on the right"><figcaption>Digital-twin console: configure the work zone and watch what the vehicle receives.</figcaption></figure>
+      <figure class="fig glass"><img src="../assets/projects/workzone/in-vehicle-display.jpg" alt="The in-vehicle display mounted in the test vehicle during a stationary test"><figcaption>The display installed in the test vehicle, October 2026 (stationary test, simulated GPS).</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="kicker">Timeline</div>
+    <h2>From bench <b>to vehicle</b></h2>
+    <div class="tl glass">
+      <div class="row"><span class="when">May 2026</span><div><b>Messages between edge devices.</b> <span>Radar-derived messages encoded, sent through two roadside units and decoded on a second device.</span></div></div>
+      <div class="row"><span class="when">Jun 2026</span><div><b>First display, first link.</b> <span>In-vehicle display designed; onboard-to-roadside message link working.</span></div></div>
+      <div class="row"><span class="when">Aug 2026</span><div><b>Console and integration.</b> <span>Digital-twin console built; roadside unit, onboard unit and display working together.</span></div></div>
+      <div class="row"><span class="when">Sep 2026</span><div><b>Ready for a car.</b> <span>Map view added; the display packaged as a desktop app and run on two devices.</span></div></div>
+      <div class="row"><span class="when">Oct 2026</span><div><b>In the test vehicle.</b> <span>Onboard unit and display installed and connected to the roadside unit; stationary tests, then a C-V2X work-zone test with INDOT.</span></div></div>
+      <div class="row"><span class="when">Next</span><div><b>Out on the road.</b> <span>Communication range, link stability and GPS accuracy outdoors; then closed-road and open-road tests.</span></div></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="card glass">
+      <div class="k">Context</div>
+      <h3>Part of a larger smart-work-zone effort</h3>
+      <p>This work is part of the Integrated Smart Work Zone project with INDOT at Purdue University. It takes its risk levels from the <a href="workzone.html" style="color:var(--fg); border-bottom:1px solid var(--c2)">Work Zone Risk Prediction</a> system. I work on it in <a href="https://engineering.purdue.edu/CARTLab/" style="color:var(--fg); border-bottom:1px solid var(--c2)">Prof. Yiheng Feng's CART Lab</a>.</p>
+    </div>
+  </section>
+
+  <div class="backnext">
+    <a class="btn" href="workzone.html">← Work Zone Risk Prediction</a>
+    <a class="btn main" href="../index.html#projects">All projects</a>
+  </div>
+
+  <footer class="site"><span>© 2026 Yongkang Li</span><span>Drawn in the style of Aurora</span></footer>
+</div>
+</main>
+<script src="../assets/site.js"></script>
+</body>
+</html>

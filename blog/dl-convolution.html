@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Convolution Operation · Yongkang Li</title>
+<meta name="description" content="Convolutional neural networks have become an extremely important part of deep learning and play a vital role in computer vision. The importance of the…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Deep learning fundamentals</span><span data-l="cn">深度学习基础</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">The Convolution Operation</span><span data-l="cn">卷积运算</span></h1>
+    <div class="meta"><span data-l="en">9 min read</span><span data-l="cn">约 7 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="dl-backprop.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Deep Feedforward Networks: Backpropagation</span><span data-l="cn">深度前馈网络：反向传播</span></span></a><a class="pn glass" href="dl-output-units-notes.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Understanding Output Units</span><span data-l="cn">理解输出单元</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+Convolutional neural networks have become an extremely important part of deep learning and play a vital role in computer vision. The importance of their theoretical foundation, the convolution operation, is especially prominent. In fact, convolution is widely used not only in deep learning but also in signal processing. In this article I will introduce the convolution operation in a fairly accessible way, with many easy-to-understand examples, leaning toward the deep learning side and taking a first look at how it relates to deep learning.
+
+I will explain the convolution operation from the following angles:
+
+
+
+### Discrete and Continuous
+
+#### Pairing-and-Summing Example
+
+Let's start with the discrete case.
+
+Suppose we have the 11 numbers from 0 to 10 and want to add them up. Of course we could simply add the eleven numbers by brute force. But do you remember the story of Gauss as a child, who cleverly summed 1 to 50? Similarly, we can take a second copy of the 11 numbers 0 to 10 and pair the two sets up element by element:
+
+$0+10=10，1+9=10,2+8=10······5+5=10$
+
+There are 11 tens in total, so the sum of 0 to 10 is $11×10÷2=55$.
+
+Shown as a figure:
+
+<img src="media/dl-convolution/JPG-资源-42.jpg" alt="Resource 42" style="zoom: 15%;" /> 
+
+If we view them as a sequence, the pairs of addends that make 10 are $x$ and $t-x$. That is, we reverse one sequence and add it to the other term by term, where $t$ is the constant 10 and $x$ is the variable. Let's remember this feature and read on.
+
+#### Dice Example, Basic
+
+We have all played with dice to some extent while growing up. Rolling dice contains many interesting mathematical patterns. We know a die has only the numbers 1 to 6, and each number is equally likely to land face up. If we now roll two dice at the same time, what is the probability that the two numbers facing up sum to 7?
+
+This is a very simple math problem that can be solved by enumeration.
+
+$7=1+6,7=2+5,7=3+4,7=4+3,7=5+2,7=6+1$ There are 6 such cases in total, and there are $6×6=36$ possible outcomes altogether, so by the classical probability model the probability is 1/6. Let's also draw a figure for this:
+
+<img src="media/dl-convolution/JPG-资源-43.jpg" alt="Resource 43" style="zoom:15%;" /> 
+
+Hey, doesn't this look a lot like the pairing-and-summing example?
+
+#### Dice Example, Intermediate
+
+Now let's extend this. Suppose our two dice are not fair (for example, one die's center of gravity is biased toward the number 5 and the other's toward 3), so the probabilities of the six faces landing up are not equal, with all other conditions unchanged. Denote the probability that the first die shows $i$ by $f(i)$ and the probability that the second die shows $i$ by $g(i)$. Then the answer to this problem is:
+$$
+P=f(1)g(6)+f(2)g(6)+f(3)g(4)+f(4)g(3)+f(5)g(2)+f(6)g(1)=\sum_{x=1}^6 f(x)g(6-x)
+$$
+Drawn as a figure:
+
+<img src="media/dl-convolution/JPG-资源-44.jpg" alt="Resource 44" style="zoom:25%;" />
+
+Let's remember the form of the expression $\sum_{x=1}^6 f(x)g(6-x)$ and read on.
+
+#### Polynomial Multiplication Example
+
+Suppose we have two polynomials: $f(x)=x^5+2x^4+3x^3+6x^2+7$ and $g(x)=2x^2+4x+1$. We now want to multiply them.
+
+The first method is brute-force computation:
+$$
+f(x)g(x)=2x^2*(x^5+2x^4+3x^3+6x^2+7)+4x*(x^5+2x^4+3x^3+6x^2+7)+1*(x^5+2x^4+3x^3+6x^2+7)
+$$
+and then expand and combine like terms.
+
+We can also use a different method: first handle the products that give the same power of $x$. For example, the ways to get $x^5$ are: $x^5*1=x^5,2x^4*4x=8x^5,3x^3*2x^2=6x^5$; adding these three gives $15x^5$. As usual, let's illustrate with a figure:
+
+![Resource 46](media/dl-convolution/JPG-资源-46.jpg)
+
+In figure (1) we demonstrated the computation of $x^5$, and in figure (2) we simplified the drawing and abstracted the coefficients into a list (or array). Now if we slide the red box of $g(x)$, we get the coefficients of the other powers of $x$:
+
+![Resource 47](media/dl-convolution/JPG-资源-47.jpg)
+
+If we let the coefficients of the terms of $f(x)$ be $a_i$ (from left to right $a_1、a_2……$) and the coefficients of the terms of $g(x)$ be $b_i$, then from the figure above we can derive the following conclusion:
+$$
+\text{coefficient of }x^i\text{ in the product: }c_i=\sum_{k=1}^3 b_ka_{i-k}
+$$
+You can plug in $i=3,4,5$ yourself to check.
+
+
+
+OK. So far we have looked at several examples, and we notice that an expression of the following form appears in both the intermediate dice example and the polynomial multiplication example:
+$$
+\sum f(x)g(t-x)
+$$
+This is the discrete form of convolution. We define:
+$$
+h(x)=(f*g)(x)=\sum f(x)g(t-x)
+$$
+as the convolution operation (discrete form), where $g(t-x)$ is the convolution kernel.
+
+Let's understand the concept of the convolution kernel. Recall this figure:
+
+![Resource 47](media/dl-convolution/JPG-资源-47.jpg)
+
+$g(x)$ is the convolution kernel. Judging from the figure, the role of $g(x)$ is to apply a special mapping operation to $f(x)$ and obtain a result, a "kernel", which in the figure appears as turning a red box of three cells into a red box of one cell.
+
+Essentially, convolution is just a special kind of mapping operation. This will become even more apparent in higher-dimensional convolution later.
+
+#### Continuous Convolution
+
+We have covered discrete convolution; now let's introduce continuous convolution. Continuous convolution is rarely used in deep learning convolutional networks, so a quick look is enough.
+
+In fact, the discrete and the continuous are inseparable. Recall the definition of the integral: it evolves from the discrete $\sum$ into the integral $\int$.
+
+Convolution is no exception: if we change the summation sign in the convolution, we get continuous convolution:
+$$
+h(x)=(f*g)(x)=\int f(x)g(t-x)dx
+$$
+I have not yet come up with a really good example to explain continuous convolution. The examples online and in some books are either essentially discrete convolution or are so far removed from everyday life that they are hard to understand. I hope some expert can offer an answer.
+
+
+
+### Dimensions
+
+The convolutions we discussed above, whether discrete or continuous, were all one-dimensional. In fact, in deep learning convolution is more widely used in two and three dimensions.
+
+![Resource 47](media/dl-convolution/JPG-资源-47.jpg)
+
+This is a one-dimensional convolution, which maps a line to a point. Similarly, a two-dimensional convolution can be understood as mapping a surface to a point.
+
+<img src="media/dl-convolution/JPG-资源-48.jpg" alt="Resource 48" style="zoom:25%;" />
+
+The figure above shows fairly clearly how a two-dimensional convolution actually works: a 3×3 convolution kernel maps a 6×6 square onto a 4×4 square. From the figure it is also easy to see why the side length of the mapped square shrinks by 2 cells. In the **Padding** section below we will explain in more detail how to deal with this shrinking.
+
+Below is a concrete example to explain the computation of a two-dimensional convolution:
+
+<img src="media/dl-convolution/JPG-资源-49.jpg" alt="Resource 49" style="zoom:33%;" />
+
+This is a very simple form of two-dimensional convolution in which the convolution kernel and the matrix being convolved both have all values equal to 1. According to the rule above, every value obtained through the convolution is: $1×1+1×1+1×1+1×1+1×1+1×1+1×1+1×1+1×1=9$
+
+In fact, the role of this convolution kernel $g(x)=
+\left[
+\begin{matrix}
+1 & 1 & 1\\1 & 1 & 1\\1 & 1 & 1\\
+\end{matrix}
+\right]$ is to turn an element's value into the sum of the values of that element and the ring of elements around it.
+
+The principle of three-dimensional convolution is very similar to that of two dimensions: it turns a solid into a point:
+
+<img src="media/dl-convolution/JPG-资源-50.jpg" alt="Resource 50" style="zoom:15%;" /> 
+
+Convolution in even higher dimensions can no longer be abstracted by drawing.
+
+
+
+### Channels
+
+In convolution we also often see the concept of channels. What we discussed above was all single-channel convolution, because there is only one convolution kernel. Multi-channel convolution has multiple convolution kernels. It is most common in images. The photos and images we normally see (printed ones excepted) are RGB images, i.e., every pixel carries information for R (red), G (green) and B (blue), which we also call three channels. An RGB image can be processed with just a single convolution, or with a different convolution kernel for each channel, which is multi-channel convolution.
+
+Let's look at an example:
+
+<img src="media/dl-convolution/JPG-资源-51.jpg" alt="Resource 51" style="zoom:12%;" /> 
+
+This is a three-channel convolution. Applying to $f(x)$ the three convolution kernels $g_1(x)、g_2(x)、g_3(x)$ separately gives three different matrices. Afterwards we can process the three resulting matrices further, for example by adding them.
+
+
+
+### Padding
+
+Earlier we mentioned that, according to the rules of the convolution operation, the matrix obtained by convolution is two cells (two pixels) smaller than the original matrix. If we want to process an image with convolutions, we often need many convolution layers, and then the generated image would be noticeably smaller. So we want the image obtained after the convolution to be the same size as the original image.
+
+By the principle of convolution, the convolved matrix will certainly shrink by two cells; if we want the generated image to keep its size, the only way is to enlarge the original image. Enlarging the original image inevitably creates many pixels that we have to fill in ourselves.
+
+![Resource 54](media/dl-convolution/JPG-资源-54.jpg)
+
+Figure (1) applies the convolution without padding the original matrix; figure (2) applies the convolution after padding the original matrix. We can see that the matrix generated in figure (2) has the same size as the original matrix (the red area).
+
+
+
+### Stride
+
+In the convolutions introduced above, the kernel moves by 1 cell each time; for example, recall the figure below:
+
+<img src="media/dl-convolution/JPG-资源-48.jpg" alt="Resource 48" style="zoom:25%;" />
+
+In the figure above, the convolution shifts only one cell to the right each time. Can it shift two cells, three cells, or even more? Let's first try a gap of two cells.
+
+![Resource 55](media/dl-convolution/JPG-资源-55.jpg)
+
+Comparing the two figures above, we find that as the gap increases, the side length of the generated matrix also shrinks. We can exploit this property to shrink things. With a suitable convolution kernel, we can shrink an image substantially without introducing extra distortion. We can also use this property to compress information.
+
+
+
+### Special Convolutions
+
+#### 1×1 Convolution
+
+A 1×1 convolution kernel can turn a high-dimensional matrix into a low-dimensional one.
+
+<img src="media/dl-convolution/JPG-资源-56.jpg" alt="Resource 56" style="zoom:15%;" /> 
+
+As in the figure above, a 1×1 convolution kernel can compress the data (elements) along one dimension while keeping the remaining dimensions.
+
+
+
+### Applications
+
+#### Smoothing
+
+If an image is very noisy, or has many white spots on it, we can smooth it with a matrix like $\left[
+\begin{matrix}
+\frac{1}{9} & \frac{1}{9} & \frac{1}{9}\\\frac{1}{9} & \frac{1}{9} & \frac{1}{9}\\\frac{1}{9} & \frac{1}{9} & \frac{1}{9}\\
+\end{matrix}
+\right]$. This is easy to understand: $\frac{1}{9}$ amounts to averaging a pixel and the ring of pixels around it, so that very dark or very bright points are neutralized by the points around them and become less conspicuous.
+
+
+
+#### Edge Detection
+
+Convolution can also be used to identify boundaries intelligently.
+
+Suppose the gray values range from 0 to 30, where 0 is white and 30 is black. In figure (1) below, half of the image is gray and half is white, and the boundary between the white and gray parts is in the middle of the image. Now look at figure (2), the image after convolution: the middle part is black (gray value 30), which corresponds exactly to the boundary between gray and white. This completes the task of vertical edge detection.
+
+![Resource 58](media/dl-convolution/JPG-资源-58.jpg)
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+卷积神经网络已成为深度学习中极其重要的一环，在计算机视觉方面起到了至关重要的作用。而其理论基础——卷积运算的重要性尤为突出。其实不只深度学习，在信号处理方面卷积也有着广泛的应用。本文会用比较通俗的方式、结合大量通俗易懂的例子对卷积运算进行介绍，并会偏向深度学习领域，初步涉猎其与深度学习的关联。
+
+我会从下面几个角度来讲解卷积运算：
+
+
+
+### 离散与连续
+
+#### 配对求和例
+
+我们先从离散入手。
+
+假设我们现在有0~10这11个数，我们希望对这11个数进行求和。当然可以通过硬计算的方式将这十一个数加起来。但是你们还记得高斯小时候那个故事吗？1 ~ 50的巧算求和。相似的我们可以再取出一组0~10这11个数，并将两组数两两配对：
+
+$0+10=10，1+9=10,2+8=10······5+5=10$
+
+总共有11个10，那么0~10的求和即为$11×10÷2=55$。
+
+如果用一张图来表示就是：
+
+<img src="media/dl-convolution/JPG-资源-42.jpg" alt="资源 42" style="zoom: 15%;" /> 
+
+如果将其看成一个数列，那么凑成10的加数的关系分别是$x$和$t-x$。即将一个数列倒过来与另一个数列一一相加。其中$t$为常数10，$x$为变量。我们记住这个特点，继续往下看。
+
+#### 初阶投掷骰子例子
+
+我们从小到大或多或少都接触过骰子。掷骰子里面蕴含着许多有趣的数学规律。我们知道一个骰子上只有1~6的点数，且每个点数朝上的概率是相同的。假如现在我们同时投掷两个骰子，请问两个点数向上之和为7的概率有多少？
+
+这是一个很简单的数学问题，可以用穷举法解决。
+
+$7=1+6,7=2+5,7=3+4,7=4+3,7=5+2,7=6+1$总共有这6种情况，而总共有$6×6=36$种可能，根据古典概型，概率是1/6。我们也画个图来表示下：
+
+<img src="media/dl-convolution/JPG-资源-43.jpg" alt="资源 43" style="zoom:15%;" /> 
+
+诶是不是和配对求和那个例子十分相似。
+
+#### 中阶投骰子例子
+
+现在我们延伸一下。假设我们这两个骰子不是均匀的(比如一个骰子重心偏向数字5，一个骰子重心偏向数字3)，即六个面向上的概率并不相等，别的条件不变。我们将第一个骰子$i$点数向上的概率记为$f(i)$、第二个骰子$i$点数向上的概率记为$g(i)$，那么这个问题的答案是：
+$$
+P=f(1)g(6)+f(2)g(6)+f(3)g(4)+f(4)g(3)+f(5)g(2)+f(6)g(1)=\sum_{x=1}^6 f(x)g(6-x)
+$$
+画图来表示一下就是：
+
+<img src="media/dl-convolution/JPG-资源-44.jpg" alt="资源 44" style="zoom:25%;" />
+
+我们记住$\sum_{x=1}^6 f(x)g(6-x)$这个表达式的形式，继续往下看。
+
+#### 多项式相乘例子
+
+假设现在我们有两个多项式：$f(x)=x^5+2x^4+3x^3+6x^2+7$和$g(x)=2x^2+4x+1$。我们现在想将这两个多项式相乘。
+
+第一种方法是硬算：
+$$
+f(x)g(x)=2x^2*(x^5+2x^4+3x^3+6x^2+7)+4x*(x^5+2x^4+3x^3+6x^2+7)+1*(x^5+2x^4+3x^3+6x^2+7)
+$$
+然后再展开合并同类项。
+
+也可以换一种方法。我们可以对乘积结果是相同的$x$的幂先进行运算。比如，结果是$x^5$的情况可能是：$x^5*1=x^5,2x^4*4x=8x^5,3x^3*2x^2=6x^5$，将这三者相加得到$15x^5$。老规矩，我们画个图演示一下：
+
+![资源 46](media/dl-convolution/JPG-资源-46.jpg)
+
+在图（1）中我们演示了$x^5$的计算过程，在图（2）中我们简化了图的表示并将系数抽象成一个列表（或者数组）。此时我们移动$g(x)$那个红色的框，我们会得到$x$其它次幂的系数：
+
+![资源 47](media/dl-convolution/JPG-资源-47.jpg)
+
+如果我们假设$f(x)$各项的系数为$a_i$（从左向右依次为$a_1、a_2……$），$g(x)$各项的系数为$b_i$，那么通过上面的图我们可以归纳出下面的结论：
+$$
+乘积结果中的x^i的系数c_i=\sum_{k=1}^3 b_ka_{i-k}
+$$
+可以自行代入$i=3,4,5$进行检验。
+
+
+
+好，到此为止我们已经看了好几个例子，我们发现在中阶投骰子例子和多项式相乘例子中都出现了形如这样一个式子:
+$$
+\sum f(x)g(t-x)
+$$
+这个就是卷积的离散形式。我们定义:
+$$
+h(x)=(f*g)(x)=\sum f(x)g(t-x)
+$$
+为卷积运算（离散形式）。其中$g(t-x)$为卷积核。
+
+我们理解一下卷积核这个概念。我们回顾一下这张图：
+
+![资源 47](media/dl-convolution/JPG-资源-47.jpg)
+
+$g(x)$就是卷积核。从图上来看，其实$g(x)$的作用是对$f(x)$进行了一种特殊的映射操作而最终得到了一个结果，即为一个"核"，其在图像上的表现为将一个三格的红色框转化成了一格红色的框。
+
+其实本质上，卷积就是一种特殊的映射操作。在之后的高维卷积中，会更加明显的体现出来。
+
+#### 连续卷积
+
+离散卷积我们已经介绍过了，下面引入一下连续卷积。连续卷积在深度学习卷积网络中使用很少，所以涉猎即可。
+
+其实，离散与连续是密不可分的。回顾一下积分的定义，就是从离散$\sum$，演变称为积分$\int$。
+
+卷积也不例外，我们可以改变卷积的求和符号，就得到了连续卷积：
+$$
+h(x)=(f*g)(x)=\int f(x)g(t-x)dx
+$$
+连续卷积我还没有想到一个非常好的解释例子。网上以及部分书上的例子要么其实本质上是离散卷积要么其实很不符合生活实际不好理解，希望有大佬能提供一份答案。
+
+
+
+### 维度
+
+前文我们讨论的卷积无论是离散还是连续都是只有一维的，其实在深度学习中卷积更加广泛的应用是在二维、三维中。
+
+![资源 47](media/dl-convolution/JPG-资源-47.jpg)
+
+这是一维的卷积，是将一条线映射到一个点上。类似的二维的卷积可以理解为是将一个面映射到一个点上。
+
+<img src="media/dl-convolution/JPG-资源-48.jpg" alt="资源 48" style="zoom:25%;" />
+
+上图比较清晰的表示了一个二维卷积的实际运作过程：利用一个3×3的卷积核将一个6×6的正方形映射成一个4×4的正方形。从图中我们也很容易理解为什么映射后的正方形边长缩短了2格。在后面的**填充**部分我们会较为详细的讲解如何处理这种边长减少的问题。
+
+下面我们给出一个具体的例子来解释二维卷积的运算过程：
+
+<img src="media/dl-convolution/JPG-资源-49.jpg" alt="资源 49" style="zoom:33%;" />
+
+这是一种非常简单的二维卷积形式，卷积核与被卷积矩阵值都是1。根据上面运算规律，通过卷积得到的所有的值都为：$1×1+1×1+1×1+1×1+1×1+1×1+1×1+1×1+1×1=9$
+
+其实，这个$g(x)=
+\left[
+\begin{matrix}
+1 & 1 & 1\\1 & 1 & 1\\1 & 1 & 1\\
+\end{matrix}
+\right]$卷积核的作用是将一个元素的值转化成该元素与其周围一圈元素的所有值之和。
+
+三维卷积原理与二维很类似，即将一个立体转化成一个点：
+
+<img src="media/dl-convolution/JPG-资源-50.jpg" alt="资源 50" style="zoom:15%;" /> 
+
+更高维的卷积就无法用画图抽象出来了。
+
+
+
+### 通道
+
+在卷积中我们也常常看到通道的概念。上文我们讨论的都属于单通道卷积，因为只有一个卷积核。多通道卷积是有多个卷积核。最常见的是在图像中。我们平常看到的照片和图像（打印除外）都是RGB图像，即每个像素都拥有R(red)、G(green)、B(blue)这三者的信息，我们又称其为三通道。对RGB图像的处理可以只使用一个卷积，也可以针对每个通道分别使用不同的卷积核，即多通道卷积。
+
+下面我们来看一个例子：
+
+<img src="media/dl-convolution/JPG-资源-51.jpg" alt="资源 51" style="zoom:12%;" /> 
+
+这就是一个三通道卷积。对$f(x)$分别用$g_1(x)、g_2(x)、g_3(x)$三个卷积核得到了三个不同的矩阵。后续我们可以对得到的三个矩阵进行相加等操作进一步处理。
+
+
+
+### 填充
+
+在前文中我们提到，根据卷积的运算规律，通过卷积运算得到的矩阵要比原矩阵小两格（两个像素）。如果我们想要对一个图像用卷积进行处理，往往我们需要很多层卷积，这样的话生成的图片在尺寸上会明显小很多。所以我们需要经过卷积计算后得到的图片与原图片尺寸相同。
+
+根据卷积计算的原理，经过卷积的矩阵肯定会变小两格；在我们希望生成图片尺寸不变的条件下，只能通过增大原图片尺寸进行实现。而增大原图片尺寸必然会带来很多像素点需要我们自己去填充。
+
+![资源 54](media/dl-convolution/JPG-资源-54.jpg)
+
+图（1）是不对原矩阵进行填充而使用卷积运算；图（2）是对原矩阵进行填充后而使用卷积运算。我们会发现，图（2）生成的矩阵与原矩阵（红色区域）尺寸相同。
+
+
+
+### 步长
+
+上文中我们介绍的卷积的运算，每次移动的格数都是1格，比如我们可以回顾一下下面这张图：
+
+<img src="media/dl-convolution/JPG-资源-48.jpg" alt="资源 48" style="zoom:25%;" />
+
+上图中，卷积运算每次只向右平移一个格子。那么是否可以平移两个格子、三个格子甚至更多的格子呢？我们先尝试一下间隔两格的。
+
+![资源 55](media/dl-convolution/JPG-资源-55.jpg)
+
+我们通过比对上面两个图，会发现，间隔数增大，生成的矩阵边长也会缩小。而我们也可以利用这个特点去对进行缩小。通过特定的卷积核，我们可以将图片大幅度缩小而同时不会发生多余的变形等现象。我们也可以利用这个特点对信息进行压缩。
+
+
+
+### 特殊卷积
+
+#### 1×1卷积
+
+利用1×1卷积核可以将一个高维矩阵转化成低维矩阵。
+
+<img src="media/dl-convolution/JPG-资源-56.jpg" alt="资源 56" style="zoom:15%;" /> 
+
+如上图，利用1×1卷积核可以将一个维度的数据（元素）进行压缩，而保留剩下的其它维度。
+
+
+
+### 应用
+
+#### 平滑处理
+
+如果一个图像噪点很多，或者上面出现了许多白点，我们可以用类似于$\left[
+\begin{matrix}
+\frac{1}{9} & \frac{1}{9} & \frac{1}{9}\\\frac{1}{9} & \frac{1}{9} & \frac{1}{9}\\\frac{1}{9} & \frac{1}{9} & \frac{1}{9}\\
+\end{matrix}
+\right]$的矩阵对其进行平滑处理。其实这也很好理解，$\frac{1}{9}$相当于是对一个像素点及其周围一圈像素点进行平均操作，这样特别暗或者特别亮的点会受到周围一圈点的中和而变得不那么突兀。
+
+
+
+#### 边缘检测
+
+利用卷积运算还可以智能的进行边界的识别。
+
+我们假设灰度值是0~30，其中0表示白，30表示黑。现在我们有如下图（1）灰色和白色各占一半。白色和灰色的部分的交界处位于图像中间。再看图（2），是经过卷积后的图像，中间部分是黑色（灰度值为30），正好对应着灰色与白色的边界处，这就完成了垂直边缘检测的任务。
+
+![资源 58](media/dl-convolution/JPG-资源-58.jpg)
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sigmoid · Yongkang Li</title>
+<meta name="description" content="The Sigmoid function, also known as the logistic function, is one of the earliest activation functions used in neural networks. However, due to some i…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Deep Learning from Zero to Kang</span><span data-l="cn">Deep Learning from Zero to Kang</span></span><i>/</i><span><span data-l="en">Activation functions</span><span data-l="cn">激活函数</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Sigmoid</span><span data-l="cn">Sigmoid 激活函数</span></h1>
+    <div class="meta"><span data-l="en">1 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><span></span><a class="pn glass" href="tanh.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Tanh</span><span data-l="cn">Tanh 激活函数</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+
+### Sigmoid Function
+
+The Sigmoid function, also known as the logistic function, is one of the earliest activation functions used in neural networks. However, due to some inherent drawbacks, it is rarely used as an activation function nowadays, but still finds common application in probability estimation for binary classification problems.
+
+### Function Expression
+
+$$
+\text{sigmoid}(x)=\frac{1}{1+e^{-x}}
+$$
+
+### Function Graph
+
+![Function Graph](media/sigmoid/1.png)
+
+### Function Characteristics
+
+#### Advantages:
+
+- The output of the sigmoid function is constrained between $(0,1)$, effectively normalizing the output and making it suitable for models where predicted probabilities are required.
+
+- The sigmoid gradient is smooth, which helps prevent sudden jumps in output values.
+
+- The sigmoid function is easy to differentiate, reducing computational complexity.
+
+  > The derivative formula is: $f'(x)=f(x)[1-f(x)]$, which can be derived easily.
+
+#### Disadvantages:
+
+- The sigmoid function is prone to saturation and gradient vanishing issues. It exhibits significant gradient changes only near the origin, with minimal gradient changes at the extremes, making it challenging to update parameters effectively.
+
+  > Let's examine its gradient graph:
+  >
+  > ![Gradient Graph](media/sigmoid/2.png)
+  >
+  > It's evident that the gradient is significant only between $(-2,2)$.
+
+- The sigmoid function involves exponential computations, leading to increased computational complexity.
+
+  > Note that this does not contradict its advantage of being easy to differentiate, as even though it's easy to differentiate, exponential computations are still encountered during calculation.
+
+- The function graph is not symmetric about the origin, which reduces the efficiency of weight updates.
+</script>
+<script type="text/markdown" data-lang="cn">
+
+Sigmoid函数，又称logistic函数，是最早使用的激活函数之一。但是由于其固有存在的一些缺点，如今很少将其作为激活函数，但是依然常用于二分类问题中的概率划分。
+
+### 函数表达式
+
+$$
+sigmoid(x)=\frac{1}{1+e^{-x}}
+$$
+
+### 函数图像
+
+![QQ图片20221225155840](media/sigmoid/1.png)
+
+### 函数特性
+
+#### 优点：
+
+- sigmoid函数的输出范围限定在$(0,1)$之间，相当于做了归一化操作，可以用于将预测概率作为输出的模型
+
+- sigmoid梯度平滑，可以避免跳跃的输出值
+
+- sigmoid函数便于求导，计算量减小
+
+   > 求导公式为：$f'(x)=f(x)[1-f(x)]$，可自行推导
+
+#### 缺点：
+
+- sigmoid函数容易饱和、出现梯度消失等问题。sigmoid函数只在原点附近有比较大的梯度变化，在两端梯度变化很小，参数难以更新。
+
+   > 我们不妨看一下其梯度图像：
+   >
+   > ![QQ图片20221225161752](media/sigmoid/2.png)
+   >
+   > 不难发现其梯度只有在$(-2,2)$之间存在的比较大
+
+- sigmoid函数中出现指数运算，计算量较大。
+
+   > 注意这一步和之前的便于求导的优点并不冲突，因为即使其便于求导，在计算过程中也会遇到指数的运算。
+
+- 函数图像不是关于原点中心对称的，这样会降低权重更新的效率
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Generalization and Model Selection · Yongkang Li</title>
+<meta name="description" content="Regularization was introduced to prevent a model from overfitting. It works by adding one more term after the loss function to penalize having too man…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Machine learning basics</span><span data-l="cn">机器学习基础</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Generalization and Model Selection</span><span data-l="cn">泛化性与模型选择</span></h1>
+    <div class="meta"><span data-l="en">1 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="ml-clustering.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Clustering</span><span data-l="cn">聚类</span></span></a><a class="pn glass" href="ml-metrics.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Common Evaluation Metrics</span><span data-l="cn">常用评价指标</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+### Generalization
+
+???
+
+### Model Selection
+
+#### Overfitting and Underfitting
+
+**Overfitting:** This means the model contains too many parameters during learning, so that it fits the training data very well but predicts poorly on the test data and other datasets
+
+**Underfitting:** This means the model contains too few parameters during learning, so that it cannot predict well
+
+
+
+#### Regularization
+
+Regularization was introduced to prevent a model from overfitting. It works by adding one more term after the loss function to penalize having too many parameters.
+
+The original loss function is:
+$$
+L(w)=\frac{1}{N}\sum_{i=1}^NL(y_i,f(x_i))
+$$
+Regularization adds a term involving $||w||$ after it, and uses a coefficient $\lambda$ to adjust its weight relative to the preceding loss function. Here is an example:
+$$
+L(w)=\frac{1}{N}\sum_{i=1}^NL(y_i,f(x_i))+\frac{\lambda}2||w||^2
+$$
+
+
+#### Cross-Validation
+
+##### (1) Simple Cross-Validation
+
+If enough sample data is available, we can simply split the dataset at random into three parts: a training set, a validation set, and a test set.
+
+- The training set is used to train the model parameters
+- The validation set is used to tune the hyperparameters and select the most suitable model
+- The test set is used to evaluate the model's generalization ability
+
+
+
+##### (2) S-Fold Cross-Validation
+
+Randomly split the sample data into S parts. Each time, choose S-1 parts as the training set and use the remaining 1 part as the validation set. When this round is finished, randomly choose K-1 parts again to train on. After several rounds (fewer than K), choose the model and parameters that are best according to the loss function.
+
+##### (3) Leave-One-Out Cross-Validation
+
+This is a special case of S-fold cross-validation; the only difference is that here there are only S samples in total. It is used only when data is extremely scarce.
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+### 泛化性
+
+？？？
+
+### 模型选择
+
+#### 过拟合与欠拟合
+
+**过拟合：**指学习时包含的参数过多，以至于对于训练数据拟合很好但是对测试数据以及其它数据集预测较差
+
+**欠拟合：**指学习时包含的参数过少，以至于无法很好的预测
+
+
+
+#### 正则化
+
+正则化出现是防止模型过拟合，其操作方法是在损失函数后再增加一项用于惩罚参数过多的情况。
+
+原先的函数的损失函数为：
+$$
+L(w)=\frac{1}{N}\sum_{i=1}^NL(y_i,f(x_i))
+$$
+而正则化会在后面增加一个关于$||w||$的多项式，并用系数$\lambda$调节其与前面损失函数的关系，下面是一个例子：
+$$
+L(w)=\frac{1}{N}\sum_{i=1}^NL(y_i,f(x_i))+\frac{\lambda}2||w||^2
+$$
+
+
+#### 交叉验证
+
+##### （1）简单交叉验证
+
+如果给定的样本数据充足，可以比较简单的随机地将数据集分成三部分：训练集、验证集、测试集。
+
+- 训练集用于训练模型参数
+- 验证集用于调整超参数，选择最合适的模型
+- 测试集用于评估模型的泛化能力
+
+
+
+##### （2）S折交叉验证
+
+把样本数据随机分成S份，每次选择S-1份作为训练集，剩下的1份作为验证集。当这一轮完成后，重新随机选择K-1份来训练数据。若干轮（小于K）之后，选择损失函数评估最优的模型和参数。
+
+##### （3）留一交叉验证
+
+这是S折交叉验证的特例，唯一不同的是此时总共只有S个样本数。只有在数据集极其缺乏的情况下才会使用。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

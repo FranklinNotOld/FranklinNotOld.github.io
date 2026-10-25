@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Softmax Regression and Loss Functions · Yongkang Li</title>
+<meta name="description" content="This article mainly draws on Mu Li&#x27;s Dive into Deep Learning and his online course">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Dive into Deep Learning notes</span><span data-l="cn">《动手学深度学习》笔记</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Softmax Regression and Loss Functions</span><span data-l="cn">softmax 回归与损失函数</span></h1>
+    <div class="meta"><span data-l="en">2 min read</span><span data-l="cn">约 2 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="d2l-linear-regression.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Linear Regression</span><span data-l="cn">线性回归</span></span></a><span></span></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+This article mainly draws on Mu Li's *Dive into Deep Learning* and his online course
+
+### Difference Between Regression and Classification
+
+Regression: a single output; passing through the regression function in the end yields only one result
+
+Classification: multiple outputs; different classes have different output results
+
+
+
+### The Softmax Function
+
+$$
+\hat{y}=\frac{exp(o_i)}{\sum_kexp(o_k)}
+$$
+
+In this way the output is a number between $(0,1)$. Moreover, owing to the properties of the exponential function $e$, the larger $o_i$ is, the disproportionately larger its result becomes, so the softmax function in effect makes "the large larger and the small smaller".
+
+
+
+### Cross-Entropy Loss
+
+The cross-entropy loss function formula:
+$$
+Loss(y,\hat y)=-\sum{y_i}log\hat{y_i}
+$$
+If we compute its gradient, what we end up with is the difference between the true probability and the predicted probability:
+$$
+\frac{\partial Loss(y,\hat y)}{\partial{o_i}}=softmax(o_i)-y_i
+$$
+
+### Loss Functions
+
+**Absolute Value Loss, L1 Loss:**
+$$
+Loss(y,y')=|y-y'|
+$$
+The advantage of the absolute value loss is that the gradient is constantly 1 or -1, but it is not differentiable at the origin, i.e., there is a break when going from 1 to -1, which causes some problems for training.
+
+**Mean Squared Loss, L2 Loss:**
+$$
+Loss(y,y')=\frac{1}{2}(y-y')^2
+$$
+
+The advantage of the mean squared loss is that the larger y is, the larger the gradient, so the faster the gradient updates, but this easily brings instability.
+
+**Huber's Robust Loss:**
+$$
+l(y,y')=
+\left\{
+\begin{aligned}
+|y-y'|-\frac12 && if|y-y'|>1 \\
+\frac{1}{2}(y-y')^2 && otherwise \\
+\end{aligned}
+\right.
+$$
+This loss function combines the advantages of the two above: when far from the origin the gradient does not drop too fast and cause instability, and it is also continuously differentiable at the origin.
+
+
+
+### Image Classification Datasets
+
+The purpose of softmax is to classify data, so before implementing softmax we first need to understand how to read a multiclass dataset.
+
+The MNIST dataset is one of the most widely used datasets in image classification, and Fashion-MNIST is more complex than it. Here we use Fashion-MNIST as the example.
+
+First import the relevant packages:
+
+```python
+import torch
+import torchvision  # Library for computer vision
+from matplotlib import pyplot as plt
+from torch.utils import data
+from torchvision import transforms
+from d2l import torch as d2l
+```
+
+Then download the Fashion-MNIST dataset:
+
+```python
+# Download the dataset
+trans = transforms.ToTensor()  # Convert the images to Tensor format
+mnist_train = torchvision.datasets.FashionMNIST(root='/Datasets/FashionMNIST',
+                                                train=True, download=True, transform=trans)
+mnist_test = torchvision.datasets.FashionMNIST(root='/Datasets/FashionMNIST',
+                                                train=False, download=True, transform=trans)
+
+print(len(mnist_train), len(mnist_test))  # Print the number of samples in the datasets
+feature, label = mnist_train[1]
+print(feature.shape, label)
+```
+
+We get the following output:
+
+```python
+60000 10000
+torch.Size([1, 28, 28]) 0
+```
+
+60000 is the size of the training set and 10000 the size of the test set; in [1,28,28], the "1" is the number of channels, which is 1 because a grayscale image has only one channel (gray-white); 28 is the number of pixels, i.e., the image is 28 pixels in both width and height; and the "0" is the label.
+
+If we want to see what an image actually looks like, we can do the following:
+
+```python
+# Return the text labels of the dataset
+def get_fashion_mnist_labels(labels):
+    text_labels = ['t-shirt', 'trouser', 'pullover', 'dress', 'coat',
+                   'sandal', 'shirt', 'sneaker', 'bag', 'ankle boot']
+    return [text_labels[int(i)] for i in labels]
+```
+
+The explanation in Mu Li's slides is "return the text labels of the dataset". Here an array text_labels is constructed, and given an array index i, this function returns the label corresponding to that index. It is as if the earlier numeric labels were replaced with text labels.
+
+Next define a function to display the actual contents of the dataset:
+
+> Note: I personally am more used to the matlab library, so the code here is not consistent with the code in Mu Li's online course
+
+```python
+def show_fashion_mnist(images, labels):
+    d2l.use_svg_display()
+    _, figs = plt.subplots(1, len(images), figsize=(12, 12))
+    for f, img, lbl in zip(figs, images, labels):
+        f.imshow(img.view((28, 28)).numpy())
+        f.set_title(lbl)
+        f.axes.get_xaxis().set_visible(False)
+        f.axes.get_yaxis().set_visible(False)
+    plt.show()
+
+
+X, y = [], []
+for i in range(10):
+    X.append(mnist_train[i][0])
+    y.append(mnist_train[i][1])
+show_fashion_mnist(X, get_fashion_mnist_labels(y))
+```
+
+Here I used the MATLAB library; there is no need to study the code too closely for now, just get a rough idea of what it does. The output is as follows:
+![QQ picture 20230315140451](media/d2l-softmax/笔记图片-QQ图片20230315140451.png)
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+本文主要参考李沐老师的《动手学深度学习》以及网课
+
+### 回归与分类的区别
+
+回归：单一输出，最后经过回归函数只会得到一个结果
+
+分类：多个输出，不同的类有不同的输出结果
+
+
+
+### softmax函数
+
+$$
+\hat{y}=\frac{exp(o_i)}{\sum_kexp(o_k)}
+$$
+
+这样输出结果是一个在$(0,1)$之间的数，而且，根据$e$指数函数的性质，$o_i$的值越大其结果大得越多，所以softmax函数其实是起到了让“大的更大、小的更小”的一个作用。
+
+
+
+### 交叉熵损失
+
+交叉熵损失函数公式：
+$$
+Loss(y,\hat y)=-\sum{y_i}log\hat{y_i}
+$$
+如果我们求其梯度，最后得到的就是真是概率和预测概率的区别：
+$$
+\frac{\partial Loss(y,\hat y)}{\partial{o_i}}=softmax(o_i)-y_i
+$$
+
+### 损失函数
+
+**绝对值损失L1 Loss：**
+$$
+Loss(y,y')=|y-y'|
+$$
+绝对值损失函数的好处是梯度恒定为1或者-1，但是在原点处不可导，也就是1到-1的时候会有一个断点，这会给训练带来一些问题。
+
+**均方损失L2 Loss：**
+$$
+Loss(y,y')=\frac{1}{2}(y-y')^2
+$$
+
+均方损失函数的好处是y越大梯度越大，梯度更新速度也就越快，但是这样容易带来不稳定。
+
+**Huber's Robust Loss：**
+$$
+l(y,y')=
+\left\{
+\begin{aligned}
+|y-y'|-\frac12 && if|y-y'|>1 \\
+\frac{1}{2}(y-y')^2 && otherwise \\
+\end{aligned}
+\right.
+$$
+这个损失函数就结合上面两者的优点，这样在距离原点较远的时候梯度不会下降过快而带来不稳定，原点处也是连续可导的。
+
+
+
+### 图像分类数据集
+
+softmax的作用是为了实现对数据进行分类，所以在实现softmax之前，我们首先要了解如何读取一个多分类的数据集。
+
+MNIST数据集是图像分类中广泛使用的数据集之一，Fashion-MNIST数据集在其基础上会更加复杂。我们在此以Fashion-MNIST为例。
+
+首先导入相关的包：
+
+```python
+import torch
+import torchvision  # 计算机视觉相关的库
+from matplotlib import pyplot as plt
+from torch.utils import data
+from torchvision import transforms
+from d2l import torch as d2l
+```
+
+然后对Fashion-MNIST数据集进行下载：
+
+```python
+# 下载数据集
+trans = transforms.ToTensor()  # 将图片转化成Tensor格式
+mnist_train = torchvision.datasets.FashionMNIST(root='/Datasets/FashionMNIST',
+                                                train=True, download=True, transform=trans)
+mnist_test = torchvision.datasets.FashionMNIST(root='/Datasets/FashionMNIST',
+                                                train=False, download=True, transform=trans)
+
+print(len(mnist_train), len(mnist_test))  # 打印数据集数量
+feature, label = mnist_train[1]
+print(feature.shape, label)
+```
+
+可以得到输出结果：
+
+```python
+60000 10000
+torch.Size([1, 28, 28]) 0
+```
+
+60000表示训练集，10000表示测试集；[1,28,28]中“1”表示通道数，由于灰度图只有一个通道（灰白），所以为1；28表示像素数量，即图片长宽都是28像素；“0”表示的是标签。
+
+如果我们想看一下图像的具体内容，可进行如下的操作：
+
+```python
+# 返回数据集的文本标签
+def get_fashion_mnist_labels(labels):
+    text_labels = ['t-shirt', 'trouser', 'pullover', 'dress', 'coat',
+                   'sandal', 'shirt', 'sneaker', 'bag', 'ankle boot']
+    return [text_labels[int(i)] for i in labels]
+```
+
+李沐老师PPT里给的解释是“返回数据集的文本标签”，这里是构造了一个text_labels的数组，根据数组的索引i，这个函数可以返回索引对应的标签。相当于是将之前的数字标签替换成了文字标签。
+
+下面定义一个函数显示数据集具体内容：
+
+> 备注：我个人比较习惯用matlab的库，所以这里并没有和李沐老师的网课代码保持一致
+
+```python
+def show_fashion_mnist(images, labels):
+    d2l.use_svg_display()
+    _, figs = plt.subplots(1, len(images), figsize=(12, 12))
+    for f, img, lbl in zip(figs, images, labels):
+        f.imshow(img.view((28, 28)).numpy())
+        f.set_title(lbl)
+        f.axes.get_xaxis().set_visible(False)
+        f.axes.get_yaxis().set_visible(False)
+    plt.show()
+
+
+X, y = [], []
+for i in range(10):
+    X.append(mnist_train[i][0])
+    y.append(mnist_train[i][1])
+show_fashion_mnist(X, get_fashion_mnist_labels(y))
+```
+
+这里用的了MATLAB的库，可以暂时不用太细究其代码，大概来理解作用即可。输出结果如下：
+![QQ图片20230315140451](media/d2l-softmax/笔记图片-QQ图片20230315140451.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

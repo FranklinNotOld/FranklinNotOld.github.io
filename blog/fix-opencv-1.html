@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenCV Errors, Part 1 · Yongkang Li</title>
+<meta name="description" content="This error cost me more than six hours. I hope my blog can save everyone that time.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Troubleshooting</span><span data-l="cn">报错解决</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">OpenCV Errors, Part 1</span><span data-l="cn">OpenCV 报错（一）</span></h1>
+    <div class="meta"><span data-l="en">2 min read</span><span data-l="cn">约 2 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="fix-unpack.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">ValueError: too many values to unpack</span><span data-l="cn">ValueError: too many values to unpack</span></span></a><a class="pn glass" href="fix-opencv-2.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">OpenCV Errors, Part 2</span><span data-l="cn">OpenCV 报错（二）</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+This error cost me more than six hours. I hope my blog can save everyone that time.
+
+While writing a script as usual, I ran into this error:
+
+```python
+OpenCV(4.5.4-dev) D:\a\opencv-python\opencv-python\opencv\modules\videoio\src\cap_images.cpp:253: error: (-5:Bad argument) CAP_IMAGES: can't find starting number (in the name of file): C:/Users/Desktop/test in function 'cv::icvExtractPattern'
+```
+
+I looked up many solutions for similar errors online and tried almost all of them. I uninstalled and reinstalled opencv many times, but nothing worked, and sometimes I even got an error ending with `cv::imwrite`. It took from nine in the evening until half past three in the morning before I found the solution.
+
+First, my code:
+
+```python
+import cv2
+import os
+
+times = 1  # frame counter for the extracted frames
+sourceFileName = '01_11__talking_against_wall__9229VVZ3'
+frame_frequency = 50  # frame rate for extracting from the video, i.e. how many to extract per 1 frame
+file_path = 'videoTest/' + sourceFileName + '/'
+video_path = "C:/Users/Desktop/test"  # directory of the video file to read
+if not os.path.exists(file_path):  # create the folder if the file path does not exist
+    os.makedirs(file_path)
+camera = cv2.VideoCapture(video_path)
+while True:
+    times = times+1
+    res, image = camera.read()
+    if not res:
+        print('not res , not image')
+        break
+    if times % frame_frequency == 0:
+        cv2.imwrite(file_path + "/" + str(times) + ".jpg", image)
+        times = times + 1  # record the number of saved photos
+    camera.release()
+```
+
+After a very long search, I finally found where my problem was. I had been misled by the variable name `video_path` and assumed that **only the path of the folder containing the video file needs to be passed in**, but in fact what `cv2.VideoCapture` expects is **the path of the video + the video name/format**. Change line 8 of the code above to: `video_path = "C:/Users/11304/Desktop/test/01_11__talking_against_wall__9229VVZ3.mp4"  `
+
+The original error is resolved, and the code runs normally.
+
+
+
+There are many solutions online. Since I have basically read through all of them, I will summarize them here to make things easier for everyone. I found that errors of this kind in opencv are mostly caused by the following reasons:
+
+(1) The file directory or the video name contains Chinese characters; it must be changed to English
+
+(2) The image or video does not exist
+
+(3) The opencv version does not match the python version. The opencv version installed with `pip` or `conda` is the latest by default, but in fact there is a fairly strict version correspondence between opencv and python. Here I attach the download link:
+
+https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/opencv-python/
+
+The number after cp is the python version; on Windows download the win builds, and likewise for Linux and mac; X64 and X32 are the bitness of your computer, which you can check for yourself: use X64 for 64-bit and X32 for 32-bit.
+
+After downloading, put the downloaded whl into Lib/sitepackage of the corresponding python environment, which is the place dedicated to storing python libraries, and then open cmd in that folder and install with this command: `pip install filename`
+
+
+
+Here is the official opencv page as well, which can help you solve some common installation errors:
+
+https://pypi.org/project/opencv-python/
+
+
+
+I solved this problem thanks to an answer from a guy abroad, which suggested that the problem might not be with the opencv installation but with my own code. So I went online, found code that other people had written with functionality similar to mine, and compared it with mine. In the end it took six hours before I found the cause. I hope this can help everyone save that time.
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+这个报错耗了我六个多小时，希望通过我的博客能帮大家省下这个时间。
+
+在日常写脚本的时候出现了这样一个报错：
+
+```python
+OpenCV(4.5.4-dev) D:\a\opencv-python\opencv-python\opencv\modules\videoio\src\cap_images.cpp:253: error: (-5:Bad argument) CAP_IMAGES: can't find starting number (in the name of file): C:/Users/Desktop/test in function 'cv::icvExtractPattern'
+```
+
+在网上查了很多类似的报错的解决方法，几乎所有的都试过了，opencv卸载重装了很多遍，都没有用，甚至有的时候还出现了结尾是`cv::imwrite`的报错。这个报错从晚上九点一直到凌晨三点半我才找到解决方法。
+
+首先，我的代码如下：
+
+```python
+import cv2
+import os
+
+times = 1  # 提取的帧记数
+sourceFileName = '01_11__talking_against_wall__9229VVZ3'
+frame_frequency = 50  # 提取视频的帧率，即每1帧提取几个视频
+file_path = 'videoTest/' + sourceFileName + '/'
+video_path = "C:/Users/Desktop/test"  # 读取视频的文件目录
+if not os.path.exists(file_path):  # 如果文件路径不存在就创建文件夹
+    os.makedirs(file_path)
+camera = cv2.VideoCapture(video_path)
+while True:
+    times = times+1
+    res, image = camera.read()
+    if not res:
+        print('not res , not image')
+        break
+    if times % frame_frequency == 0:
+        cv2.imwrite(file_path + "/" + str(times) + ".jpg", image)
+        times = times + 1  # 记录存储照片的次数
+    camera.release()
+```
+
+经过很长时间的探寻我，我终于发现了我的问题所在。我被`video_path`这个变量名给误导了，以为**只需要传入视频文件所在的路径**即可，但事实上，`cv2.VideoCapture`要接收的是**视频所在路径+视频名称/格式**，将上述代买第8行修改为：`video_path = "C:/Users/11304/Desktop/test/01_11__talking_against_wall__9229VVZ3.mp4"  `
+
+原报错解决，可以正常运行。
+
+
+
+网上有很多解决方法，由于我基本都看过一遍，所以在此总结一下，方便大家解决。我发现opencv这种类似格式的报错大多是由以下几种原因造成的：
+
+（1）文件目录或者视频名称中含有中文，必须修改成英文
+
+（2）图片或者视频不存在
+
+（3）opencv与python的版本不对应。使用`pip`或者`conda`安装的opencv版本默认为最新版，但是事实上opencv和python有一个比较严格的版本对应关系。在此我附上了下载链接：
+
+https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/opencv-python/
+
+里面cp后面的数字指的是python版本；windows系统下载win的，Linux、mac以此类推；X64，X32是电脑位数，这个自己查看自己电脑的位数即可，64位用X64，32位用X32。
+
+下载好之后，将下载的whl放到python对应环境的Lib/sitepackage里面，这里面专门用于存放python的一些库，然后在对应文件夹打开cmd用指令安装即可：`pip install 文件名`
+
+
+
+这里再附上opencv的官网，里面可以帮助你解决一些常见的安装报错问题：
+
+https://pypi.org/project/opencv-python/
+
+
+
+当时我解决这个问题是受到了一个外国小哥回答的启发，即有可能不是opencv安装的问题，而是我原代码出了错，所以我去网上找了别人跟我写的类似功能的代码去比对，最后历经六小时才发现原因所在，希望能帮助大家省下这个时间。
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

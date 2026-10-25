@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Long Short-Term Memory (LSTM) · Yongkang Li</title>
+<meta name="description" content="The design of LSTM addresses this issue by enhancing the neural network&#x27;s ability to remember earlier input data. However, enabling the neural network…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Deep Learning from Zero to Kang</span><span data-l="cn">Deep Learning from Zero to Kang</span></span><i>/</i><span><span data-l="en">Sequence models</span><span data-l="cn">序列模型</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Long Short-Term Memory (LSTM)</span><span data-l="cn">长短期记忆网络（LSTM）</span></h1>
+    <div class="meta"><span data-l="en">4 min read</span><span data-l="cn">约 3 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="rnn.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Recurrent Neural Networks (RNN)</span><span data-l="cn">循环神经网络（RNN）</span></span></a><a class="pn glass" href="lenet.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">LeNet</span><span data-l="cn">LeNet</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+### Reference
+（1）https://zhuanlan.zhihu.com/p/32481747
+## Introduction
+In the blog post about RNNs, it's mentioned that due to the characteristics of RNN backpropagation through time (BPTT), RNNs struggle with handling long time-series problems because of the issues of vanishing and exploding gradients. Specifically, when the input sequence is long, the RNN structure also elongates accordingly, which can cause gradients to become too large or too small, leading to the forgetting of early sequence data.
+
+The design of LSTM addresses this issue by enhancing the neural network's ability to remember earlier input data. However, enabling the neural network to have better memory of past information posed a challenge. To understand this better, let's analogize it to human memory. If we repeatedly read an English word "A" five times after waking up, compared to reading twenty different English words each five times (with the first English word being "A"), we are more likely to remember "A" in the first scenario. This is because in the second scenario, there are too many other words interfering. RNNs function similarly. If every input data at each time point needs to be remembered, then the importance of early input data diminishes. The most direct solution could be using attention mechanisms to assign different weights to input sequences at different time points. However, for high-dimensional input data, this significantly increases network parameters and is challenging to train.
+
+Nevertheless, this method of allocating attention (weights) has a point worth acknowledging: **the notion of good and bad memory is essentially about the weight of importance**. Remembering just one word is easier because there is no interference from other memories (under ideal conditions); remembering twenty words is harder because there is a large amount of memory interference, and the weight of word "A" is low. The original intention of LSTM is also similar, employing certain techniques to retain important information while discarding unimportant information, thereby increasing the "weight" of important information in memory.
+
+## Basic Methodology
+LSTM employs a rather ingenious approach by dividing the connections between different time points into two parts: the "long-term memory line" $C$ and the "short-term memory line" $h$. The "long-term memory line" is similar to the connections in RNNs, gathering all the information from the input sequence. On the other hand, the "short-term memory line," as the name suggests, mainly gathers input information over a short period of time. Based on its importance, important information is passed to the "long-term memory line" while unimportant information is discarded. This allows the "long-term memory line" to better maintain and effectively utilize the information it holds.
+
+<img src="media/lstm/2.jpg" alt="2" style="zoom: 25%;" />
+
+In an LSTM, the "short-term memory line" $ h_{t-1} $ is concatenated with the regular input data $ x_{t} $ to form a new input for the hidden neuron, $ [h_{t-1}, x_{t}] $. This combined input is then separately fed into three "gates" to control the memorization of information. For this purpose, the LSTM is divided into three gates: the "forget gate," the "input gate," and the "output gate."
+
+<img src="media/lstm/1.jpg" alt="1" style="zoom:10%;" />
+
+#### Forget Gate
+The main function of the forget gate is to selectively remember or forget important and unimportant information. For the input $ [h_{t-1},x_{t}] $, it first undergoes dimension mapping (adjusting to suitable input dimensions) through the linear layer $ W_{1} $. Subsequently, the input values are mapped to the range between 0 and 1 through the sigmoid function, and then multiplied element-wise with the input from the "long-term memory line". It's important to note that the multiplication here is element-wise, corresponding to the elements in the tensors (matrices).
+
+<img src="media/lstm/3.jpg" alt="3" style="zoom:25%;" />
+
+The principle behind this is that when "short-term memory" and "new memory" are concatenated to form a new tensor, if the values are relatively small, it indicates that this memory is less important. In such cases, the sigmoid function assigns weights closer to 0, indicating unimportance. Conversely, if the values are larger, weights closer to 1 are assigned, indicating importance. Subsequently, these weights are multiplied with the "long-term memory line". Multiplying unimportant memories with weights close to 0 and important memories with weights close to 1 facilitates "forgetting" unimportant information and "retaining" important information.
+
+#### Input Gate
+The role of the input gate is to selectively input information into the "long-term memory line" while retaining it. This gate consists of two branches: one passes through $ W_{2} $ followed by the sigmoid activation function, and the other passes through $ W_{3} $ followed by the tanh activation function. Finally, the outputs of these two branches are multiplied together. In fact, by examining the diagram below, it is easy to see that if the sigmoid branch is removed, the right part resembles the structure of hidden neurons in an RNN. Essentially, RNN utilizes this mechanism to input information from different positions in the sequence and adds it to the main memory line after activation. The difference from RNN is that here, the sigmoid function is used to map importance to values between 0 and 1, which are then multiplied with the information passed through tanh activation to reduce the value of unimportant information before inputting it into the "long-term memory line".
+
+<img src="media/lstm/4.jpg" alt="4" style="zoom:15%;" />
+
+#### Output Gate
+The role of the output gate is to selectively output information to the "short-term memory line". It is easy to notice that the overall structure of the output gate is very similar to that of the input gate, except for changes in its input and output content. Like the input gate, the output gate also allocates weights through sigmoid to output more valuable information to the "short-term memory line".
+
+<img src="media/lstm/5.jpg" alt="5" style="zoom:25%;" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<script type="text/markdown" data-lang="cn">
+### 相关资料
+（1）[人人都能看懂的GRU - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/32481747)
+## 引入
+在 RNN 那篇博客中提到，根据 RNN 反向传播 BPTT 的特点， RNN 对长时间序列问题难以处理，因为会出现梯度消失和梯度爆炸的问题。详细来说就是当输入序列比较长的时候，RNN 结构也会相应变长，此时根据反向传播中的链式法则，容易使得梯度过大或者过小，也就是 RNN 对越早序列上的数据越容易遗忘。
+LSTM 设计的初衷就是使得神经网络对较早输入的数据有更好的记忆力。但是如何能让神经网络对过去的信息也能拥有更好的记忆力成为了难题。如果直接去思考比较难以理解，我们可以类别人类的正常的记忆方式。如果我们早起后重复读一个英语单词 A 五遍，和起床后二十个英语单词各读五遍（其中第一个英语单词也是 A），那么大概率在第一种情况下我们更容易记住 A。这是因为在第二种情况下，有太多别的单词干扰。RNN 的作用也十分类似。如果每个时间点上输入的数据都需要记忆，那么势必越早输入的数据重要性越低。最直接的解决方法可以是使用注意力机制，为不同时间点的输入序列分配不一样的权重，但是对于高维的输入数据，这样无疑会大大加深网络参数量，且不容易训练。但是这种分配注意力（权重）的方法有一点是值得认同的，就是**所谓的记忆好与差其实就是比重的高与低**。只读一个单词更容易记住，是因为没有别的记忆进行干扰（相对理想的情况下）；读二十个单词不容易记住，是因为有大量记忆内容进行干扰，单词 A 所占记忆的比重很低。LSTM 的初衷也是如此，通过一些手段使得重要的信息得以保留，而不重要的信息被抛弃，使得重要的信息所占“记忆”的“比重”变高。
+
+## 基本原理
+LSTM 采用了一种比较巧妙的处理方式，将不同时间点之间连接起来的部分分为“长期记忆线” $C$ 和“短期记忆线” $h$。“长期记忆线”类似于 RNN 中的连接方式，用于汇集输入序列上的所有信息；而“短期记忆线”，顾名思义，主要是汇集短期时间内的输入信息，并根据其重要程度，将重要的传给“长期记忆线”，而将不重要的抛弃，这样“长期记忆线”就能够更好地维持其所拥有的信息更加有效。
+
+<img src="media/lstm/2.jpg" alt="2" style="zoom: 25%;" />
+
+相信大伙在网上也看过 LSTM 内部各种门的各种各样的画法，这里我自己画了一种觉得方便理解。
+LSTM 将“短期记忆线” $h_{t-1}$ 和正常的输入数据 $x_{t}$ “拼接”组成隐藏神经元新的输入 $[h_{t-1},x_{t}]$，并分别输入到三个“门”中，用于控制信息的记忆性。为此，LSTM 分成了三个门：“遗忘门”“输入门”和“输出门”。
+
+<img src="media/lstm/1.jpg" alt="1" style="zoom:10%;" />
+
+#### 遗忘门 Forget Gate
+遗忘门主要的作用是对重要以及不重要的信息进行选择记忆或者遗忘。对于输入 $[h_{t-1},x_{t}]$，首先经过线性层 $W_{1}$ 进行维度映射（调整成适合的输入），接着通过 sigmoid 函数将输入值映射到 0,1 之间，并与“长期记忆线”输入相乘。注意这里的相乘是张量 (矩阵)对应位置元素相乘。
+
+<img src="media/lstm/3.jpg" alt="3" style="zoom:25%;" />
+
+这样做的原理在于，“短期记忆”和“新记忆”拼接起来形成的新张量，如果值比较小说明该记忆不重要，不重要就会被 sigmoid 赋予更接近于 0 的权重，反之则会赋予更接近于 1 的权重。之后再与“长期记忆线”相乘，将不重要的与接近于 0 的权重相乘，将重要的需要保留的与接近于 1 的权重相乘。也就是不重要的“遗忘”，重要的“保留”。
+
+#### 输入门 Input Gate
+输入门的作用是将输入的信息有保留的输入到“长期记忆线”上。这个门由两条线组成，一条是经过 $W_{2}$ 再经过 sigmoid 激活函数激活，另外一条是经过 $W_{3}$ 再经过 tanh 激活函数激活，最后将两者相乘。其实通过下有图不难发现，将 sigmoid 那条线删去，右边部分就是 RNN 在隐藏神经元的部分。本质上，RNN 就是利用此将序列不同位置的信息输入经过激活后加入主记忆线。与 RNN 不同的是，在这里利用 sigmoid 函数将重要性划分至 0,1 并与经过 tanh 经过激活的信息相乘，以将不重要的信息值减少，最后才输入到“长期记忆线”上。
+
+<img src="media/lstm/4.jpg" alt="4" style="zoom:15%;" />
+
+#### 输出门 Output Gate
+输出门的作用是将信息有选择性的输出到“短期记忆线”上。不难发现输出门的整体结构和输入门十分相似，只不过其输入和输出内容发生了变化。输出门也是通过 sigmoid 分配权重，将更有价值的信息输出到“短期记忆线”上。
+
+<img src="media/lstm/5.jpg" alt="5" style="zoom:25%;" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ValueError: too many values to unpack · Yongkang Li</title>
+<meta name="description" content="References: [Azure Silly Bird][https://blog.csdn.net/GIS112216/article/details/109303905?opsrequestmisc=&amp;requestid=&amp;bizid=102&amp;utmterm=PILsplit%E5%87%B…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Troubleshooting</span><span data-l="cn">报错解决</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">ValueError: too many values to unpack</span><span data-l="cn">ValueError: too many values to unpack</span></h1>
+    <div class="meta"><span data-l="en">1 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="fix-argparse.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">An import argparse Error</span><span data-l="cn">import argparse 报错</span></span></a><a class="pn glass" href="fix-opencv-1.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">OpenCV Errors, Part 1</span><span data-l="cn">OpenCV 报错（一）</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+References: [Azure Silly Bird][https://blog.csdn.net/GIS112216/article/details/109303905?ops_request_misc=&request_id=&biz_id=102&utm_term=PILsplit%E5%87%BD%E6%95%B0%E8%BF%94%E5%9B%9E%E5%80%BC&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-0-109303905.142^v53^pc_rank_34_2,201^v3^control_1&spm=1018.2226.3001.4449]
+
+While studying the PIL module in PyTorch, I ran the following code:
+
+```python
+from PIL import Image
+a = Image.open('Avengers.jpeg')
+ra, ga, ba = a.split() # split the image into three channel images R, G, B
+ra.save("R.jpg")
+ga.save("G.jpg")
+ba.save("B.jpg")
+```
+
+Roughly, this splits an RGB image into the three channels R, G and B and saves the image of each channel separately.
+
+But the following error appeared:
+
+ ![QQ图片20221012172945](media/fix-unpack/图像-QQ图片20221012172945.png)
+
+> ValueError: too many values to unpack (expected 3)
+
+Translated, this means that the number of variables used to receive the values does not match the number the function expects.
+
+I searched through blogs for a long time and finally found one whose problem description matched mine (the link given after "References")
+
+The problem is that the image 'Avengers.jpeg' does not necessarily have only three channels!
+
+So I added a line of code after the second line:
+
+```python
+print(a.mode, a.size, a.format)
+```
+
+The output is:
+
+```python
+RGBA (600, 299) PNG
+```
+
+What is output here is RGBA, not RGB! The RGBA mode has four color channels, so it should be received by four variables.
+
+The modified code is as follows:
+
+```python
+from PIL import Image
+a = Image.open('Avengers.jpeg')
+print(a.mode, a.size, a.format)
+ra, ga, ba, aa = a.split()  # split the image into three channel images R, G, B
+ra.save("R.jpg")
+ga.save("G.jpg")
+ba.save("B.jpg")
+aa.save("A.jpg")
+```
+
+Result: four new images were added to the folder of that directory, but except for 'A.jpg', which is a white image, the other three images are all gray (I guess they are grayscale images: only a single numeric value was saved for each, and the system defaults to treating them as single-channel grayscale images)
+
+![R](media/fix-unpack/GIL语法-R.png) 
+
+I have not found a solution yet, so I called in the pylab module
+
+```python
+from PIL import Image
+from pylab import subplot, imshow, show
+a = Image.open('Avengers.jpeg')
+ra, ga, ba, aa = a.split()  # split the image into three channel images R, G, B
+subplot(221)
+imshow(ra)
+subplot(222)
+imshow(ga)
+subplot(223)
+imshow(ba)
+subplot(224)
+imshow(aa)
+show()
+```
+
+Result:
+
+![QQ图片20221012180646](media/fix-unpack/GIL语法-QQ图片20221012180646.png) 
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+参考资料：[蔚蓝呆鸟][https://blog.csdn.net/GIS112216/article/details/109303905?ops_request_misc=&request_id=&biz_id=102&utm_term=PILsplit%E5%87%BD%E6%95%B0%E8%BF%94%E5%9B%9E%E5%80%BC&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-0-109303905.142^v53^pc_rank_34_2,201^v3^control_1&spm=1018.2226.3001.4449]
+
+在我学习Pytorch的PIL模块的过程中，运行了如下代码：
+
+```python
+from PIL import Image
+a = Image.open('Avengers.jpeg')
+ra, ga, ba = a.split() # 把图像分割为R,G,B三个通道图像
+ra.save("R.jpg")
+ga.save("G.jpg")
+ba.save("B.jpg")
+```
+
+大致意思是将一张RGB图片分成R、G、B三个通道，并分别将每个通道的图片保存下来。
+
+但是出现了如下的报错：
+
+ ![QQ图片20221012172945](media/fix-unpack/图像-QQ图片20221012172945.png)
+
+> ValueError: too many values to unpack (expected 3)
+
+翻译一下就是用来接收的变量数与函数需要接收的变量数不一致。
+
+我查找了好久的博客，终于找到一篇博客问题描述与我的相符(就是参考资料后面给的链接)
+
+问题在于，'Avengers.jpeg'这张图片的通道不一定只有三个！
+
+于是我在第二行之后加一行代码：
+
+```python
+print(a.mode, a.size, a.format)
+```
+
+输出结果为：
+
+```python
+RGBA (600, 299) PNG
+```
+
+这里输出的是RGBA而不是RGB！RGBA模式有四种颜色通道，所以应该由四个变量去接收。
+
+修改后的代码如下：
+
+```python
+from PIL import Image
+a = Image.open('Avengers.jpeg')
+print(a.mode, a.size, a.format)
+ra, ga, ba, aa = a.split()  # 把图像分割为R,G,B三个通道图像
+ra.save("R.jpg")
+ga.save("G.jpg")
+ba.save("B.jpg")
+aa.save("A.jpg")
+```
+
+运行结果：该目录的文件夹内新增加了四张图片，但是除了‘A.jpg’是白色图片以外，另外三张图片都是灰色（我猜是灰度图，保存的时候只保存了一个数字值，然后系统默认为只有一个通道的灰度图）
+
+![R](media/fix-unpack/GIL语法-R.png) 
+
+我目前没有找到解决办法，于是调用pylab模块
+
+```python
+from PIL import Image
+from pylab import subplot, imshow, show
+a = Image.open('Avengers.jpeg')
+ra, ga, ba, aa = a.split()  # 把图像分割为R,G,B三个通道图像
+subplot(221)
+imshow(ra)
+subplot(222)
+imshow(ga)
+subplot(223)
+imshow(ba)
+subplot(224)
+imshow(aa)
+show()
+```
+
+运行结果：
+
+![QQ图片20221012180646](media/fix-unpack/GIL语法-QQ图片20221012180646.png) 
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

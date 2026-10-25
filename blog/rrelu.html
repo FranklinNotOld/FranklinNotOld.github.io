@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RReLU · Yongkang Li</title>
+<meta name="description" content="Randomized Rectified Linear Unit (RReLU) is an extension of ReLU designed to address the dead ReLU problem by introducing a random factor.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Deep Learning from Zero to Kang</span><span data-l="cn">Deep Learning from Zero to Kang</span></span><i>/</i><span><span data-l="en">Activation functions</span><span data-l="cn">激活函数</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">RReLU</span><span data-l="cn">RReLU 激活函数</span></h1>
+    <div class="meta"><span data-l="en">1 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="prelu.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">PReLU</span><span data-l="cn">PReLU 激活函数</span></span></a><a class="pn glass" href="elu.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">ELU</span><span data-l="cn">ELU 激活函数</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+
+Randomized Rectified Linear Unit (RReLU) is an extension of ReLU designed to address the dead ReLU problem by introducing a random factor.
+
+### Function Expression
+
+$$
+f(x) = \begin{cases}
+\alpha x, & \text{if } x \leq 0 \\
+x, & \text{if } x > 0
+\end{cases}
+$$
+where $\alpha$ is a random variable sampled from a uniform distribution $U(m, n)$.
+
+For $x < 0$, the function is $f(x) = \alpha x$, with $\alpha$ being a random variable within the range $[m, n]$. For $x > 0$, the function is $f(x) = x$.
+
+### Function Graph
+
+![RReLU Graph](media/rrelu/1.png)
+
+As shown in the graph, the left side of the function is chosen from the yellow region.
+
+### Function Characteristics
+
+#### Advantages:
+
+- The introduction of randomness helps to reduce the risk of overfitting.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+随机修正整流线性单元(RReLU)，全称Randomized ReLU，是ReLU的延伸版，也是为了解决dead relu神经元坏死现象而提出的一种激活函数。
+
+### 函数表达式
+
+$$
+f(x)=\begin{cases}
+\alpha x,\quad x\leq 0\\
+x, \quad x>0
+\end{cases}
+\\其中\alpha满足U(m,n)
+$$
+
+当$x<0$时，函数值为$f(x)=\alpha x$，但是$\alpha$初始是一个随机变量，随后不断进行修正，其取值范围为$[m,n]$；当$x>0$时，函数值为$f(x)=x$
+
+### 函数图像
+
+![QQ图片20221225143803](media/rrelu/1.png)
+
+如上图，左侧函数在黄色区域的范围内进行选择。
+
+### 函数特性
+
+#### 优点：
+
+- 引入了随机因素，可以减少过拟合的风险
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

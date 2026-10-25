@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenCV Errors, Part 2 · Yongkang Li</title>
+<meta name="description" content="When I was running a piece of code, the following error appeared:">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Troubleshooting</span><span data-l="cn">报错解决</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">OpenCV Errors, Part 2</span><span data-l="cn">OpenCV 报错（二）</span></h1>
+    <div class="meta"><span data-l="en">1 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="fix-opencv-1.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">OpenCV Errors, Part 1</span><span data-l="cn">OpenCV 报错（一）</span></span></a><span></span></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+When I was running a piece of code, the following error appeared:
+
+```python
+Traceback (most recent call last):
+  File "E:\OGM-GEpro\ACM_MM_2020\train.py", line 4, in <module>
+    from dataset_3d import *
+  File "E:\OGM-GEpro\ACM_MM_2020\dataset_3d.py", line 12, in <module>
+    import cv2
+  File "C:\...\anaconda3\Lib\site-packages\cv2\__init__.py", line 181, in <module>
+    bootstrap()
+  File "C:\...\anaconda3\Lib\site-packages\cv2\__init__.py", line 175, in bootstrap
+    if __load_extra_py_code_for_module("cv2", submodule, DEBUG):
+  File "C:\...\anaconda3\Lib\site-packages\cv2\__init__.py", line 28, in __load_extra_py_code_for_module
+    py_module = importlib.import_module(module_name)
+  File "C:\...\anaconda3\lib\importlib\__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "C:\...\anaconda3\Lib\site-packages\cv2\gapi\__init__.py", line 301, in <module>
+    cv.gapi.wip.GStreamerPipeline = cv.gapi_wip_gst_GStreamerPipeline
+AttributeError: partially initialized module 'cv2' has no attribute 'gapi_wip_gst_GStreamerPipeline' (most likely due to a circular import)
+```
+
+After searching online, I found the following solution:
+
+**Comment out line 301 of the file cv2/gapi/init.py, i.e. cv.gapi.wip.GStreamerPipeline = cv.gapi_wip_gst_GStreamerPipeline. (The exact line number may differ between versions; on my computer, this line appears at the very bottom of the file.)**
+
+This line seems to be a useless naming adjustment, and commenting it out does not affect the normal functioning of cv2. And the error is resolved by doing so.
+
+I tested it myself, and it works.
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+我在跑一段代码的时候出现了如下报错内容：
+
+```python
+Traceback (most recent call last):
+  File "E:\OGM-GEpro\ACM_MM_2020\train.py", line 4, in <module>
+    from dataset_3d import *
+  File "E:\OGM-GEpro\ACM_MM_2020\dataset_3d.py", line 12, in <module>
+    import cv2
+  File "C:\...\anaconda3\Lib\site-packages\cv2\__init__.py", line 181, in <module>
+    bootstrap()
+  File "C:\...\anaconda3\Lib\site-packages\cv2\__init__.py", line 175, in bootstrap
+    if __load_extra_py_code_for_module("cv2", submodule, DEBUG):
+  File "C:\...\anaconda3\Lib\site-packages\cv2\__init__.py", line 28, in __load_extra_py_code_for_module
+    py_module = importlib.import_module(module_name)
+  File "C:\...\anaconda3\lib\importlib\__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "C:\...\anaconda3\Lib\site-packages\cv2\gapi\__init__.py", line 301, in <module>
+    cv.gapi.wip.GStreamerPipeline = cv.gapi_wip_gst_GStreamerPipeline
+AttributeError: partially initialized module 'cv2' has no attribute 'gapi_wip_gst_GStreamerPipeline' (most likely due to a circular import)
+```
+
+经过上网搜索，发现解决方法如下：
+
+**注释掉 cv2/gapi/init.py 文件中的第 301 行，即 cv.gapi.wip.GStreamerPipeline = cv.gapi_wip_gst_GStreamerPipeline。（不同版本具体行数可能会不太一样，在我电脑里，这一行出现在文件的最下方）**
+
+这一行似乎是一个无用的命名调整，注释掉它不会影响 cv2 的正常功能。但是报错就此解决。
+
+亲测有效。
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

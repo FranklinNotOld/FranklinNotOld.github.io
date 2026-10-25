@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Linear Algebra Basics · Yongkang Li</title>
+<meta name="description" content="These notes are based on Dive into Deep Learning by Mu Li and his online course, and mainly consist of implementations of some basic code related to l…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Dive into Deep Learning notes</span><span data-l="cn">《动手学深度学习》笔记</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Linear Algebra Basics</span><span data-l="cn">线性代数基础</span></h1>
+    <div class="meta"><span data-l="en">1 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="d2l-data.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Data Manipulation and Preprocessing</span><span data-l="cn">数据操作与预处理</span></span></a><a class="pn glass" href="d2l-derivatives.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Derivatives</span><span data-l="cn">导数</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+These notes are based on *Dive into Deep Learning* by Mu Li and his online course, and mainly consist of implementations of some basic code related to linear algebra
+
+#### Creating a Matrix
+
+```python
+import torch
+#  Create a matrix of shape mxn
+A = torch.arange(20).reshape(5, 4)
+print(A)
+# tensor([[ 0,  1,  2,  3],
+#             [ 4,  5,  6,  7],
+#             [ 8,  9, 10, 11],
+#             [12, 13, 14, 15],
+#             [16, 17, 18, 19]])
+```
+
+
+
+#### Matrix Transpose
+
+```python
+# Matrix transpose
+print(A.T)
+# tensor([[ 0,  4,  8, 12, 16],
+#             [ 1,  5,  9, 13, 17],
+#             [ 2,  6, 10, 14, 18],
+#             [ 3,  7, 11, 15, 19]])
+```
+
+
+
+#### Copying a Matrix
+
+```python
+# Copy a matrix
+A = torch.arange(20).reshape(5, 4)
+B = A.clone()
+```
+
+
+
+#### Matrix Summation
+
+```python
+# Compute the sum of all elements of the matrix
+print(A.sum())
+# tensor(190)
+# If you do not want to drop the dimension when computing, you can use A.sum(keepdims=True)
+
+# Compute the sum of the elements along a specific axis of the matrix
+print(A.sum(axis=1))
+print(A.sum(axis=[0, 1]))  # Same as A.sum()
+# tensor([ 6, 22, 38, 54, 70])
+# tensor(190)
+
+# Compute the cumulative sum of the matrix elements
+print(A.cumsum(axis=0))
+# tensor([[ 0,  1,  2,  3],
+#         [ 4,  6,  8, 10],
+#         [12, 15, 18, 21],
+#         [24, 28, 32, 36],
+#         [40, 45, 50, 55]])
+
+
+```
+
+
+
+#### Matrix Norm
+
+```python
+# Compute the norm of the matrix
+A = torch.tensor([-3, 4])
+C = torch.norm(A)
+print(C)
+# tensor(5)
+```
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+本笔记基于《动手学深度学习》——李沐及其网课，主要是一些线性代数相关的基础代码的实现
+
+#### 创建矩阵
+
+```python
+import torch
+#  创建形状为mxn的矩阵
+A = torch.arange(20).reshape(5, 4)
+print(A)
+# tensor([[ 0,  1,  2,  3],
+#             [ 4,  5,  6,  7],
+#             [ 8,  9, 10, 11],
+#             [12, 13, 14, 15],
+#             [16, 17, 18, 19]])
+```
+
+
+
+#### 矩阵的转置
+
+```python
+# 矩阵的转置
+print(A.T)
+# tensor([[ 0,  4,  8, 12, 16],
+#             [ 1,  5,  9, 13, 17],
+#             [ 2,  6, 10, 14, 18],
+#             [ 3,  7, 11, 15, 19]])
+```
+
+
+
+#### 复制矩阵
+
+```python
+# 复制矩阵
+A = torch.arange(20).reshape(5, 4)
+B = A.clone()
+```
+
+
+
+#### 矩阵求和相关
+
+```python
+# 计算矩阵所有元素的和
+print(A.sum())
+# tensor(190)
+# 如果计算时不想丢掉维度则可以使用A.sum(keepdims=True)
+
+# 计算矩阵特定轴的元素的和
+print(A.sum(axis=1))
+print(A.sum(axis=[0, 1]))  # 与A.sum()一致
+# tensor([ 6, 22, 38, 54, 70])
+# tensor(190)
+
+# 计算矩阵的累加元素和
+print(A.cumsum(axis=0))
+# tensor([[ 0,  1,  2,  3],
+#         [ 4,  6,  8, 10],
+#         [12, 15, 18, 21],
+#         [24, 28, 32, 36],
+#         [40, 45, 50, 55]])
+
+
+```
+
+
+
+#### 矩阵范数
+
+```python
+# 求矩阵的范数
+A = torch.tensor([-3, 4])
+C = torch.norm(A)
+print(C)
+# tensor(5)
+```
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

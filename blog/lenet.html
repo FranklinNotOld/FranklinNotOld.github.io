@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LeNet · Yongkang Li</title>
+<meta name="description" content="LeNet, proposed by the deep learning pioneer Yann LeCun in 1998, can be considered as the first successful application of multi-layer convolutional ne…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Deep Learning from Zero to Kang</span><span data-l="cn">Deep Learning from Zero to Kang</span></span><i>/</i><span><span data-l="en">Vision backbones</span><span data-l="cn">视觉骨干网络</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">LeNet</span><span data-l="cn">LeNet</span></h1>
+    <div class="meta"><span data-l="en">2 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="lstm.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Long Short-Term Memory (LSTM)</span><span data-l="cn">长短期记忆网络（LSTM）</span></span></a><a class="pn glass" href="alexnet.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">AlexNet</span><span data-l="cn">AlexNet</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+
+### 引入
+
+LeNet, proposed by the deep learning pioneer Yann LeCun in 1998, can be considered as the first successful application of multi-layer convolutional networks in the field of image recognition. When we refer to LeNet nowadays, we are typically referring to LeNet-5. The earliest version, LeNet-1, was researched as early as 1988, spanning a decade of development. However, due to the limitations in computational power at that time, as well as the excellent performance of Support Vector Machine (SVM) technology, LeNet did not receive widespread attention. Nevertheless, in today's computer vision landscape built upon convolutional neural networks, one cannot help but marvel at how models like LeNet or CNN, once groundbreaking, may be surpassed by newer architectures like LLM twenty years later.
+
+### 模型结构
+
+<img src="media/lenet/1.png" alt="image-20240430191549937" style="zoom:50%;" />
+
+The LeNet model architecture, as illustrated above, was initially applied to the MNIST handwritten digit dataset for digit recognition. Given input images of 32×32 pixels, the data is first processed by a convolutional layer with 5×5 kernels, resulting in 6 feature maps of size 28×28×6 (with 6 different kernels). Subsequently, Sigmoid activation and 2×2 Max pooling are applied to extract crucial features, reducing the dimensionality to 14×14. Following this, another convolutional layer with 5×5 kernels is used to transform the data into 10×10 feature maps, with 16 channels. Again, Sigmoid activation and 2×2 Max pooling are applied to extract key features, resulting in a dimensionality of 5×5×16. The feature maps are then flattened into a one-dimensional array and connected to three fully connected layers followed by a Softmax activation function to produce probabilities for 10 classes, with the class corresponding to the highest probability being chosen as the final prediction. Detailed structure of the LeNet model is as followed:
+
+![Lenet-5 | Lenet-5 Architecture | Introduction to Lenet-5](media/lenet/2.png)
+
+It is worth noting that, according to information from Wikipedia (as of April 30, 2024), the connections between convolutional layers and fully connected layers are made using Sigmoid activation functions, contrary to some assertions found in certain online blogs which mention the use of ReLU. This clarification is important.
+
+LeNet can be regarded as a paradigm for subsequent feature extractors. This paradigm involves using convolutional layers for feature extraction, gradually reducing feature map size and increasing channel depth, pooling layers to enhance generalization and prevent overfitting. Subsequently, these features are flattened into one dimension, classified using fully connected layers, and Softmax is employed to output prediction probabilities.
+
+### 实现代码
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class LeNet(nn.Module):
+    def __init__(self):
+        super(LeNet, self).__init__()
+        self.conv1 = nn.Conv2d(1, 6, kernel_size=5)
+        self.conv2 = nn.Conv2d(6, 16, kernel_size=5)
+        self.fc1 = nn.Linear(16 * 4 * 4, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 10)
+
+    def forward(self, x):
+        x = F.max_pool2d(F.sigmoid(self.conv1(x)), (2, 2))
+        x = F.max_pool2d(F.sigmoid(self.conv2(x)), 2)
+        x = x.view(-1, self.num_flat_features(x))
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
+
+    def num_flat_features(self, x):
+        size = x.size()[1:]
+        num_features = 1
+        for s in size:
+            num_features *= s
+        return num_features
+
+net = LeNet()
+print(net)
+```
+
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+### 引入
+
+LeNet是是由深度学习巨头Yann LeCun在1998年提出，可以算作多层卷积网络在图像识别领域的首次成功应用。我们现在通常说的LeNet是指LeNet-5，最早的LeNet-1在1988年即开始研究，前后持续十年之久。但是，受限于当时计算机算力的发展，以及本有的SVM技术效果就十分优秀，这一技术并没有得到广泛重视。然而，在以卷积神经网络为基础构建起的计算机视觉的今天，不得不感慨，二十年后今天的LLM或者是什么模型，会成为曾经的CNN/LeNet。
+
+### 模型结构
+
+<img src="media/lenet/1.png" alt="image-20240430191549937" style="zoom:50%;" />
+
+LeNet的模型结构如上图所示，LeNet最初是用在MNIST手写数据集上，对手写数字进行分辨。对于输入的32×32像素的手写数据图，首先利用卷积核为5×5的卷积层转化成28×28×6的特征图，通道数为6（就是有6个不同卷积核），再使用Sigmoid和2×2的最大池化Maxpool提取最为关键的特征信息，维度变成14×14。接着在使用卷积核为5×5的卷积层转化成10×10的特征图，通道数为16，再使用Sigmoid和2×2的最大池化Maxpool提取最为关键的特征信息，维度变成5×5×16。再将其全部展开成一维，并连接三个卷积层和Softmax激活函数得到10分类的概率值，选取概率最大的分类作为最终预测分类。更为详细的结构图如下所示：
+
+![Lenet-5 | Lenet-5 Architecture | Introduction to Lenet-5](media/lenet/2.png)
+
+值得注意的是，通过查阅维基百科(2024.4.30)，其中卷积层之间以及全连接层之间是使用Sigmoid进行连接的而不是像网上一些博客中提到的ReLU，在此进行更正。
+
+LeNet可以说为后续的特征提取器提供了一个范式。这个范式是先使用卷积层提取特征，通过不断缩小特征图尺寸以及增加通道数提取特征，并使用池化层提升泛化性防止过拟合。之后将这些特征展开成一维使用全连接层进行分类并使用Softmax输出预测概率。
+
+### 实现代码
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class LeNet(nn.Module):
+    def __init__(self):
+        super(LeNet, self).__init__()
+        self.conv1 = nn.Conv2d(1, 6, kernel_size=5)
+        self.conv2 = nn.Conv2d(6, 16, kernel_size=5)
+        self.fc1 = nn.Linear(16 * 4 * 4, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 10)
+
+    def forward(self, x):
+        x = F.max_pool2d(F.sigmoid(self.conv1(x)), (2, 2))
+        x = F.max_pool2d(F.sigmoid(self.conv2(x)), 2)
+        x = x.view(-1, self.num_flat_features(x))
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
+
+    def num_flat_features(self, x):
+        size = x.size()[1:]
+        num_features = 1
+        for s in size:
+            num_features *= s
+        return num_features
+
+# 创建LeNet模型实例
+net = LeNet()
+# 打印LeNet模型结构
+print(net)
+
+```
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

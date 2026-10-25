@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Perceptron · Yongkang Li</title>
+<meta name="description" content="Scientists originally came up with the perceptron algorithm by analogy with the projections of nerve cells in the brain. In the figure below, we have…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Machine learning basics</span><span data-l="cn">机器学习基础</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Perceptron</span><span data-l="cn">感知机</span></h1>
+    <div class="meta"><span data-l="en">6 min read</span><span data-l="cn">约 5 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><span></span><a class="pn glass" href="ml-knn.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">k-Nearest Neighbors</span><span data-l="cn">k 近邻算法</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+### Perceptron Prerequisites
+
+#### The Neuron
+
+Scientists originally came up with the perceptron algorithm by analogy with the projections of nerve cells in the brain. In the figure below, we have three initial values of $x$: $x_1,x_2,x_0$. Here $x_0=1$ is an initial constant, which is technically called the "bias". Each $x$ is multiplied by a weight $w$, and the results are linearly combined into a polynomial. This polynomial then passes through a classification function $f$ to produce $y$. The role of this classification function is to convert the class into $0,1$ or $-1,1$. The green and blue circles are like individual neurons, and the $w$ connecting them is like the projections that neurons use to pass signals.
+
+<img src="media/ml-perceptron/JPG-资源-2.jpg" alt="Resource 2" style="zoom: 33%;" /> 
+
+#### Separability of a Dataset
+
+Intuitively, a dataset is separable if a single hyperplane can completely separate the sample points of different classes.
+
+<img src="media/ml-perceptron/JPG-image-20220701172602305.png" alt="image-20220701172602305" style="zoom:50%;" /> 
+
+In the figure above, the yellow line completely separates the yellow triangles from the red circles: no yellow triangle lies in the region of the red circles, and no red circle lies in the region of the yellow triangles. A dataset like this is separable.
+
+### The Perceptron Model
+
+#### Classification Function
+
+Let's go back to the very first figure. Suppose we have a dataset $X$ with two feature values $\{x_{10},x_{20}\}$. We also have a hyperplane $y=w_1x_1+w_2x_2$. If we feed these two feature values in, we get the following:
+$$
+w_1x_{10}+w_2x_{20}+w_0x_0=w_1x_{10}+w_2x_{20}+w_0=w^Tx_0+w_0
+$$
+By the properties of a hyperplane: if a data point lies above the hyperplane, then $w^Tx_0+w_0>0$; if it lies below the hyperplane, then $w^Tx_0+w_0<0$.
+
+Following the usual convention, we replace $w_0$ with $b$. This is just a change of symbol, to make the later discussion easier to follow.
+
+However, different sample points have different values of $x_1,x_2$, so the computed $w^Tx+b$ will certainly differ from point to point as well. How, then, do we tell the two classes apart?
+
+The most intuitive idea is to give each class its own specific constant, for example 0 for class 1 and 1 for class 2. This raises a problem: we have to convert the earlier value of $w^Tx+b$ into 0 or 1. That is exactly what $f$ does.
+
+$f$ is called the activation function, and it converts $w^Tx+b$ into 0 or 1. There are many activation functions; here we use the sign function:
+$$
+sign(x)=\begin{cases}
++1,&x>0\\
+-1,&x<0
+\end{cases}
+$$
+Above we mentioned the property of a hyperplane: if a point lies above the hyperplane, then $w^Tx+b>0$, which corresponds exactly to +1 in the sign function, and likewise for points below the hyperplane. This is why the sign function can accomplish classification. We therefore obtain the perceptron's classification function:
+$$
+y_i=sign(w^Tx_0+b)
+$$
+
+#### Loss Function
+
+During model training, a classification function alone is far from enough. We need a loss function to continuously optimize the weights $w$ in the classification function.
+
+We might immediately think of using the number of misclassified points as the loss: the fewer the misclassified points, the more accurate the classification. But this has two problems:
+
+- The first is that even with the same number of misclassified points, the classification quality differs depending on how far the misclassified points are from the hyperplane.
+- The second is that using the number of misclassified points as the loss function makes optimization difficult. We know we want to reduce the number of misclassified points, but the function does not express how to do so.
+
+Both problems can be solved as follows:
+
+First, for the first problem, the loss function needs to be able to measure how far the misclassified points are from the hyperplane. The point-to-line distance formula is:
+$$
+d=\frac{|w^Tx_0+b|}{||w||}
+$$
+For a given line, $||w||$ does not change, so it can be dropped. We can also consider what happens with misclassified points:
+
+- When a point above the hyperplane is misclassified as lying below it, we have $w^Tx+b＜0$, but the correct class is actually $y_i=+1$;
+- When a point below the hyperplane is misclassified as lying above it, we have $w^Tx+b＞0$, but the correct class is actually $y_i=-1$;
+
+In either case, $y_i(w^Tx+b)<0$ holds. So if we use $-y_i(w^Tx+b)$ as the loss function, the first problem is solved, and the second problem gets solved along the way. Since there may be multiple misclassified points, we also need to add a $\sum$.
+
+> The reason for adding the negative sign here is that we want the loss function to be smaller the more accurately the hyperplane classifies.
+
+So the classification function is:
+$$
+L(w_i,w_0)=-\sum_{x_i∈M}y_i(w^Tx+b)
+$$
+
+#### Parameter Update
+
+Once we have the loss function, we can update the parameters via gradient descent, continuously optimizing so that the separating hyperplane classifies more accurately.
+
+According to the gradient descent algorithm, we need to take the partial derivatives of the loss function:
+$$
+\nabla_wL(w^T_i,b)=-\sum_{x_i∈M}y_ix_i
+\\\nabla_bL(w^T_i,b)=-\sum_{x_i∈M}y_i
+$$
+Then we can update the parameters:
+$$
+w^T\to w^T+\eta y_ix_i
+\\b\to b+\eta y_i
+$$
+where $\eta$ is the learning rate.
+
+#### Original Form of the Perceptron Algorithm
+
+So we obtain the perceptron algorithm:
+
+- Input: training set $T$, learning rate $\eta$
+
+- Output: $w^T，b$
+
+Perceptron model: $f(x)=sign(w^T∗x+b)$
+
+**Procedure:**
+
+(1) Initialize $w_0,b_0 $.
+
+(2) Select a data point $(x_i,y_i)$ from the training set
+
+(3) If $y_i(w^T∗x_i+b)≤0$ (a misclassified point), update the parameters:
+
+$w^T\to w+ηy_ix_i$
+
+$b^T\to b+ηy_i$
+
+(4) Go to (2), until there are no misclassified points in the training set.
+
+
+
+### The Dual Problem
+
+Above we mentioned updating the parameters with gradient descent:
+$$
+w^T\to w^T+\eta y_ix_i
+\\b\to b+\eta y_i
+$$
+Suppose the sample point $(x_i,y_i)$ is used $n_i$ times during the updates, that is, it goes through $n_i$ iterations. We can then obtain the expressions for $w^T$ and $b$.
+$$
+w^T=\sum_{i=1}^N n_i\eta y_ix_i
+\\b=\sum_{i=1}^N n_i\eta y_i
+$$
+Substituting them into the original perceptron model,
+$$
+f(x)=sign(w^T∗x+b)=sign(\sum_{i=1}^N n_i\eta y_ix_i·x+\sum_{i=1}^N n_i\eta y_i)
+$$
+the learning objective is now $n_i$
+
+#### Dual Form of the Perceptron Algorithm
+
+- Input: training set $T$, learning rate $\eta$
+
+- Output: $n_i$
+
+Perceptron model: $f(x)=sign(\sum_{i=1}^N n_i\eta y_ix_i·x+\sum_{i=1}^N n_i\eta y_i)$
+
+**Procedure:**
+
+(1) Initialize $n_i $.
+
+(2) Select a data point $(x_i,y_i)$ from the training set
+
+(3) If $y_i(\sum_{i=1}^N n_i\eta y_ix_i·x+\sum_{i=1}^N n_i\eta y_i)≤0$ (a misclassified point), update the parameters:
+
+$n_i\to n_i+1$
+
+(4) Go to (2), until there are no misclassified points in the training set.
+
+
+
+There is also another way to write it:
+
+- Input: training set $T$, learning rate $\eta$
+
+- Output: $\alpha_i,b$ ($\alpha_i=n_i\eta$)
+
+Perceptron model: $f(x)=sign(\sum_{i=1}^N\alpha_i y_ix_i·x+b)$
+
+**Procedure:**
+
+(1) Initialize $n_i $.
+
+(2) Select a data point $(x_i,y_i)$ from the training set
+
+(3) If $y_i(\sum_{i=1}^N n_i\eta y_ix_i·x+b)≤0$ (a misclassified point), update the parameters:
+
+$\alpha_i\to \alpha_i+\eta$
+
+$b\to b+\eta y_i$
+
+(4) Go to (2), until there are no misclassified points in the training set.
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+### 感知机预备知识
+
+#### 神经元
+
+​		感知机算法最初是由科学家从脑细胞的神经凸起联想而来。如下图，我们拥有三个初始$x$值，$x_1,x_2,x_0$。其中$x_0=1$为一个初始的常量，专业上称作“偏置”。每个$x$的值都会乘上一个权重值$w$，再线性组合生成一个多项式，这个多项式经过一个分类函数$f$生成$y$。这个分类函数的作用就是将类别转化成$0,1$或者$-1,1$。绿色和蓝色的圆就像是一个个神经元，中间连接$w$就像是神经元用来传递信号的凸起。
+
+<img src="media/ml-perceptron/JPG-资源-2.jpg" alt="资源 2" style="zoom: 33%;" /> 
+
+#### 数据集可分性
+
+​		从直观上理解，数据集可分的概念就是一个数据集可以通过一个超平面将不同的类别的数据样本点完全分开。
+
+<img src="media/ml-perceptron/JPG-image-20220701172602305.png" alt="image-20220701172602305" style="zoom:50%;" /> 
+
+如上图，黄色的线可以将黄色三角形和红色圆形完全分开，不会有黄色三角形在红色圆形的区域，也不会有红色圆形在黄色三角形区域。这样一个数据集就是可分的。
+
+### 感知机模型
+
+#### 分类函数
+
+​		重新回到一开始那个图。假设现在我们有一些数据集$X$，有$\{x_{10},x_{20}\}$这两个特征值。我们还有个超平面$y=w_1x_1+w_2x_2$。现在我们将这两个特征值输入，会得到下式：
+$$
+w_1x_{10}+w_2x_{20}+w_0x_0=w_1x_{10}+w_2x_{20}+w_0=w^Tx_0+w_0
+$$
+​		根据超平面的性质：如果数据点在超平面之上，则$w^Tx_0+w_0>0$，如果数据点在超平面之下，则$w^Tx_0+w_0<0$。
+
+​		根据书写习惯，我们将$w_0$换成$b$，单纯换个符号，方便后面区分理解。
+
+​		但是，对于不同的样本点，其$x_1,x_2$值不相同，所计算出来的$w^Tx+b$肯定也不相同。那我们如何去区分这两个类别呢？
+
+​		最直观的一种想法就是，让不同的类别对应其特殊的一个常数，比如类别1对应的是0，类别2对应的是1。这就涉及到一个问题，就是要将之前$w^Tx+b$的值转化成0和1。而这一步就是$f$的作用了。
+
+​		$f$称为激活函数，就是将$w^Tx+b$转化成0,1。激活函数有很多，我们这使用的是sign函数：
+$$
+sign(x)=\begin{cases}
++1,&x>0\\
+-1,&x<0
+\end{cases}
+$$
+​		在上面我们提到超平面的性质，如果点在超平面之上，那么$w^Tx+b>0$，此时正好对应sign函数中的+1，点在超平面之下同理。这也是为什么sign函数能达到分类的目的。于是我们得到感知机的分类函数：
+$$
+y_i=sign(w^Tx_0+b)
+$$
+
+#### 损失函数
+
+​		在模型训练的过程中，仅仅有一个分类函数是远远不够的。我们需要有一个损失函数，用来不断优化分类函数中$w$的权重值。
+
+​		我们或许可以直接想到，误分类点个数可以作为损失函数的标准：误分类点数目越少，分类越准确。但是这有两个问题：
+
+- 第一个是即使拥有相同的误分类点数目，误分类点距离超平面远近不同，其分类效果也是不一样的。
+- 第二个是将误分类点个数作为损失函数难以进行优化。我们知道要减少误分类点的个数，但是具体怎么减少，函数里没有体现。
+
+​		上面两个问题我们可以通过如下方式进行解决：
+
+​		首先第一个问题，损失函数需要能够衡量误分类点距离超平面的远近距离。已知点到直线的距离公式为：
+$$
+d=\frac{|w^Tx_0+b|}{||w||}
+$$
+对于同一条直线，$||w||$是不会发生变化的，所以可以省去。此外我们可以考虑下误分类点的状况：
+
+- 当超平面上方的点误分类到下方时，所以$w^Tx+b＜0$，但是实际上正确的分类$y_i=+1$；
+- 当超平面下方的点误分类到上方时，所以$w^Tx+b＞0$，但是实际上正确的分类$y_i=-1$；
+
+无论是哪一种情况，都满足$y_i(w^Tx+b)<0$。所以如果我们使用$-y_i(w^Tx+b)$作为损失函数就可以解决第一个问题，而第二个问题也可以顺便解决。由于要考虑到是多个误分类点，所以我们还要加上$\sum$。
+
+> 这里之所以要填符号是因为我们希望损失函数越小，超平面分类越准确。
+
+所以分类函数为：
+$$
+L(w_i,w_0)=-\sum_{x_i∈M}y_i(w^Tx+b)
+$$
+
+#### 参数更新
+
+​		有了损失函数之后，我们就可以通过梯度下降进行参数更新，不断优化使分离超平面分类更加准确。
+
+​		根据梯度下降算法，我们需要对损失函数求偏导：
+$$
+\nabla_wL(w^T_i,b)=-\sum_{x_i∈M}y_ix_i
+\\\nabla_bL(w^T_i,b)=-\sum_{x_i∈M}y_i
+$$
+然后就可以进行参数更新了：
+$$
+w^T\to w^T+\eta y_ix_i
+\\b\to b+\eta y_i
+$$
+其中$\eta$为学习率。
+
+#### 感知机算法的原始形式
+
+所以我们得到了感知机算法：
+
+- 输入：训练集$T$，学习率$\eta$
+
+- 输出：$w^T，b$
+
+感知机模型： $f(x)=sign(w^T∗x+b)$
+
+**步骤流程：**
+
+(1) 初始化 $w_0,b_0 $。
+
+(2) 在训练集中选取数据 $(x_i,y_i)$
+
+(3) 若 $y_i(w^T∗x_i+b)≤0$ (误分类点)，则进行参数更新：
+
+$w^T\to w+ηy_ix_i$
+
+$b^T\to b+ηy_i$
+
+(4) 转至(2)，直到训练集没有误分类点。
+
+
+
+### 对偶问题
+
+上面我们提到，利用梯度下降进行参数更新：
+$$
+w^T\to w^T+\eta y_ix_i
+\\b\to b+\eta y_i
+$$
+如果我们假设样本点$(x_i,y_i)$在更新过程中被使用了$n_i$次，也就是进行了$n_i$次迭代，所以我们可以得到$w^T和b$的表达式。
+$$
+w^T=\sum_{i=1}^N n_i\eta y_ix_i
+\\b=\sum_{i=1}^N n_i\eta y_i
+$$
+将其代入到原始感知机模型当中，
+$$
+f(x)=sign(w^T∗x+b)=sign(\sum_{i=1}^N n_i\eta y_ix_i·x+\sum_{i=1}^N n_i\eta y_i)
+$$
+此时学习目标就是$n_i$
+
+#### 感知机算法的对偶形式
+
+- 输入：训练集$T$，学习率$\eta$
+
+- 输出：$n_i$
+
+感知机模型： $f(x)=sign(\sum_{i=1}^N n_i\eta y_ix_i·x+\sum_{i=1}^N n_i\eta y_i)$
+
+**步骤流程：**
+
+(1) 初始化 $n_i $。
+
+(2) 在训练集中选取数据 $(x_i,y_i)$
+
+(3) 若 $y_i(\sum_{i=1}^N n_i\eta y_ix_i·x+\sum_{i=1}^N n_i\eta y_i)≤0$ (误分类点)，则进行参数更新：
+
+$n_i\to n_i+1$
+
+(4) 转至(2)，直到训练集没有误分类点。
+
+
+
+也有另外一种写法：
+
+- 输入：训练集$T$，学习率$\eta$
+
+- 输出：$\alpha_i,b$（$\alpha_i=n_i\eta$）
+
+感知机模型： $f(x)=sign(\sum_{i=1}^N\alpha_i y_ix_i·x+b)$
+
+**步骤流程：**
+
+(1) 初始化 $n_i $。
+
+(2) 在训练集中选取数据 $(x_i,y_i)$
+
+(3) 若 $y_i(\sum_{i=1}^N n_i\eta y_ix_i·x+b)≤0$ (误分类点)，则进行参数更新：
+
+$\alpha_i\to \alpha_i+\eta$
+
+$b\to b+\eta y_i$
+
+(4) 转至(2)，直到训练集没有误分类点。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

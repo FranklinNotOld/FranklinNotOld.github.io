@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The argparse Module · Yongkang Li</title>
+<meta name="description" content="The argparse module is a Python built-in module for parsing command-line arguments. By changing a few variables or arguments, you can control an entir…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">PyTorch and tools</span><span data-l="cn">PyTorch 与工具</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">The argparse Module</span><span data-l="cn">argparse 模块</span></h1>
+    <div class="meta"><span data-l="en">4 min read</span><span data-l="cn">约 3 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="pt-mnist.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Loading MNIST</span><span data-l="cn">加载 MNIST</span></span></a><a class="pn glass" href="pt-os.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">The os Module</span><span data-l="cn">os 模块</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+### I. Introduction
+
+The argparse module is a Python built-in module for parsing command-line arguments. By changing a few variables or arguments, you can control an entire code project. For large projects (say, more than 10,000 lines of code), it is very convenient
+
+The argparse module makes it easy to write user-friendly command-line interfaces, and it helps programmers define parameters for their models.
+
+Simply put, this module is a "code-style" control panel: by modifying a set of centralized parameters you can achieve all kinds of goals
+
+![QQ图片20221006173807](media/pt-argparse/Argparse语法-QQ图片20221006173807.png)
+
+> The figure above shows part of the argparse module in train.py of yolov5. For example, we can change const=300 on line 488 to const=600. With the argparse module, we do not need to search the whole yolov5 codebase for where to change the value of the const parameter, because the code in yolov5 adds up to thousands or tens of thousands of lines.
+
+### II. Usage
+
+```python
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument()
+parser.parse_args()
+```
+
+- `import argparse` imports the module, similar to `import torch as t`
+
+- `parser = argparse.ArgumentParser` creates a parsing object (also called an argument parser), and next we add the command-line arguments and options we want to this object. The parentheses of ArgumentParser() can be empty, or it can be written as ArgumentParser(description=""), where the text inside the double quotes describes what this parser is for; this argument can be left empty
+
+- `parser.add_argument` adds argument information to parser, which is also easy to understand, since that is exactly what the name add_argument means
+
+In PyTorch syntax, the officially required form for specifying argument-parsing information is as follows:
+
+```python
+parser.add_argument(name or flags...[, action][, nargs][, const][, default][, type][,choices][, required][, help][, metavar][, dest])
+```
+
+Each parameter is explained below:
+
+**name: sets the name of the variable or flag**
+
+> The name of a regular argument or flag, e.g. `epochs` or `-e, --epochs`
+
+**action: what to do when the command line encounters a flag argument**
+
+- There are 6 kinds of actions, as follows:
+
+   - `store`: saves the argument value, possibly after first converting it to another data type
+   - `store_true`: sets the flag argument to true;
+
+   - `store_false`: sets the flag argument to False. These two are used to implement boolean switches
+   - `store_const`: assigns the value const
+   - `append`: saves the value to a list; if the argument appears repeatedly, multiple values are saved
+   - `append_const`: saves a value defined in the argument specification to a list
+   - `version`: prints the version information of the program and then exits
+
+**nargs: sets the number of values the argument can be given when used**
+
+The number of command-line arguments that should be consumed. It can be a specific number, or a ? sign, in which case, when no value is given, default is used for a positional argument and const is used for an optional argument; or a * sign, meaning 0 or more arguments; or a + sign, meaning 1 or more arguments.
+
+**const: the constant value required by action and nargs**
+
+**default: the default value used when no value is set**
+
+> default is the value the program should use in place of this argument when the command line does not set it.
+
+**type: the data type the command-line argument should be converted to**
+
+> The default argument type in PyTorch is str. If your program needs an integer or boolean argument, you need to set `type=int` or `type=bool`
+
+**required: whether the argument is required or optional**
+
+> If `required=True` is set, the program will raise an error at run time when the value of this argument is not given: `error: argument --name is required`; if `required=False` is set, it does not matter whether the argument is present at run time
+
+Error message:
+
+```python
+error: argument --name is required
+```
+
+**help: specifies the description of the argument**
+
+>The value of help gives the people using the tool a description of what the argument sets, so that users know what the argument is for
+
+An example:
+
+```python
+parser.add_argument('-arch', required=True, choices=['alexnet', 'vgg'],
+        help='the architecture of CNN, at this time we only support alexnet and vgg.')
+```
+
+
+
+**metavar: the name of the argument in the usage message,** for required arguments the default is just the argument name, and for optional arguments the default is the argument name in all caps.
+
+**dest: sets the variable name of the argument in the code**
+
+> By default, the variable name used by argparse is the string after `--` or `-`; for example, the variable name in `parser.add_argument('-name', nargs=x)` is `name`, but we can also set the variable name of the argument through `dest=xxx`
+
+**choices: a container of the values the argument is allowed to take**
+
+> That is, the values from which the argument value can be chosen
+
+If the value is not one of the specified values, the following error occurs:
+
+```python
+error: argument -arch: invalid choice: 'resnet' (choose from 'alexnet', 'vgg')
+```
+
+**count: stores the number of times it is encountered**
+
+- `parser.parse_args()` parses the arguments
+
+#### III. A Concrete Example
+
+```python
+# import the library
+import argparse
+
+# 1. Define the command-line parser object
+parser = argparse.ArgumentParser(description='Demo of argparse')
+
+# 2. Add command-line arguments
+parser.add_argument('--epochs', type=int, default=30)
+parser.add_argument('--batch', type=int, default=4)
+
+# 3. Parse the arguments from the command line in a structured way
+args = parser.parse_args()
+print(args)
+epochs = args.epochs
+batch = args.batch
+print('show {}  {}'.format(epochs, batch))
+```
+
+Output:
+
+```
+Namespace(epochs=30, batch=4)
+show 30  4
+```
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+### 一、基本介绍
+
+argparse 模块是 Python 内置的用于命令行参数解析的模块，可以通过少数代码中变量或者参数的改变以实现对整个代码项目的操控。对于大型代码项目(如代码超过10000行)，十分便捷
+
+argparse 模块可以让人轻松编写用户友好的命令行接口，能够帮助程序员为模型定义参数。
+
+简单来说，该模块就是一个“代码型”的操作界面，通过修改集中的参数以实现各种目的
+
+![QQ图片20221006173807](media/pt-argparse/Argparse语法-QQ图片20221006173807.png)
+
+> 上图是yolov5中train.py的一部分argparse 模块。比如我们可以修改488中的const=300，改成const=600。有了argparse 模块，我们并不需要去整个yolov5代码中寻找在哪里去改const这个参数的值，因为yolov5中代码各处加起来有上千上万行。
+
+### 二、使用方法
+
+```python
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument()
+parser.parse_args()
+```
+
+- `import argparse`表示导入该模块，跟`import torch as t`类似
+
+- `parser = argparse.ArgumentParser`表示创建了一个解析对象（也叫参数解析器），接下来就要向这个对象里添加一些我想要的命令行参数和选项。ArgumentParser()括号内可以为空，也可以写成ArgumentParser(description="")，双引号内是用来描述该解析器是做什么的，该参数可以为空
+
+- `parser.add_argument`表示向parser中添加对象参数信息，这也十分好理解，将add_argument翻译成中文就是这个意思
+
+在pytorch语法中，官方要求的解析命令参数信息如下：
+
+```python
+parser.add_argument(name or flags...[, action][, nargs][, const][, default][, type][,choices][, required][, help][, metavar][, dest])
+```
+
+每个参数解释如下：
+
+**name: 设定变量或者标签名称**
+
+> 普通参数或者标签(flag)的名称，例如 `epochs` 或者 `-e, --epochs`
+
+**action: 命令行遇到flags参数时的动作**
+
+- 有6种动作，如下：
+
+   - `store`：保存参数值，可能会先将参数值转换成另一个数据类型
+   - `store_true`：设定flag参数为true；
+
+   - `store_false`：设定flag参数为False。这两个用于实现布尔开关
+   - `store_const`：表示赋值为const
+   - `append` ：将值保存到一个列表中，如果参数出现重复情况则会保存为多个值
+   - `append_const` ：将一个定义在参数规格中的值保存到一个列表中
+   - `version` ：打印关于程序的版本信息，然后退出
+
+**nargs: 设置参数在使用时可以提供的个数**
+
+应该读取的命令行参数个数，可以是具体的数字，或者是?号，当不指定值时对于 Positional argument 使用 default，对于 Optional argument 使用 const；或者是 * 号，表示 0 或多个参数；或者是 + 号表示 1 或多个参数。
+
+**const： action 和 nargs 所需要的常量值**
+
+**default: 没有设置值情况下的默认参数**
+
+> default表示命令行没有设置该参数的值的时候，程序中需要用什么值来代替这个参数的值。
+
+**type: 命令行参数应该被转换成的数据类型**
+
+> pytorch默认的参数类型是str类型，如果你的程序需要一个整数或者布尔型参数，你需要设置`type=int`或`type=bool`
+
+**required: 是否为必选参数或可选参数**
+
+> 如果设置了`required=True`, 则在实际运行的时候不设置该参数的值程序将报错：`error: argument --name is required`；如果设置了`required=False`，那么在实际运行时有无该参数并不影响
+
+报错信息：
+
+```python
+error: argument --name is required
+```
+
+**help: 指定参数的说明信息**
+
+>help参数的值可以给使用工具的人提供该参数是用来设置什么的说明，这样让使用者知道这个参数是干什么用的
+
+举例如下：
+
+```python
+parser.add_argument('-arch', required=True, choices=['alexnet', 'vgg'],
+        help='the architecture of CNN, at this time we only support alexnet and vgg.')
+```
+
+
+
+**metavar： 在 usage 说明中的参数名称，**对于必选参数，默认就是参数名称，对于可选参数默认是全大写的参数名称。
+
+**dest： 设置参数在代码中的变量名**
+
+> 默认情况下，argparse默认的变量名是`--`或`-`后面的字符串，如`parser.add_argument('-name', nargs=x)`中的变量名为`name`，但是我们也可以通过`dest=xxx`来设置参数的变量名
+
+**choices： 参数可允许的值的一个容器**
+
+> 就是参数值可以在哪几个数值里面选择
+
+如果不在规定的几个值里面选择会发生如下报错：
+
+```python
+error: argument -arch: invalid choice: 'resnet' (choose from 'alexnet', 'vgg')
+```
+
+**count：存储遇到的次数**
+
+- `parser.parse_args()`表示解析参数
+
+#### 三、具体例子
+
+```python
+# 导入库
+import argparse
+
+# 1. 定义命令行解析器对象
+parser = argparse.ArgumentParser(description='Demo of argparse')
+
+# 2. 添加命令行参数
+parser.add_argument('--epochs', type=int, default=30)
+parser.add_argument('--batch', type=int, default=4)
+
+# 3. 从命令行中结构化解析参数
+args = parser.parse_args()
+print(args)
+epochs = args.epochs
+batch = args.batch
+print('show {}  {}'.format(epochs, batch))
+```
+
+输出结果：
+
+```
+Namespace(epochs=30, batch=4)
+show 30  4
+```
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recurrent Neural Networks (RNN) · Yongkang Li</title>
+<meta name="description" content="For example, let&#x27;s consider the scenario of using neural networks to process pedestrian motion trajectories. If we were to use a CNN, the convolutiona…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Deep Learning from Zero to Kang</span><span data-l="cn">Deep Learning from Zero to Kang</span></span><i>/</i><span><span data-l="en">Sequence models</span><span data-l="cn">序列模型</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Recurrent Neural Networks (RNN)</span><span data-l="cn">循环神经网络（RNN）</span></h1>
+    <div class="meta"><span data-l="en">9 min read</span><span data-l="cn">约 7 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="nll-kl-ce.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">NLLLoss, KLDivLoss and CrossEntropyLoss</span><span data-l="cn">NLLLoss、KLDivLoss 与 CrossEntropyLoss 对比</span></span></a><a class="pn glass" href="lstm.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Long Short-Term Memory (LSTM)</span><span data-l="cn">长短期记忆网络（LSTM）</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+### Reference
+（1）[What are Recurrent Neural Networks? | IBM](https://www.ibm.com/topics/recurrent-neural-networks)
+（2）[浅析循环神经网络(RNN)的反向求导过程 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/101322965) 
+（3）[循环神经网络（RNN）浅析 - 简书 (jianshu.com)](https://www.jianshu.com/p/87aa03352eb9)
+
+### Introduction
+##### Calorie Burning
+In the realm of deep learning, the most fundamental and classic architectures are Feedforward Neural Networks (FNNs), Convolutional Neural Networks (CNNs), and Recurrent Neural Networks (RNNs). FNNs are straightforward, mapping data from one dimension to another through parameter passing and matrix operations. CNNs, on the other hand, perform mappings by synthesizing elements around a particular element. However, neither FNNs nor CNNs are well-equipped to handle sequential data effectively, whereas Recurrent Neural Networks (RNNs) excel at such tasks. This is because, unlike the former two, **RNNs assume that input data sequences are not equivalent in the time dimension**, but rather distinct.
+
+For example, let's consider the scenario of using neural networks to process pedestrian motion trajectories. If we were to use a CNN, the convolutional weights would remain constant across different time points of the trajectory data. This could be a problem, as an individual becomes increasingly fatigued over time, leading to significant deviations in their movement trajectories compared to the initial ones. To illustrate, suppose an individual is jogging between home and the park for exercise. While jogging toward the park, he has a lot of energy, resulting in a relatively high speed. Despite taking a break at the park, when jogging back home, the person's endurance gradually decreases, resulting in a gradual decrease in speed.
+
+![1](media/rnn/1.jpg)
+If we were to employ a Feedforward Neural Network (FNN) to handle this scenario, each weight would learn its parameters independently, potentially overlooking the interdependence among weights. On the other hand, if we were to use a CNN, the convolutional weight parameters for processing data when the individual is energetic and when they are gradually becoming fatigued would remain the same. This approach overly generalizes different data instances (or forcibly equates all data instances). Hence, we require a novel neural network transmission method to handle such data. Upon observation, it becomes evident that there exists a correlation among this series of movement data. For instance, one rests only after reaching the park; the running speed gradually slows down on the way back home after expending considerable energy at the park, and so forth. This indicates that trajectory data exhibits temporal correlation over time. Conversely, considering CNNs primarily used for image processing, while there might indeed be underlying correlations among pixels, we lack clarity regarding their interconnection from a macro perspective. In other words, the relationships among image pixels are in spatial dimensions, not temporal dimensions.
+
+##### Temporal Dimension vs. Spatial Dimension
+
+This issue is particularly important for RNNs, and I'll discuss it from the perspective of helping to understand RNNs, rather than delving into its essential causes in detail. To facilitate understanding, let's make an assumption: here we define spatial dimensions as dimensions up to three-dimensional space, while time is considered a separate dimension.
+
+Usually, we can easily distinguish between these two concepts. The spatial dimension refers to the three-dimensional space we inhabit, where there are flowers, tears, and the person who accompanies you throughout your life. The temporal dimension, on the other hand, involves watching oneself age. However, when we broaden the discussion to include the general concepts of time and space, the distinction between the two becomes less clear. For example, consider the sentence: "How can you sleep so soundly at such a young age?" Does this sentence tend more toward the temporal dimension or the spatial dimension? From the standpoint of existence, if this sentence is written on paper, it exists in the spatial dimension. However, from the point of view of understanding, we start with the character "you," then we move on to "so," "young," and "sleep," and we need the preceding characters to help us understand the following characters and even the whole sentence. If the word order changes, the meaning could be completely different: "How can your youth sleep so soundly?“ Well, that doesn't sound quite right.
+
+We can observe that both the objective fact of time flowing forward (let's not get into arguments about exceeding the speed of light and time reversal) and the conventional convention of reading sentences from left to right, top to bottom, possess the "properties" of the temporal dimension. In my view, a significant difference between this property and the spatial dimension is that **at each point in time on the temporal dimension, there exists a relatively complete "space".** For example, when you are running, at each point in time there exists a complete spatial representation of the earth while you are in a particular running posture. Similarly, when you read text, each character is a complete entity composed of many strokes. In contrast, the concept of time does not exist in three-dimensional space. In addition, **on this timeline of the temporal dimension, different spatial representations at different points in time are interconnected, especially in a forward manner**-slowing down while running because you've expended too much energy from the previous run; individual characters combine to form a complete and meaningful sentence.
+
+### Basic Principles
+
+##### Starting with the Basics
+
+As mentioned earlier, the forward correlation of time series is crucial, meaning that the previous time point has a significant impact on the next time point. Let's continue with the example of running as we delve into the concept. For FNNs, the input data passes through a weight $u_{1}$ to reach the hidden neuron (gray), and then another weight $v_{1}$ produces the output result, as illustrated in the diagram (a) below. This can be expressed in mathematical notation as follows:
+$$
+output = v_{1}·(u_{1}·t_{1})
+$$
+Here, $t_{1}$ represents the input data at that time step.
+![11](media/rnn/11.jpg)
+If we want the input at time $t_2$ to be influenced by the input at time $t_{1}$, we can multiply the hidden variable of $t_1$ input by $w_{1}$ and then input it into $t_{2}$ to obtain the hidden variable. This way, the input has contributions from the data at two time steps, as shown in the figure above (b). This can be expressed in formula as follows:
+$$
+output=v_{1}·(u_{2}·t_{2}+w_{1}·(u_{1}·t_{1}))
+$$
+>Some may wonder, why add the values of the hidden neurons at two time steps instead of directly adding the input data?
+>
+>In fact, the hidden neurons here are more like undergoing a mapping or transformation. The original data may have issues such as mismatched scales, but after being transformed into hidden neurons, they are more suitable for addition.
+
+Continuing in this manner, we arrive at the parameter transmission methods depicted in Figures (c) and (d). In this way, we integrate the running data of ten time steps to obtain the output result, which includes complete positional information about the running. This represents the simplest implementation of an RNN, based on the concept of **forward influence in the time dimension** mentioned earlier.
+
+##### Extending High-Dimensional Information
+
+In the example above, the input data represents the one-dimensional positional information of individuals running at different time steps. Clearly, this is a significant simplification. Real-world data may include features such as latitude, longitude, speed, acceleration, and so forth, resulting in our input data becoming a high-dimensional tensor. Our approach to handling this is similar to that of FNN, whereby a single element (as shown in Figure (a)) is transformed into a tensor (as shown in Figure (b)).
+![2](media/rnn/2.jpg)
+Further expansion entails the possibility of altering the dimensions of the intermediate hidden elements and outputs, resulting in a structure akin to Figure (c). It's evident that this closely resembles an FNN (MLP). Consequently, this can be substituted for the original RNN structure depicted in Figure (a), as illustrated below:
+![3](media/rnn/3.jpg)
+
+##### Further Thinking
+![4](media/rnn/4.jpg)
+Remember the diagram from earlier? Now that we have a basic understanding of RNN, we can further explore why RNN is more suitable for handling time series data. As mentioned earlier, FNN struggles to learn the relationships between input data, whereas RNN integrates data from different time sequences through the propagation of hidden neurons (layers). CNN, on the other hand, forces all data through shared parameters, compromising their independence and creating excessive correlation. However, RNN, while also sharing parameters, adapts its depth according to the temporal proximity of each input. For instance, at time $t_{1}$, the data passes through 9 $W$ layers, whereas at $t_{5}$, it only traverses 5 layers, thereby introducing differentiation across different time points. Hence, in a sense, RNN serves as a balance between FNN and CNN.
+
+> It's worth elaborating on why these parameters can be shared: 
+>
+> Let's continue with the running example. In reality, previous running distances and other related information continually influence subsequent actions. For instance, if you start running too fast, you may tire prematurely, leading to a slow walk back home after just 10 minutes. Consequently, feeling exhausted, you might collapse into bed and oversleep, disrupting your sleep cycle and causing insomnia at night, prompting you to resort to scrolling through your phone and getting caught up in emotions. Whether indirectly affecting emotions or directly influencing actions, they are all part of the same chain of events and share similarities, allowing parameters to be shared. This approach aligns with practical logic while also reducing the parameter load.
+
+
+
+##### Different Input-Output and Intermediate Layers
+
+In the previous discussion, we examined an RNN model where the input consisted of data from 10 time points, resulting in a single output. However, in practice, both the input and output dimensions can vary. For instance, if some data is missing from the 10 time points of running data, the model can be adapted as follows:
+![5](media/rnn/5.jpg)
+Then, we can remove the extra hidden units in the middle to obtain RNNs with different inputs:
+![6](media/rnn/6.jpg)
+We can also further change the output dimension:
+![7](media/rnn/7.jpg)
+Or as follows:
+![8](media/rnn/8.jpg)
+There are various combinations and arrangements possible. Analogous to FNN (MLP) and CNN, RNN can also have multiple hidden layers.
+![9](media/rnn/9.jpg)
+
+### Backpropagation Through Time (BPTT)
+
+It's essential to introduce Backpropagation Through Time (BPTT) for RNNs, which differs slightly from traditional backpropagation used in FNNs. Understanding the basic principles and outcomes of BPTT is crucial for grasping the weaknesses of RNNs and the motivations behind LSTM.
+![10](media/rnn/10.jpg)
+We won't delve deeply into the derivation process, as it's quite theoretical and extensive. Instead, let's jump straight to the results of the partial derivatives for a 4-layer RNN, which are as follows:
+$$
+\begin{aligned}
+\frac{\partial L}{\partial V}&=\frac{\partial L}{\partial y}\frac{\partial y}{\partial V} \\
+\frac{\partial L}{\partial U}&=\frac{\partial L}{\partial y}\frac{\partial y}{\partial T_{4}}\frac{\partial T_{4}}{\partial U}+\frac{\partial L}{\partial y}\frac{\partial y}{\partial T_{4}}\frac{\partial T_{4}}{\partial T_{3}}\frac{\partial T_{3}}{\partial U}+\frac{\partial L}{\partial y}\frac{\partial y}{\partial T_{4}}\frac{\partial T_{4}}{\partial T_{3}}\frac{\partial T_{3}}{\partial T_{2}}\frac{\partial T_{2}}{\partial U}+\frac{\partial L}{\partial y}\frac{\partial y}{\partial T_{4}}\frac{\partial T_{4}}{\partial T_{3}}\frac{\partial T_{3}}{\partial T_{2}}\frac{\partial T_{2}}{\partial T_{1}}\frac{\partial T_{1}}{\partial U} \\
+\frac{\partial L}{\partial W}&=\frac{\partial L}{\partial y}\frac{\partial y}{\partial T_{4}}\frac{\partial T_{4}}{\partial W}+\frac{\partial L}{\partial y}\frac{\partial y}{\partial T_{4}}\frac{\partial T_{4}}{\partial T_{3}}\frac{\partial T_{3}}{\partial W}+\frac{\partial L}{\partial y}\frac{\partial y}{\partial T_{4}}\frac{\partial T_{4}}{\partial T_{3}}\frac{\partial T_{3}}{\partial T_{2}}\frac{\partial T_{2}}{\partial W}+\frac{\partial L}{\partial y}\frac{\partial y}{\partial T_{4}}\frac{\partial T_{4}}{\partial T_{3}}\frac{\partial T_{3}}{\partial T_{2}}\frac{\partial T_{2}}{\partial T_{1}}\frac{\partial T_{1}}{\partial W}
+\end{aligned}
+$$
+It's not difficult to identify a pattern here: $U$ and $W$ are essentially the cumulative product of multiple chain rule applications, followed by summation. However, this approach may lead to some issues, similar to those encountered with the chain rule, namely gradient vanishing and exploding.
+
+- **Gradient Vanishing:** This occurs when gradients become extremely small, effectively causing them to approach zero and halting parameter updates. In RNNs, data passing through each neuron undergoes activation by the tanh function, resulting in most values being less than 1. As the RNN network deepens, the accumulation of many values less than 1 leads to a number very close to 0, causing gradient vanishing.
+- **Gradient Exploding:** Conversely, gradient exploding happens when gradients become excessively large, often resulting in NaN values. Similar to gradient vanishing, when numerous gradients greater than 1 are multiplied, it leads to an explosion in gradient magnitudes, disrupting the normal backpropagation process.
+
+- ![12](media/rnn/12.jpg)
+  Visually, both gradient vanishing and exploding occur due to excessively long input sequences, where the chain rule causes gradients to rapidly increase or decrease. This is one of the major drawbacks of RNNs, leading to the development of LSTM and GRU for improvement. Detailed explanations of these approaches will be provided in subsequent blog posts.
+</script>
+<script type="text/markdown" data-lang="cn">
+### 相关资料
+（1）[What are Recurrent Neural Networks? | IBM](https://www.ibm.com/topics/recurrent-neural-networks)
+（2）[浅析循环神经网络(RNN)的反向求导过程 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/101322965) 总共有四篇
+（3）[循环神经网络（RNN）浅析 - 简书 (jianshu.com)](https://www.jianshu.com/p/87aa03352eb9)
+### 引入
+##### 简单燃烧下卡路里
+在深度学习中最基础也是最经典的三种分别是前馈神经网络（FNN）、卷积神经网络（CNN）、循环神经网络（RNN）。前馈神经网络最为简单易懂，通过参数传递和矩阵运算将数据从一个维度映射到另外一个维度。而卷积神经网络可以综合某个元素周围的元素进行映射。但是两者都不能够很好地去处理时间序列的问题，而循环神经网络 RNN (Recurrent neural networks) 则可以很好地处理这样的数据。这是因为，相比于前两者来说，**RNN 假定输入的数据序列在时间维度上并不是等价的**，而是有区分的。
+比如现在我们想用神经网络处理行人的运动轨迹，如果我们用卷积神经网络，那么对于不同时间的轨迹数据，卷积权重都是一样的。这样可能会带来一定的问题，比如随着时间推移，一个人会变得越来越疲惫，那么其行动轨迹肯定与一开始的行动轨迹有很大区别。比如我们举下面一个例子：现在有个人在家 (home)和公园 (park)之间跑步进行锻炼，他往公园跑的时候体力比较充沛，所以跑的速度比较快。虽然他在公园休息了一会，跑回家的时候他还是逐渐体力不支速度逐渐变慢下来。
+![1](media/rnn/1.jpg)
+如果我们用 FNN 前馈神经网络去处理，那么我们需要让每个权重自己去学习参数，很容易忽略权重之间的关联性；如果我们用 CNN 卷积神经网络去处理，那么对于这个人精力充沛时候的运动数据和逐渐疲倦时候的运动数据处理的卷积权重参数都是一样的，过于将不同数据关联化（或者说是强行将所有数据等价化)。所以我们需要一种新的神经网络传递方式去处理这类数据。通过观察不难发现，这一系列运动数据之间是有关联的。比如当跑到公园之后才会休息；跑到公园消耗了很多体力之后，回来的跑步速度才会越来越慢 · · · · · · 这说明随着时间的发展，轨迹数据之间是有关联的。而反过来思考之前主要用于处理图像的 CNN，像素之间虽然确实可能存在潜在的关联，但是宏观角度我们并不清楚他们之间的联系，或者换句话说，图片像素之间的联系是空间维度，而并不是时间维度。
+
+##### 时间维度与空间维度
+
+这个问题对于 RNN 来说其实比较重要，我只从辅助理解 RNN 的角度探讨这一问题，并不会全面而详细的论述其本质根源。为了方便理解，此处我们需要一个假定，我们假定下面说的空间指的是三维及以内的空间，而时间单独作为一个维度。
+通常我们很容易区分这两个概念，空间维度就是我们存在的三维空间中，有鲜花有泪水也有那个相伴你一生的人；而时间维度就是看着你慢慢变老。但是当我们拓展一下，讨论广义的时间与空间，两者似乎并没有那么的清晰。比如，现在有一个句子：“你这么年轻怎么睡得着的？”，那么这个句子是更偏向于是存在时间维度
+还是空间维度？如果我们从存在角度，这个句子如果写在纸上，那么其确实存在于空间维度，但是从理解角度，我们是从“你”字开始，依次往后看“这么”“年轻”“睡得着”，我们需要之前的汉字，才能辅助理解后面的汉字，乃至整个句子。如果语序发生改变句意很可能就完全不同：“这么年轻怎么睡得着你的？”，嗯，这句话就不太对劲了。
+可以发现，无论是时间正向流淌的客观事实（别抬杠超过光速时间逆向），还是人为约定的看句子从左往右从上往下看，都具有时间维度的“特性”。个人认为，这种特性与空间维度区别比较大的一点在于，**在时间维度每个时间点上，都有一个较为完整的“空间”**。比如你在奔跑，每个时间点上都有一个完整的地球空间，而你正处于某个跑步姿势；比如你在阅读文字，每个字都是完整的一个个体，由它许多笔画组成。而三维空间并不存在时间的概念。此外，**在时间维度这条线上，不同时间点的三维空间是相互联系的，尤其是正向关联**。跑步变慢是因为之前跑太多消耗了太多精力；一个个单独的字组成了完整的有蕴含的一句话。
+
+### 基本原理
+##### 先从最简单的入手
+前面提到过，时间序列的正向关联十分重要，也就是上一个时间点对下一个时间点有较大的影响。我们还是以之前的跑步的例子为例。对于 FNN 来说，输入数据是经过一个权重 $u_{1}$ 到隐藏的神经 (灰色)元，再从隐藏的神经元经过另外一个权重 $v_{1}$ 得到输出结果，如下图 (a)。写成公式如下：
+$$
+output = v_{1}·(u_{1}·t_{1})
+$$
+其中 $t_{1}$ 代表的是该时刻输入的数据。
+![11](media/rnn/11.jpg)
+如果我们希望 $t_2$ 时刻的输入受到 $t_{1}$ 时刻输入的影响，我们可以将 $t_1$ 输入的隐藏变量乘以 $w_{1}$ 再输入进 $t_{2}$ 得到的隐藏变量，这样输入就拥有两个时刻输入数据的贡献，如上图 (b)。写成公式如下：
+$$
+output=v_{1}·(u_{2}·t_{2}+w_{1}·(u_{1}·t_{1}))
+$$
+>有人可能会疑惑，为什么要将两个时刻的隐藏神经元数值相加，而不是直接将输入数据相加？
+>其实这里的隐藏神经元更像是经过了一种映射或者变换，原数据可能会有一些数量级不匹配等问题，而变成隐藏神经元之后会更加适合相加。
+
+以此类推，我们会得到如图 (c)图 (d)的参数传递方式。这样我们就将十个时刻人的跑步数据全部综合起来得到了这个输出结果，这个输出结果包含了完整的跑步位置信息。这就是 RNN 最简单的一种实现方式，其思想就是上文提到**时间维度上的正向影响**。
+
+##### 高维信息的拓展
+上面的例子中，输入数据时各个时刻人跑步的一维位置信息。很明显，这里做了极大地简化。真实的数据可能包括经纬度、速度加速度等等特征，这使得我们输入的数据变成了高维张量。我们对此处理的方式与 FNN 相类似，即将一个单一的元素（如下图 (a)）转换成一个张量（如下图 (b)）。
+![2](media/rnn/2.jpg)
+进一步拓展，中间的隐藏元素和输出维度都有可能会改变，这样就转化成了图 (c)的形式。不难发现，这与 FNN (MLP)简直一模一样；然后就可以将这个替换原 RNN 中的图 (a)了，如下图：
+![3](media/rnn/3.jpg)
+
+##### 学到这应该思考一下
+![4](media/rnn/4.jpg)
+还记得上文这个图嘛，此时我们已经对 RNN 有了一定的基础的了解，可以进一步思考为什么 RNN 更加适合处理时间序列。上文提到，FNN 不容易学习输入数据之间的关联性，而 RNN 通过隐藏神经元 (层)的传递将各个时间序列的数据都传递在了一起；CNN 会导致所有数据经过处理的参数都共享，失去了不同数据的独立性（过于关联、等价)，而 RNN 虽然也共享参数，但是每个输入数据按照时间远近有不同的深度，比如 $t_{1}$ 时刻要经过 9 个 $W$ ，而 $t_{5}$ 时刻只需要经过 5 个，通过深度对不同的时间点进行差异化。所以可以说，RNN 在某种意义上是 FNN 和 CNN 的中和。
+
+>这里个人觉得有必要补充一下为什么这些参数能够共享：
+>仍然以跑步为例。在现实情况中，之前的跑步距离等信息是会一直影响到最后的。刚开始如果跑步速度过快，很容易就过早疲惫，10 分钟可能就慢慢走回家，然后因为特别累直接倒在床上睡着了，然后导致白天睡多了晚上睡不着，晚上睡不着于是刷手机，然后刷手机刷 emo 了。可以发现，刚开始跑步速度过快其实是对 emo 有间接影响的，而刷手机是直接影响。无论是间接影响还是直接影响，都是在同一事件链下，必然有相似之处，所以可以共享参数，符合实际逻辑的同时，又可以减小参数量
+
+##### 不同的输入输出与中间层
+上文介绍的 RNN 输入是 10 个时间点的数据，输出是 1 组。但是事实上，输入输出的维度是可以改变的。比如这 10 个时间点的跑步数据发生了缺失情况，则可以如下改变：
+![5](media/rnn/5.jpg)
+然后我们将中间多余的隐藏元删去，就可以得到不同输入的 RNN 了：
+![6](media/rnn/6.jpg)
+我们也可以进一步改变输出维度：
+![7](media/rnn/7.jpg)
+也可以如下改变：
+![8](media/rnn/8.jpg)
+有各种各样的排列组合方式。
+类比于 FNN (MLP)和 CNN，RNN 也可以拥有更多的隐藏层。
+![9](media/rnn/9.jpg)
+
+### 反向传播 BPTT
+这里有必要介绍一下 RNN 的反向传播 Backpropagation Through Time (BPTT)，其与传统的 FNN 反向传播略有不同，并且了解 BPTT 的简单原理和结果对了解 RNN 的弱点以及 LSTM 提出的初衷有比较大的帮助。
+![10](media/rnn/10.jpg)
+这里不过多阐述其是如何推导的，因为过于理论，篇幅较长，先说结论，求完偏导后的公式结果如下 (以 4 层 RNN 为例)：
+$$
+\begin{aligned}
+\frac{\partial L}{\partial V}&=\frac{\partial L}{\partial y}\frac{\partial y}{\partial V} \\
+\frac{\partial L}{\partial U}&=\frac{\partial L}{\partial y}\frac{\partial y}{\partial T_{4}}\frac{\partial T_{4}}{\partial U}+\frac{\partial L}{\partial y}\frac{\partial y}{\partial T_{4}}\frac{\partial T_{4}}{\partial T_{3}}\frac{\partial T_{3}}{\partial U}+\frac{\partial L}{\partial y}\frac{\partial y}{\partial T_{4}}\frac{\partial T_{4}}{\partial T_{3}}\frac{\partial T_{3}}{\partial T_{2}}\frac{\partial T_{2}}{\partial U}+\frac{\partial L}{\partial y}\frac{\partial y}{\partial T_{4}}\frac{\partial T_{4}}{\partial T_{3}}\frac{\partial T_{3}}{\partial T_{2}}\frac{\partial T_{2}}{\partial T_{1}}\frac{\partial T_{1}}{\partial U} \\
+\frac{\partial L}{\partial W}&=\frac{\partial L}{\partial y}\frac{\partial y}{\partial T_{4}}\frac{\partial T_{4}}{\partial W}+\frac{\partial L}{\partial y}\frac{\partial y}{\partial T_{4}}\frac{\partial T_{4}}{\partial T_{3}}\frac{\partial T_{3}}{\partial W}+\frac{\partial L}{\partial y}\frac{\partial y}{\partial T_{4}}\frac{\partial T_{4}}{\partial T_{3}}\frac{\partial T_{3}}{\partial T_{2}}\frac{\partial T_{2}}{\partial W}+\frac{\partial L}{\partial y}\frac{\partial y}{\partial T_{4}}\frac{\partial T_{4}}{\partial T_{3}}\frac{\partial T_{3}}{\partial T_{2}}\frac{\partial T_{2}}{\partial T_{1}}\frac{\partial T_{1}}{\partial W}
+\end{aligned}
+$$
+其实不难从中找到规律，$U,W$ 其实就是多次使用链式法则累乘再相加。这样可能会带来一些问题，也是所有链式法则可能带来的问题，就是梯度消失以及梯度爆炸。
+- **梯度消失：** 就是梯度过小导致梯度接近于 0 使得参数不再更新。在 RNN 中，数据经过每个神经元后会通过 tanh 激活函数，使得绝大部分数据的值小于 1。而随着 RNN 网络加深，许多小于 1 的值累乘会得到一个十分接近于 0 的数，这就是梯度消失的原因。
+- **梯度爆炸：** 就是梯度过大导致梯度过高变成 NaN。这个同理梯度消失，当许多大于 1 的梯度相乘时，会导致梯度过大而没法正常进行反向传播。
+![12](media/rnn/12.jpg)
+从直观表现上，梯度消失和梯度爆炸都是由于输入的时序过于长，根据链式法则会使得梯度急剧增大或者减小。而这也是 RNN 比较大的缺点之一，由此提出了 LSTM 、GRU 进行改进。关于这两者的介绍，将放到后续博客中进行讲解
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

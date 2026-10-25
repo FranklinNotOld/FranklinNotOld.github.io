@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data Manipulation and Preprocessing · Yongkang Li</title>
+<meta name="description" content="These notes are based on Dive into Deep Learning by Mu Li and his online course">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Dive into Deep Learning notes</span><span data-l="cn">《动手学深度学习》笔记</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Data Manipulation and Preprocessing</span><span data-l="cn">数据操作与预处理</span></h1>
+    <div class="meta"><span data-l="en">2 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><span></span><a class="pn glass" href="d2l-linear-algebra.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Linear Algebra Basics</span><span data-l="cn">线性代数基础</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+These notes are based on *Dive into Deep Learning* by Mu Li and his online course
+
+### Preface
+
+An image is essentially a matrix, so the direct object of data manipulation and preprocessing is the matrix. In deep learning, the fundamental operations are operations on Tensors (tensors, which can be simply understood as matrices of various dimensions), so learning to operate on matrices is especially important.
+
+### Accessing Elements
+
+In PyTorch, accessing the elements of a Tensor is always written with square brackets **[ ]**. The brackets contain row and column information, and if we want to select a whole row or column we use the colon **:**
+
+##### (1) Accessing a Single Element
+
+Suppose we want to access a single element of a tensor; we specify it by its coordinates:
+
+[1, 2] accesses the element in row 2, column 3 of the tensor
+
+> Note that tensor indices start at 0
+
+<img src="media/d2l-data/JPG-资源-1.jpg" alt="Resource 1" style="zoom:150%;" /> 
+
+##### (2) Accessing a Row or a Column
+
+If we want to access a row or a column of elements, we use ":" to denote all the elements in that row or column
+
+[1, :] accesses the second row, and [: , 2] accesses the third column
+
+<img src="media/d2l-data/JPG-资源-2.jpg" alt="Resource 2" style="zoom:150%;" /> 
+
+##### (3) Accessing a Region
+
+Accessing a region requires giving the start and end coordinates of the rows and columns
+
+For example, [1:3, 1:3] selects the region of the tensor from the second row to the third row and from the second column to the second column.
+
+> Note: 1:3 is equivalent to a left-open, right-closed interval; the second column can be taken (open interval), but the fourth column cannot (closed interval). The figure makes this easier to understand
+
+<img src="media/d2l-data/JPG-资源-3.jpg" alt="Resource 3" style="zoom:150%;" /> 
+
+Extension: if the elements we want to access run from some column (row) all the way to the end, we can write [2: , 2:]. The colon here means "up to the end". See the figure below
+
+<img src="media/d2l-data/JPG-资源-4.jpg" alt="Resource 4" style="zoom:150%;" /> 
+
+##### (4) Strided Access
+
+We can use the double colon "::" for strided access. The number after the double colon indicates that one element is selected for every that many elements
+
+[::3, ::2] selects one element every three rows and one element every two rows, and takes the intersection of the two
+
+<img src="media/d2l-data/JPG-资源-5.jpg" alt="Resource 5" style="zoom:150%;" /> 
+
+
+
+### Basic Data Manipulation Code
+
+Here is some basic data manipulation code, which is fairly simple:
+
+```python
+import torch  # Note that we import torch, not pytorch
+
+---------------------------------------------
+# Generate an integer array (tensor) from 0 to 11
+x = torch.arange(12)
+# out: tensor([0,1,2,...,10,11])
+
+---------------------------------------------
+# Access the shape of the tensor
+print(x.shape)
+# out: torch.Size([12])
+
+---------------------------------------------
+# Access the total number of elements
+print(x.numel())
+# out: 12
+
+---------------------------------------------
+# Change the shape of the tensor without changing its elements
+x = x.reshape(3, 4)
+print(x)
+# tensor([[ 0,  1,  2,  3],
+#             [ 4,  5,  6,  7],
+#             [ 8,  9, 10, 11]])
+
+---------------------------------------------
+# Define the tensor contents manually
+x = torch.tensor([[1, 2, 3], [1, 2, 3]])
+
+---------------------------------------------
+# Elements of a tensor support addition, subtraction, multiplication, division, and exponentiation (**)
+x = torch.tensor([[1, 2, 3], [1, 2, 3]])
+y = torch.tensor([[2, 2, 2], [2, 2, 2]])
+print(x ** y)
+# tensor([[1, 4, 9],
+#             [1, 4, 9]])
+
+---------------------------------------------
+# Vector concatenation 1
+x = torch.tensor([[1, 1, 1], [1, 1, 1]])
+y = torch.tensor([[2, 2, 2], [2, 2, 2]])
+z = torch.cat((x, y), dim=0)  # dim is the dimension; concatenate along dim=0 (rows)
+print(z)
+# tensor([[1, 1, 1],
+#             [1, 1, 1],
+#             [2, 2, 2],
+#             [2, 2, 2]])
+
+---------------------------------------------
+# Vector concatenation 2
+x = torch.tensor([[1, 1, 1], [1, 1, 1]])
+y = torch.tensor([[2, 2, 2], [2, 2, 2]])
+z = torch.cat((x, y), dim=1)  # dim is the dimension; concatenate along dim=1 (columns)
+print(z)
+# tensor([[1, 1, 1, 2, 2, 2],
+#              [1, 1, 1, 2, 2, 2]])
+
+---------------------------------------------
+# Convert to a NumPy tensor
+a = x.numpy()
+b = torch.tensor(a)
+print(type(a))
+print(type(b))
+# <class 'numpy.ndarray'>
+# <class 'torch.Tensor'>
+```
+
+
+
+### Data Preprocessing Code
+
+```python
+import os
+import pandas as pd
+
+# Create the dataset
+os.makedirs(os.path.join('...', 'data'), exist_ok=True)
+data_file = os.path.join('...', 'data', 'house_tiny.csv')
+with open(data_file, 'w') as f:   # w means the operation is write
+    f.write('number, date')         # Column names
+    f.write('1, 3.5')  # Data contents
+    f.write('2, 9.4')
+    f.write('3, 11.26')
+
+# Load the dataset
+data = pd.read_csv(data_file)
+print(data)
+
+# Select a slice of the dataset
+inputs, outputs = data.iloc[:, 0:2], data.iloc[:, 2]
+
+# Convert the numeric values to tensor format
+x, y = torch.tensor(inputs.values), torch.tensor(outputs.values)
+```
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+本笔记基于《动手学深度学习》——李沐以及其网课整理
+
+### 前言
+
+图片的本质是矩阵，所以数据操作与预处理的直接对象是矩阵。在深度学习中，本质的操作是对Tensor（张量，简单理解为各个维度的矩阵）的操作，所以学会对矩阵的操作尤其重要。
+
+### 访问元素
+
+在pytorch中，访问Tensor的元素都是用中括号**[ ]**来表示，中括号内包含行、列信息，如果想选中整行或者整列，则会使用冒号**：**
+
+##### （1）访问一个元素
+
+假设我们想访问张量中的一个元素，我们会用其坐标来表示：
+
+[1, 2]访问的就是张量中第2行第三列
+
+> 注意张量的索引是从0开始的
+
+<img src="media/d2l-data/JPG-资源-1.jpg" alt="资源 1" style="zoom:150%;" /> 
+
+##### （2）访问一行或者一列
+
+假如我们想访问一行或者一列元素，我们会使用“：”表示那一行或者那一列的元素的所有元素
+
+[1, :]访问的就是第二行，[: , 2]访问的就是第三列
+
+<img src="media/d2l-data/JPG-资源-2.jpg" alt="资源 2" style="zoom:150%;" /> 
+
+##### （3）访问一片区域
+
+访问一片区域需要将行列的首尾坐标分别给出
+
+如[1:3, 1:3]表示的是选取张量中第二行到第三行，第二列到第二列的区域。
+
+> 注意：1:3 相当于一个左开右闭区间，第二列可以取(开区间)，但是第四列就不能取(闭区间)，看图可以更加容易理解
+
+<img src="media/d2l-data/JPG-资源-3.jpg" alt="资源 3" style="zoom:150%;" /> 
+
+拓展：如果我们想要访问的元素是从某一列(行)开始一直到结尾，我们可以这样表示：[2: , 2:]。这里的冒号就相当于到结尾的意思。如下图
+
+<img src="media/d2l-data/JPG-资源-4.jpg" alt="资源 4" style="zoom:150%;" /> 
+
+##### （4）跳跃式访问
+
+我们可以使用双冒号“::”进行跳跃式访问，双冒号后面的数即为每多少个元素选取一个数
+
+[::3, ::2]即为每三行选取一个元素，没两行再选取一个元素，两者求交集
+
+<img src="media/d2l-data/JPG-资源-5.jpg" alt="资源 5" style="zoom:150%;" /> 
+
+
+
+### 基本数据操作代码
+
+下面是一些基本数据操作的代码，比较简单：
+
+```python
+import torch  # 注意导入的是torch而不是pytorch
+
+---------------------------------------------
+# 生成0到11的整数数组(张量tensor)
+x = torch.arange(12)
+# out：tensor([0,1,2,……,10,11])
+
+---------------------------------------------
+# 访问张量的形状
+print(x.shape)
+# out：torch.Size([12])
+
+---------------------------------------------
+# 访问元素的总数
+print(x.numel())
+# out: 12
+
+---------------------------------------------
+# 改变张量形状但是不改变元素
+x = x.reshape(3, 4)
+print(x)
+# tensor([[ 0,  1,  2,  3],
+#             [ 4,  5,  6,  7],
+#             [ 8,  9, 10, 11]])
+
+---------------------------------------------
+# 自定义张量内容
+x = torch.tensor([[1, 2, 3], [1, 2, 3]])
+
+---------------------------------------------
+# tensor中的元素可以进行加减乘除和指数(**)
+x = torch.tensor([[1, 2, 3], [1, 2, 3]])
+y = torch.tensor([[2, 2, 2], [2, 2, 2]])
+print(x ** y)
+# tensor([[1, 4, 9],
+#             [1, 4, 9]])
+
+---------------------------------------------
+# 向量的拼接1
+x = torch.tensor([[1, 1, 1], [1, 1, 1]])
+y = torch.tensor([[2, 2, 2], [2, 2, 2]])
+z = torch.cat((x, y), dim=0)  # dim是维度，按维度dim=0(行)拼接
+print(z)
+# tensor([[1, 1, 1],
+#             [1, 1, 1],
+#             [2, 2, 2],
+#             [2, 2, 2]])
+
+---------------------------------------------
+# 向量的拼接2
+x = torch.tensor([[1, 1, 1], [1, 1, 1]])
+y = torch.tensor([[2, 2, 2], [2, 2, 2]])
+z = torch.cat((x, y), dim=1)  # dim是维度，按维度dim=1(列)拼接
+print(z)
+# tensor([[1, 1, 1, 2, 2, 2],
+#              [1, 1, 1, 2, 2, 2]])
+
+---------------------------------------------
+# 转换为Numpy张量
+a = x.numpy()
+b = torch.tensor(a)
+print(type(a))
+print(type(b))
+# <class 'numpy.ndarray'>
+# <class 'torch.Tensor'>
+```
+
+
+
+### 数据预处理代码
+
+```python
+import os
+import pandas as pd
+
+# 创建数据集
+os.makedirs(os.path.join('...', 'data'), exist_ok=True)
+data_file = os.path.join('...', 'data', 'house_tiny.csv')
+with open(data_file, 'w') as f:   # w 表示要进行的操作是write写
+    f.write('number, date')         # 列名
+    f.write('1, 3.5')  # 数据内容
+    f.write('2, 9.4')
+    f.write('3, 11.26')
+
+# 加载数据集
+data = pd.read_csv(data_file)
+print(data)
+
+# 选取数据集片段
+inputs, outputs = data.iloc[:, 0:2], data.iloc[:, 2]
+
+# 将数值类型转化成tensor格式
+x, y = torch.tensor(inputs.values), torch.tensor(outputs.values)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

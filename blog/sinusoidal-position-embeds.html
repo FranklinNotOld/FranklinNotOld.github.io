@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sinusoidal Position Embeddings · Yongkang Li</title>
+<meta name="description" content="In the past, I worked on some sequence processing tasks and briefly experimented with Transformers, but didn&#x27;t delve into the details. Recently, while…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Deep Learning from Zero to Kang</span><span data-l="cn">Deep Learning from Zero to Kang</span></span><i>/</i><span><span data-l="en">Positional embeddings</span><span data-l="cn">位置编码</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Sinusoidal Position Embeddings</span><span data-l="cn">正弦位置编码</span></h1>
+    <div class="meta"><span data-l="en">3 min read</span><span data-l="cn">约 3 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="googlenet.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">GoogLeNet</span><span data-l="cn">GoogLeNet</span></span></a><a class="pn glass" href="learned-sinusoidal-position-embeds.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Learned Sinusoidal Position Embeddings</span><span data-l="cn">可学习的正弦位置编码</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+
+### Introduce
+
+In the past, I worked on some sequence processing tasks and briefly experimented with Transformers, but didn't delve into the details. Recently, while exploring diffusion models (DDPM), I came across some related content in the code and became interested, so I decided to organize my thoughts.
+
+When dealing with sequence data, elements are expanded along the time dimension and have some interconnections. For instance, if someone says, "Is 79 too expensive? It's already quite cheap. Take a moment to think about whether your salary has increased over the years, or if you haven't been working hard enough." (As we know, language processing problems can be considered as sequence data processing problems.) In the above statement, there are many logical causal relationships in the time dimension, such as "already quite cheap" explaining "79 is too expensive" and "whether you haven't been working hard enough" being a possible reason for "79 is too expensive." If we change the order to "Has your salary increased over the years? It's already quite cheap. Maybe you haven't been working hard enough. Take a moment to think is 79$ too expensive?" the overall meaning changes entirely, and the context is lost.
+
+Computers cannot directly handle Chinese, so the text must first be encoded using an encoder, resulting in a sequence such as "[12, 4839, 2452, 203, 8, 15937, ...]," which can then be fed into a model for further processing. However, this approach presents a problem, especially for longer sequences: the model receives inputs with only contextual information, but doesn't know the actual distance between the data points. Although it may infer that B follows A and C follows B, and thus C is two positions away from A, this is indirect information and can be hard to discern, particularly with long sequences. Therefore, it's essential to directly represent the position of the data point within the sequence in the input data. This is essentially a form of mapping.
+
+### Sinusoidal Position Embeds
+
+
+As the name suggests, this is a positional encoding method based on sine and cosine functions. The complete derivation of the formula is complex, so let's focus on some key and foundational points.
+
+As mentioned earlier, we want to include position information in the input data. One feasible approach is to add a distinct encoding vector $ p_i $ at each position $ x_i $, resulting in $ x_i + p_i $. Assuming the sequence processing is a complex mapping $ f $, the overall process for positional encoding can be represented as (showing just two data points for simplicity):
+$$
+f(x_m, x_n) = f(x_m + p_m, x_n + p_n).
+$$
+Performing a second-order Taylor expansion on the equation above, we find that the dot product $ <p_m, p_n> $ represents relative positional information, indicating the existence of a function $ g $, where $ g(m - n) $ expresses the relative positional information between $ m $ and $ n $:
+$$
+<p_m, p_n> = g(m - n).
+$$
+After certain calculations, the final solution is:
+$$
+p_m = e^{im\theta}, \text{or written as} ~ p_m = \begin{bmatrix}
+\cos(m\theta) \\
+\sin(m\theta)
+\end{bmatrix}.
+$$
+These two forms are equivalent due to Euler's formula. The example above is for two dimensions, but higher dimensions (even dimensions) can also be used for positional encoding:
+$$
+p_m = \begin{bmatrix}
+\cos(m \theta_0) \\
+\sin(m \theta_0) \\
+\cos(m \theta_1) \\
+\sin(m \theta_1) \\
+\vdots \\
+\cos(m \theta_{\frac{d}{2} - 1}) \\
+\sin(m \theta_{\frac{d}{2} - 1})
+\end{bmatrix}.
+$$
+Where $ d $ refers to the dimension. Observing the encoding, as relative distance increases, the dot product should decrease (indicating the relationship between vectors), essentially representing the **asymptotic vanishing** of high-frequency oscillation integrals. This is related to the asymptotic estimation of the integral $ \int_0^1 e^{i(m - n) \theta_x} \, d x $. As previously mentioned, the encoding process can be seen as a mapping from continuous to discrete, which can be understood using continuous integrals (discrete values approaching infinity becomes continuous). The goal is to design $ \theta_x $ as a function of $ x $, so that the integral shows a **long-range** tendency toward zero. Here, you can refer to the image from the [Zhihu article](https://zhuanlan.zhihu.com/p/359500899) for a visualization. If we use a power function, the final result is illustrated below:
+
+![微信图片_20240110005534](media/sinusoidal-position-embeds/1.png)
+
+
+Typically, the choice of $ \theta_t = 10000^{-t} $. This choice is not strictly quantifiable, but rather depends on the specific problem. If the overall text is relatively short, the relative distances are small, and a faster convergence rate should be chosen.
+
+The final result of positional encoding is:
+$$
+P(x, y) = (\sin\left(\frac{m}{10000^{\frac{2i}{d_{model}}}}\right), \cos\left(\frac{m}{10000^{\frac{2i}{d_{model}}}}\right))
+$$
+Here, $ m $ represents the position of the word, and $ t $ is equal to $ \frac{2i}{d_{model}} $. The negative exponent in the original base has been converted into a denominator.
+
+### Code
+
+Here is an implementation of a Sinusoidal Position Embeds.
+
+```python
+class SinusoidalPosEmb(nn.Module):
+    def __init__(self, dim, theta=10000):
+        super().__init__()
+        self.dim = dim  # Dimension of the embedding
+        self.theta = theta  # Scaling factor to adjust the range of frequencies
+
+    def forward(self, x):
+        device = x.device
+        half_dim = self.dim // 2  # d_model ÷ 2
+        emb = math.log(self.theta) / (half_dim - 1)  # First take the log, then exponentiate; subtracting 1 since the first term is 0
+        emb = torch.exp(torch.arange(half_dim, device=device) * -emb)  # Decrease by exponential scale
+        emb = x[:, None] * emb[None, :]  # Utilize broadcasting to multiply by scaling factor and generate the vector
+        emb = torch.cat((emb.sin(), emb.cos()), dim=-1)  # Apply sine and cosine functions
+        return emb
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+### 位置编码引入
+
+下面开一期新坑，关于位置编码的一系列介绍。之前做过时序处理的一些问题，草草调包用过transformer，但是并没有对其细节进行了解。最近在琢磨扩散模型DDPM的时候，偶然在代码中看到这一部分的相关内容比较感兴趣，所以想进行一些整理。
+
+在我们处理时序数据的时候，元素是在时间维度上进行拓展，彼此具有一定的联系。比如现在有个人对你说：“79还嫌贵？已经很便宜了，这时候自己好好想想，这些年工资有没有涨，是不是自己没有好好工作。”（众所周知，语言处理问题可以看成一个序列数据处理的问题）。在上面这句话中，出现了很多时间维度上的逻辑因果关系，比如，“已经很便宜了”是对“79还嫌贵”的解释，“是不是自己没有好好工作”是对“79还嫌贵”一种可能的原因的猜测。如果我们调换语序成：“这些年工资有没有涨，已经很便宜了，是不是自己没有好好工作，这时候自己好好想想，79还嫌贵？”，整体的意思就完全不同了，李某某的直播间也就不会被炒上热搜了。
+
+计算机是无法直接处理中文的，必须要先经过编码器进行编码，生成如“[12, 4839, 2452, 203, 8, 15937,...]”一个序列后再送入模型中进行进一步地处理。然而，这样学习会带来一个问题，尤其是对于长序列愈发明显：即模型只有序列数据前后信息的输入，但是具体并不知道两个数据之间相隔了多少。虽然当我知道B在A后面，C在B后面，那么C距离A为2，但是这是属于间接信息，隐藏比较深，特别是对于长序列数据，间接让模型“理解”这些内容并不现实，所以需要在输入数据中直接表示出该数据位于序列的位置。这本质上是一种映射。
+
+
+
+### Sinusoidal Position Embedding
+
+顾名思义，这是一种基于正余弦函数的编码方式。完整的推导公式比较复杂，这里只讲解一些关键点和比较基础的点。
+
+上文提到，我们想要在输入数据中体现位置信息，一种可行的方法就是在每个位置$x_i$上都加上一个不同的编码向量$x_i+p_i$。我们假设时序处理的过程是一个复杂的映射$f$，则这个位置编码的整体流程可以表示为(为了简化下面只表现出了两个数据)：
+$$
+f(x_m,x_n)=f(x_m+p_m,x_n+p_n)
+$$
+对上面式子进行二次的泰勒展开，最后可以得到一个结论是$p_m,p_n$的内积$<p_m,p_n>$表达的是相对位置信息，即存在某个函数$g$，$g(m-n)$表示在$m-n$距离的情况下两者的相对位置信息，即：
+$$
+<p_m,p_n>=g(m-n)
+$$
+经过一定的运算，最后得到的解是：
+$$
+p_m=e^{im\theta},或者写成~p_m=
+\left(
+\begin{matrix}
+cosm\theta \\
+sinm\theta \\
+\end{matrix}
+\right)
+$$
+两者利用欧拉公式等价。上面是二维的情况，其实还可以用更高维（偶数维度）进行位置编码：
+$$
+p_m=
+\left(
+\begin{matrix}
+cosm\theta_0 \\
+sinm\theta_0 \\
+cosm\theta_1 \\
+sinm\theta_1 \\
+···\\
+cosm\theta_{\frac{d}{2}-1} \\
+sinm\theta_{\frac{d}{2}-1} \\
+\end{matrix}
+\right)
+$$
+其中$d$指的是维度。通过观察可以发现，随着相对距离越来越大，内积应该越来越小（某种意义上内积大小可以反映两个向量之间的关系是否紧密），本质上是**高频震荡积分的渐进趋零性**，即对积分$\int_0^1 {e^{i(m-n)\theta_x}} \,{\rm d}x$进行渐近估计。前文说过，编码的过程可以看成一个从连续到离散的映射，而这一离散的映射依然可以用连续的积分进行辅助理解（离散到无穷大的数就是连续）。此处其实是要将$\theta_x$设计成一个关于x的函数，使得该积分呈现**远程**趋于0的效果。这里借用了[Transformer升级之路：1、Sinusoidal位置编码追根溯源 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/359500899) 中的配图，如果我们使用幂函数，最后的结果如下图：
+
+![微信图片_20240110005534](media/sinusoidal-position-embeds/1.png)
+
+通常情况下，选用$\theta_t=10000^{-t}$。这其中其实并不是可以量化到说可以选哪个值，而是根据实际问题有关。如果文本整体比较短，那么相对距离比较小，这时候应该选收敛比较快的。
+
+最后位置编码的结果是：
+$$
+P(x,y)=(sin(\frac{m}{10000^{\frac{2i}{d_{model}}}}),cos(\frac{m}{10000^{\frac{2i}{d_{model}}}}))
+$$
+这里的$m$相当于是单词所在的位置，$t$等于$\frac{2i}{d_{model}}$，原本指数上的负号转换成了分母。
+
+### 代码实现
+
+下面是Sinusoidal Position Embedding的一种代码实现：
+
+```python
+class SinusoidalPosEmb(nn.Module):
+    def __init__(self, dim, theta=10000):
+        super().__init__()
+        self.dim = dim  # 嵌入的维度
+        self.theta = theta  # 缩放因子，用于调整频率的范围
+
+    def forward(self, x):
+        device = x.device
+        half_dim = self.dim // 2  # d_model÷2
+        emb = math.log(self.theta) / (half_dim - 1)  # 先取对数再取指数，需要减1是因为0为第一个
+        emb = torch.exp(torch.arange(half_dim, device=device) * -emb)  # 按指数比例减小
+        emb = x[:, None] * emb[None, :]  # 利用广播机制，乘以缩放比例生成向量
+        emb = torch.cat((emb.sin(), emb.cos()), dim=-1)  # 应用正余弦
+        return emb
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Installing PyTorch3D · Yongkang Li</title>
+<meta name="description" content="PyTorch3D is a library for speeding up the computations of deep learning when it deals with 3D information. Deep learning sometimes needs to process l…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">PyTorch and tools</span><span data-l="cn">PyTorch 与工具</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Installing PyTorch3D</span><span data-l="cn">安装 PyTorch3D</span></h1>
+    <div class="meta"><span data-l="en">4 min read</span><span data-l="cn">约 3 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="pt-gil.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Image Processing with PIL</span><span data-l="cn">PIL 图像处理</span></span></a><a class="pn glass" href="setup-ffmpeg.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Installing ffmpeg</span><span data-l="cn">安装 ffmpeg</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+### Brief Introduction
+
+PyTorch3D is a library for speeding up the computations of deep learning when it deals with 3D information. Deep learning sometimes needs to process large amounts of 3D data, for example in face modeling. In such cases, using this library helps us save a great deal of computational cost.
+
+
+
+### Problems Encountered
+
+Following the official installation method (https://github.com/facebookresearch/pytorch3d/blob/main/INSTALL.md) runs into quite a few problems. When I installed it myself, entering the commands did not install it successfully, and it took me almost a whole morning plus noon to sort out. I am sharing it here in the hope that it helps more people.
+
+
+
+### Preparation
+
+##### 1. A virtual environment created with conda
+
+First you need a virtual environment created with conda. There are plenty of tutorials online on how to create one, so I will not go into detail here. Note that your CUDA setup needs to include the cudatoolkit package, which is used to work with CUDA; simply put, it is what calls the GPU on your computer.
+
+> Keep a note of the python/pytorch version and the cudatoolkit version of your virtual environment. I recommend setting the pytorch version manually when installing, otherwise the latest version will be installed automatically, and the latest version is often incompatible with many other packages.
+
+
+
+##### 2. Installing and configuring cub
+
+The cub version must match the cudatoolkit version. The link explaining which versions correspond is here: https://gitcode.net/mirrors/nvidia/cub?utm_source=csdn_github_accelerator
+
+Once you know your version, start downloading. Download link: https://github.com/NVIDIA/cub/releases
+
+![image-20230403214854758](media/setup-pytorch3d/Pytorch3D-image-20230403214854758.png)
+
+After entering the page, scroll down and find the Assets for the matching version. There are two archives here. Generally, if you are on a Windows computer choose zip, and if you are on Linux choose tar.gz (then extract it with a command).
+
+Then extract the corresponding package.
+
+After extraction, add the directory containing the files to the environment variables.
+
+> How to set environment variables: right-click My Computer (This PC) — Properties — Advanced system settings — Environment Variables — Path variable — add a new environment variable.
+
+
+
+##### 3. Installing MinGW
+
+Some blogs online say it needs to be installed. I had installed it earlier because I needed it for VS Code, so it is already on my computer, and I am not sure whether it is strictly necessary.
+
+
+
+### Actual Installation
+
+##### 1. First, download the pytorch3D package
+
+Download link: https://github.com/facebookresearch/pytorch3d/releases
+
+==Be sure to pay attention to version compatibility!!==
+
+![image-20230403222406492](media/setup-pytorch3d/Pytorch3D-image-20230403222406492.png)
+
+For example, the image above shows that pytorch3D version 0.7.1 only supports pytorch from 1.9.0 to 1.12.1
+
+After downloading, extract it. I recommend putting it in the site-packages folder, since this folder is where all kinds of pytorch packages are stored, for example mine: `.\anaconda3\Lib\site-packages`
+
+
+
+##### 2. Modifying the relevant files
+
+The extracted files cannot be used directly; the code needs to be changed first.
+
+Open the pytorch3D folder (mine is named `pytorch3d-0.7.2`). Inside there is a setup.py file, and the code in the following part needs to be modified:
+
+![image-20230403223639072](media/setup-pytorch3d/Pytorch3D-image-20230403223639072.png)
+
+On line 52, what I commented out is the original code; line 53, the one with the red dot, is the modified version. My guess is that this change makes it not specify a C++ compiler. Python's underlying code is actually still C++, so this package cannot be used directly after downloading; it has to be installed and compiled before it can be used.
+
+> Some tutorials online change code in many places, but I only modified this one place and it worked. If changing just this one does not work for you, refer to this blog post ([click the link][https://blog.csdn.net/zaf0516/article/details/125011964?ops_request_misc=&request_id=&biz_id=102&utm_term=pytorch3d%E5%AE%89%E8%A3%85&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-5-125011964.nonecase&spm=1018.2226.3001.4187])
+
+
+
+##### 3. Installing VS2019
+
+You need to install vs2019; just look up a tutorial online, as there are plenty. The reason for installing vs2019 is to compile the downloaded package.
+
+Once it is downloaded and installed, find this thing called **x64 Native Tools Command Prompt for VS 2019** (on Windows 10/11 you can simply search for it in the search bar). This is the terminal that comes with vs2019.
+
+
+
+##### 4. Install!!!
+
+We have finally reached this step.
+
+First, enter the following commands in the terminal window one after another:
+
+```shell
+set DISTUTILS_USE_SDK=1
+set PYTORCH3D_NO_NINJA=1
+```
+
+Then enter this to compile and install pytorch3d:
+
+```shell
+python setup.py install
+```
+
+As I recall, the terminal scrolled through a great many lines, which should have been the compilation going line by line. After about fifteen minutes, it succeeded.
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+### 简单介绍
+
+Pytorch3D是一个用于加速深度学习在处理3D相关信息时候的运算速率的库。深度学习有时会需要处理大量的3D数据，比如在人脸建模的时候。这时候使用这些库会大大帮助我们节省运算成本。
+
+
+
+### 遇到问题
+
+按照官方的安装方法会遇到不少问题：https://github.com/facebookresearch/pytorch3d/blob/main/INSTALL.md。我个人在安装的时候，输入相关的指令并不能够成功安装，也是折腾了快一个上午加一个中午才解决，这里分享一下，希望能帮助更多的人。
+
+
+
+### 准备工作
+
+##### 1.conda创建好的虚拟环境
+
+首先你需要一个用conda创建好的虚拟环境，如何创建网上教程很多，在此不多赘述。注意你的cuda里面要有cudatoolkit这个包，这个包是用来使用cuda的，简单来说就是调用你电脑GPU的。
+
+> 要记好你虚拟环境的python/pytorch版本和cudatoolkit版本，建议pytorch版本手动设定安装版本，否则会自动安装到最新版，最新版往往与别的很多包都是不兼容的
+
+
+
+##### 2.cub安装配置
+
+cub的版本一定要和cudatoolkit版本对应，版本对应说明的链接在这里：https://gitcode.net/mirrors/nvidia/cub?utm_source=csdn_github_accelerator
+
+知道自己版本是什么了之后，开始下载，下载链接：https://github.com/NVIDIA/cub/releases
+
+![image-20230403214854758](media/setup-pytorch3d/Pytorch3D-image-20230403214854758.png)
+
+进入网页后往下翻，找到对应版本的Assets。这里有两个压缩包，一般如果是windows电脑的话选择zip，如果是linux的话选择tar.gz（然后用命令解压）
+
+之后解压相应安装包。
+
+解压完成后，将文件所在位置目录添加到环境变量中
+
+> 环境变量设置方式：右键我的电脑（此电脑）—属性—高级系统设置—环境变量—Path变量——添加新环境变量
+
+
+
+##### 3.MinGW安装
+
+网上有博客说要安装，因为我电脑里之前需要用vscode所以安装过，电脑里就有，所以我也不确定是否一定要装。
+
+
+
+### 正式安装
+
+##### 1.首先下载pytorch3D安装包
+
+下载链接：https://github.com/facebookresearch/pytorch3d/releases
+
+==一定要注意版本对应！！==
+
+![image-20230403222406492](media/setup-pytorch3d/Pytorch3D-image-20230403222406492.png)
+
+比如上面这张图，就说明pytorch3D 0.7.1 版本只支持1.9.0到1.12.1的pytorch
+
+下载后进行解压，建议安装到site-packages这个文件夹里，因为这个文件夹是专门存放pytorch各种包的地方，比如我的：`.\anaconda3\Lib\site-packages`
+
+
+
+##### 2.更改相关的文件
+
+解压好的文件并不能直接使用，需要先改一下代码。
+
+打开pytorch3D文件夹（我的文件名是`pytorch3d-0.7.2`），里面有个setup.py文件夹，修改下面部分的代码：
+
+![image-20230403223639072](media/setup-pytorch3d/Pytorch3D-image-20230403223639072.png)
+
+52行我注释掉的是原来的代码，53行有红点的是修改后的。我猜这里修改是不指定C++的编译器。因为其实python的底层代码还是C++，这个包下载好并不能直接用，需要安装编译后这个包才能用。
+
+> 网上有的教程改了很多地方的代码，但是我自己只修改了这一个地方就可以使用了。如果只改了一个没有成功，参考这篇博客（[点击链接][https://blog.csdn.net/zaf0516/article/details/125011964?ops_request_misc=&request_id=&biz_id=102&utm_term=pytorch3d%E5%AE%89%E8%A3%85&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-5-125011964.nonecase&spm=1018.2226.3001.4187]）
+
+
+
+##### 3.安装VS2019
+
+需要安装vs2019，这里上网找下教程即可，教程很多。下载vs2019的原因是用来编译下载的安装包。
+
+等下载安装好之后，找到这玩意儿**x64 Native Tools Command Prompt for VS 2019**（如果是win10win11可以直接在搜索栏里搜索）。这个是vs2019自带的终端。
+
+
+
+##### 4.安装！！！
+
+终于到这一步了。
+
+首先依次在终端窗口输入下面的命令：
+
+```shell
+set DISTUTILS_USE_SDK=1
+set PYTORCH3D_NO_NINJA=1
+```
+
+然后再输入这个对pytorch3d进行编译安装：
+
+```shell
+python setup.py install
+```
+
+我记得当时终端里跑了好多好多行代码，应该是在一行行编译，大概过了个十五分钟，就成功了。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

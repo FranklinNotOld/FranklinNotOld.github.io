@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>An import argparse Error · Yongkang Li</title>
+<meta name="description" content="Translated, the error message means a circular import of argparse. After checking for a long time, I found that it was because I had also named my own…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Troubleshooting</span><span data-l="cn">报错解决</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">An import argparse Error</span><span data-l="cn">import argparse 报错</span></h1>
+    <div class="meta"><span data-l="en">1 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><span></span><a class="pn glass" href="fix-unpack.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">ValueError: too many values to unpack</span><span data-l="cn">ValueError: too many values to unpack</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+#### Error:
+
+![QQ图片20221006184244](media/fix-argparse/图像-QQ图片20221006184244.png)
+
+The error message reads as follows:
+
+```python
+AttributeError: partially initialized module 'argparse' has no attribute 'ArgumentParser' (most likely due to a circular import)
+```
+
+##### Cause of the error:
+
+First, the source code:
+
+```python
+import argparse
+
+parser = argparse.ArgumentParser(description='Demo of argparse')
+
+parser.add_argument('--epochs', type=int, default=30)
+parser.add_argument('--batch', type=int, default=4)
+
+args = parser.parse_args()
+print(args)
+epochs = args.epochs
+batch = args.batch
+print('show {}  {}'.format(epochs, batch))
+```
+
+Translated, the error message means a circular import of argparse. After checking for a long time, I found that it was because I had also named my own file argparse, the same as the argparse module in import argparse. As a result, this python file imported itself instead of the argparse module, which caused the error.
+
+##### Solution:
+
+Rename the file to something else (do not use the same name as a keyword, an imported module or a package; I renamed it to argparse_test)
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+#### 报错：
+
+![QQ图片20221006184244](media/fix-argparse/图像-QQ图片20221006184244.png)
+
+报错信息显示如下：
+
+```python
+AttributeError: partially initialized module 'argparse' has no attribute 'ArgumentParser' (most likely due to a circular import)
+```
+
+##### 错误原因：
+
+先附上源代码：
+
+```python
+import argparse
+
+parser = argparse.ArgumentParser(description='Demo of argparse')
+
+parser.add_argument('--epochs', type=int, default=30)
+parser.add_argument('--batch', type=int, default=4)
+
+args = parser.parse_args()
+print(args)
+epochs = args.epochs
+batch = args.batch
+print('show {}  {}'.format(epochs, batch))
+```
+
+翻译报错信息的意思是循环引用argparse，检查了许久发现是因为自己的文件名也命名成了argparse，和import argparse的argparse模块名一样。这样就导致了这个python文件自己导入自己而不是导入的argparse模块，所以发生了报错。
+
+##### 解决方法：
+
+将文件名修改成别的名字（不要和关键字、导入的模块或者包重名，我修改成了argparse_test
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

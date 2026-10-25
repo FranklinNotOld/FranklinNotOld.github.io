@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Understanding Output Units · Yongkang Li</title>
+<meta name="description" content="In this section, we assume that the feedforward network provides a set of hidden features defined by h = f(x; θ). The role of the output layer is then…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Deep learning fundamentals</span><span data-l="cn">深度学习基础</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Understanding Output Units</span><span data-l="cn">理解输出单元</span></h1>
+    <div class="meta"><span data-l="en">5 min read</span><span data-l="cn">约 4 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="dl-convolution.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">The Convolution Operation</span><span data-l="cn">卷积运算</span></span></a><a class="pn glass" href="dl-distillation.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Knowledge Distillation</span><span data-l="cn">知识蒸馏</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+In this section, we assume that the feedforward network provides a set of hidden features defined by $h = f(x; θ)$. The role of the output layer is then to apply some additional transformation to these features to complete the task the whole network must accomplish.
+
+1 Linear Output Units
+One simple kind of output unit is based on an affine transformation with no nonlinearity. These units are often simply called linear units.
+Given features  $h$, a layer of linear output units produces a vector  $\hat{\boldsymbol{y}}=\boldsymbol{W}^{\top} \boldsymbol{h}+\boldsymbol{b}$.
+
+Property 1: linear output layers are often used to produce the mean of a conditional Gaussian distribution
+
+$p(\boldsymbol{y} \mid \boldsymbol{x})=\mathcal{N}(\boldsymbol{y} ; \hat{\boldsymbol{y}}, \boldsymbol{I})$
+
+Q: What does "used to produce the mean of a conditional Gaussian distribution" mean?
+A: This sentence sounds a bit awkward; here is how I understand it.
+If we feed $x$ into a unit and get the output $\hat{y} $, then we consider $p(y|x) $ to follow a Gaussian distribution with mean $\hat{y} $ and standard deviation I.
+
+A perceptron has a problem: when the dataset it faces is not linearly separable, it may fail to converge, which means we can never finish training the perceptron. To solve this problem, we replace the perceptron's step function with a differentiable linear function, and such a perceptron is called a linear unit. When faced with a linearly non-separable dataset, a linear unit converges to a best approximation.
+
+The difference between a linear unit and a perceptron lies in the activation function
+
+Property 2: suited to predicting continuous values (regression problems)
+
+After the activation function is replaced, the linear unit returns a real value rather than a 0/1 classification. Therefore linear units are used to solve regression problems rather than classification problems.
+
+Property 3: under a Gaussian distribution, maximizing the likelihood (minimizing the negative log-likelihood) is equivalent to minimizing the mean squared error, so linear output units can use the mean squared error loss function
+
+$L(y, \hat{y})=\frac{1}{N} \sum \limits _{n=1}^{N}\left\|\hat{y}^{(n)}-y^{(n)}\right\|^{2}$
+
+where $y^{(n)}$ is the true value, $\hat{y}^{(n)}$ is the predicted value, and $N$  is the number of samples. 
+See Section 5.5.1 of the *Deep Learning* "Flower Book"
+
+2 Sigmoid Units
+Property 1: sigmoid output units are commonly used to output a Bernoulli distribution.
+
+Sigmoid unit
+
+$\hat{y}=\sigma\left(\boldsymbol{w}^{\mathrm{T}} \boldsymbol{h}+b\right)=\frac{1}{1+\exp \left(-\boldsymbol{w}^{\mathrm{T}} \boldsymbol{h}-b\right)}$
+
+Bernoulli distribution: the distribution of a single binary random variable
+
+$$\begin{array}{l} P(X=1)=\phi \\ P(X=0)=1-\phi \\ P(X=a)=\phi^{a}(a-\phi)^{(1-a)} \\ E[x]=\phi \\\operatorname{Var}(x)=\phi(1-\phi) \end{array}$$
+
+Property 2: suited to binary classification problems.
+
+Many tasks require predicting the value of a binary variable $y$. Classification problems with two classes can be reduced to this form.
+In this case the maximum likelihood approach is to define a Bernoulli distribution over $y$  conditioned on $x$ .
+
+Q: What is "the Bernoulli distribution of $y$ conditioned on $x$"?
+A: 
+$$
+\begin{array}{r} P(y \mid x) \sim \phi(y \mid x ; p) \\ P(y=1 \mid x)=p \\ P(y=0 \mid x)=1-p \end{array}
+$$
+A Bernoulli distribution is defined by a single parameter. The neural network only needs to predict P (y = 1 | x). For this number to be a valid probability, it must lie in the interval [0, 1].
+Satisfying this constraint requires some careful design. Suppose we intend to use a linear unit and clip it with a threshold so that it becomes a valid probability:
+
+$P(y=1 \mid \boldsymbol{x})=\max \left\{0, \min \left\{1, \boldsymbol{w}^{\top} \boldsymbol{h}+b\right\}\right\}$
+
+This does define a valid conditional probability distribution, but we cannot train it efficiently with gradient descent. Whenever $\boldsymbol{w}^{\top} \boldsymbol{h}+b$ lies outside the unit interval, the gradient of the model's output with respect to its parameters will be 0. A gradient of 0 is typically problematic, because the learning algorithm no longer has a guide for how to improve the corresponding parameters.
+
+Instead, it is better to use a different approach that ensures there is always a strong gradient whenever the model gives a wrong answer. This approach is based on using sigmoid output units combined with maximum likelihood.
+We can think of a $ \operatorname{sigmoid} $  output unit as having two parts. First, it uses a linear layer to compute  $z=\boldsymbol{w}^{\top} \boldsymbol{h}+b_{\circ} $ Next, it uses the sigmoid activation function to convert  $z$  into a probability.
+We temporarily ignore the dependence on  $\boldsymbol{x}$  and discuss only how to use the value of  $z$  to define a probability distribution over  $y $. The sigmoid can be derived by constructing an unnormalized (not summing to 1) probability distribution  $\tilde{P}(y)$ .
+
+Q: What is an "unnormalized (not summing to 1) probability distribution"?
+
+A: $0 \leq \tilde{P}(y) \leq 1, \ \text{but not necessarily}\  \tilde{P}(y=0)+\tilde{P}(y=1)=1$
+
+We can then divide by an appropriate constant to obtain a valid probability distribution. If we assume that the unnormalized log probability is linear in  $y$   and  $z $ , we can exponentiate it to obtain the unnormalized probability.
+
+We then normalize it, and find that this yields a Bernoulli distribution controlled by a sigmoid transformation of  $z$ :
+
+$\begin{aligned} \log \tilde{P}(y) &=y z \\ \tilde{P}(y) &=\exp (y z) \\ P(y) &=\frac{\exp (y z)}{\sum_{y^{\prime}=0}^{1} \exp \left(y^{\prime} z\right)} \\ P(y) &=\sigma((2 y-1) z) \end{aligned}$
+
+$\begin{array}{l} \tilde{P}(y) \text { is the unnormalized probability distribution. }\\ P(y) \text { is the normalized Bernoulli distribution. }\end{array}$
+
+Probability distributions based on exponentiation and normalization are common in the statistical modeling literature. The variable zz used to define such a distribution over a binary variable is called a logit.
+
+Property 3: sigmoid output units can use the cross-entropy loss function
+$L(y, \hat{y})=-\frac{1}{N} \sum \limits _{n=1}^{N}\left(y^{(n)} \log \hat{y}^{(n)}+\left(1-y^{(n)}\right) \log \left(1-\hat{y}^{(n)}\right)\right)$
+where $y^{(n)}$  is the true label, $\hat{y}^{(n)}$ is the predicted label, and $ N$ is the number of samples. 
+
+3 Softmax Units
+Whenever we want to represent the distribution of a discrete random variable with n possible values, we can use the softmax function. It can be viewed as an extension of the sigmoid function, where the sigmoid function is used to represent the distribution of a binary variable. 
+The softmax function is most often used as the output of a classifier, to represent the probability distribution over n different classes. More rarely, the softmax function can be used inside the model, for example if we want the model to choose among n different options for some internal variable. 
+
+Property 1: softmax output units are commonly used to output a Multinoulli distribution
+
+Property 2: suited to multiclass classification problems
+
+Property 3: softmax output units can use the cross-entropy loss function
+
+ 
+
+Seek the conditions at the cause, strive at the result
+-----------------------------------
+Output Units
+https://blog.51cto.com/u_15127518/3521110
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+在本节中，我们假设前馈网络提供了一组定义为 $h = f(x; θ)$ 的隐藏特征。输出层的作用是随后对这些特征进行一些额外的变换来完成整个网络必须完成的任务。
+
+1 线性输出单元
+　　一种简单的输出单元是基于仿射变换的输出单元，仿射变换不具有非线性。这些单元往往被直接称为线性单元。
+　　给定特征  $h$，线性输出单元层产生一个向量  $\hat{\boldsymbol{y}}=\boldsymbol{W}^{\top} \boldsymbol{h}+\boldsymbol{b}$。
+
+　　特点1：线性输出层经常被用来产生条件高斯分布的均值
+
+　　　　$p(\boldsymbol{y} \mid \boldsymbol{x})=\mathcal{N}(\boldsymbol{y} ; \hat{\boldsymbol{y}}, \boldsymbol{I})$
+
+　　问：什么叫 “被用来产生条件高斯分布的均值”？
+　　答：这句话看起来有点拗口，我是这么理解的。
+　　如果向 unit 输入 $x$，得到输出 $\hat{y} $。那么认为 $p(y|x) $ 符合均值为 $\hat{y} $ 标准差为I的高斯分布。
+
+　　感知器有一个问题，当面对的数据集不是线性可分的时候，可能无法收敛，这意味着我们永远也无法完成一个感知器的训练。为解决这个问题，使用一个可导的线性函数来替代感知器的阶跃函数，这种感知器就叫做线性单元。线性单元在面对线性不可分的数据集时，会收敛到一个最佳的近似上。
+
+　　线性单元和感知器的区别就是在激活函数
+
+　　特点2：适合连续值预测（回归）问题
+
+　　替换了激活函数之后，线性单元将返回一个实数值而不是 0,1 分类。因此线性单元用来解决回归问题而不是分类问题。
+
+　　特点3：基于高斯分布，最大化似然（最小化负对数似然）等价于最小化均方误差，因此线性输出单元可采用均方误差损失函数
+
+　　　　$L(y, \hat{y})=\frac{1}{N} \sum \limits _{n=1}^{N}\left\|\hat{y}^{(n)}-y^{(n)}\right\|^{2}$
+
+　　其中 $y^{(n)}$ 为真实值, $\hat{y}^{(n)}$ 为预测值， $N$  为样本数。 
+　　参考花书5.5.1
+
+2 Sigmoid单元
+　　特点1：Sigmoid输出单元常用于输出Bernoulli分布。
+
+　　Sigmoid 单元
+
+　　　　$\hat{y}=\sigma\left(\boldsymbol{w}^{\mathrm{T}} \boldsymbol{h}+b\right)=\frac{1}{1+\exp \left(-\boldsymbol{w}^{\mathrm{T}} \boldsymbol{h}-b\right)}$
+
+　　Bernoulli分布：单个二值随机变量的分布
+
+　　　　$$\begin{array}{l} P(X=1)=\phi \\ P(X=0)=1-\phi \\ P(X=a)=\phi^{a}(a-\phi)^{(1-a)} \\ E[x]=\phi \\\operatorname{Var}(x)=\phi(1-\phi) \end{array}$$
+
+　　特点2：适合二分类问题。
+
+　　许多任务需要预测二值型变量 $y$ 的值。具有两个类的分类问题可以归结为这种形式。
+　　此时最大似然的方法是定义 $y$  在 $x$  条件下的 Bernoulli 分布。
+
+　　问：什么是 “ $y$ 在 $x$ 条件下的 Bernoulli分布”？
+　　答： 
+$$
+\begin{array}{r} P(y \mid x) \sim \phi(y \mid x ; p) \\ P(y=1 \mid x)=p \\ P(y=0 \mid x)=1-p \end{array}
+$$
+　　Bernoulli 分布仅需单个参数来定义。神经网络只需要预测 P (y = 1 | x) 即可。 为了使这个数是有效的概率，它必须处在区间 [0, 1] 中。
+　　为满足该约束条件需要一些细致的设计工作。假设我们打算使用线性单元，并 且通过阈值来限制它成为一个有效的概率：
+
+　　　　$P(y=1 \mid \boldsymbol{x})=\max \left\{0, \min \left\{1, \boldsymbol{w}^{\top} \boldsymbol{h}+b\right\}\right\}$
+
+　　这的确定义了一个有效的条件概率分布，但我们无法使用梯度下降来高效地训练它。 当 $\boldsymbol{w}^{\top} \boldsymbol{h}+b$ 处于单位区间外时，模型的输出对其参数的梯度都将为 0。梯度为 0 通 常是有问题的，因为学习算法对于如何改善相应的参数不再具有指导意义。
+
+　　相反，最好是使用一种新的方法来保证无论何时模型给出了错误的答案时，总能有一个较大的梯度。这种方法是基于使用 sigmoid 输出单元结合最大似然来实现的。
+　　我们可以认为 $ \operatorname{sigmoid} $  输出单元具有两个部分。首先，它使用一个线性层来计 算  $z=\boldsymbol{w}^{\top} \boldsymbol{h}+b_{\circ} $ 接着，它使用 sigmoid 激活函数将  $z$  转化成概率。
+　　我们暂时忽略对于  $\boldsymbol{x}$  的依赖性，只讨论如何用  $z$  的值来定义  $y $ 的概率分布。 sigmoid 可以通过构造一个非归一化（和不为 1 ) 的概率分布  $\tilde{P}(y)$  来得到。
+
+　　问：什么是“非归一化（和不为1）的概率分布”？
+
+　　答：$0 \leq \tilde{P}(y) \leq 1, 但不保证 \tilde{P}(y=0)+\tilde{P}(y=1)=1$
+
+　　我们可以随后除以一个合适的常数来得到有效的概率分布。如果我们假定非归一化的对数概率对  $y$   和  $z $  是线性的，可以对它取指数来得到非归一化的概率。
+
+　　我们然后对它归 一化，可以发现这服从  Bernoulli  分布，该分布受  $z$   的  sigmoid  变换控制：
+
+　　　　$\begin{aligned} \log \tilde{P}(y) &=y z \\ \tilde{P}(y) &=\exp (y z) \\ P(y) &=\frac{\exp (y z)}{\sum_{y^{\prime}=0}^{1} \exp \left(y^{\prime} z\right)} \\ P(y) &=\sigma((2 y-1) z) \end{aligned}$
+
+　　$\begin{array}{l} \tilde{P}(y) \text { 是非归一化的概率分布。 }\\ P(y) \text { 是归一化后的Bernoulli分布。 }\end{array}$
+
+ 　　基于指数和归一化的概率分布在统计建模的文献中很常见。 用于定义这种二值型变量分布的变量zz被称为分对数。
+
+　　特点3：Sigmoid输出单元可采用交叉熵损失函数
+　　　　$L(y, \hat{y})=-\frac{1}{N} \sum \limits _{n=1}^{N}\left(y^{(n)} \log \hat{y}^{(n)}+\left(1-y^{(n)}\right) \log \left(1-\hat{y}^{(n)}\right)\right)$
+　　其中 $y^{(n)}$  为真实标签, $\hat{y}^{(n)}$ 为预测标签， $ N$ 为样本数。 
+
+3 Softmax单元
+　　任何时候当我们想要表示一个具有 n 个可能取值的离散型随机变量的分布时， 我们都可以使用 softmax 函数。它可以看作是 sigmoid 函数的扩展，其中 sigmoid 函 数用来表示二值型变量的分布。 
+　　softmax 函数最常用作分类器的输出，来表示 n 个不同类上的概率分布。比较 少见的是，softmax 函数可以在模型内部使用，例如如果我们想要在某个内部变量的 n 个不同选项中进行选择。 
+
+　　特点1：Softmax输出单元常用于输出Multinoulli分布
+
+　　特点2：适合多分类问题
+
+　　特点3：Softmax输出单元可采用交叉熵损失函数
+
+ 
+
+因上求缘，果上努力
+-----------------------------------
+输出单元
+https://blog.51cto.com/u_15127518/3521110
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

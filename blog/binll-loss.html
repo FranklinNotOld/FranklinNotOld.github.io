@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bivariate Gaussian NLL Loss · Yongkang Li</title>
+<meta name="description" content="BiNLL Loss stands for Bivariate Gaussian Negative Log-Likelihood Loss. In the blog post on the single variable Gaussian negative log-likelihood loss,…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Deep Learning from Zero to Kang</span><span data-l="cn">Deep Learning from Zero to Kang</span></span><i>/</i><span><span data-l="en">Loss functions</span><span data-l="cn">损失函数</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Bivariate Gaussian NLL Loss</span><span data-l="cn">双变量高斯负对数似然损失</span></h1>
+    <div class="meta"><span data-l="en">1 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="nll-loss.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">NLL Loss</span><span data-l="cn">NLL 损失函数</span></span></a><a class="pn glass" href="nll-kl-ce.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">NLLLoss, KLDivLoss and CrossEntropyLoss</span><span data-l="cn">NLLLoss、KLDivLoss 与 CrossEntropyLoss 对比</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+
+
+BiNLL Loss stands for **Bivariate Gaussian Negative Log-Likelihood Loss**. In the blog post on the single variable Gaussian negative log-likelihood loss, we derived NLL Loss by taking the logarithm of a univariate normal distribution. Similarly, BiNLL Loss is derived by taking the logarithm of the bivariate normal distribution function.
+
+The bivariate normal distribution function is as follows:
+$$
+f(x, y) = \frac{1}{2\pi \sigma_x \sigma_y \sqrt{1 - \rho^2}} \exp\left\{ -\frac{1}{2(1 - \rho^2)} \left[ \left(\frac{x - \mu_x}{\sigma_x}\right)^2 - 2 \rho \frac{x - \mu_x}{\sigma_x} \cdot \frac{y - \mu_y}{\sigma_y} + \left(\frac{y - \mu_y}{\sigma_y}\right)^2 \right] \right\}
+$$
+
+Where:
+- $ \sigma_x $ and $ \sigma_y $ are the variances of $ x $ and $ y $, respectively.
+- $ \mu_x $ and $ \mu_y $ are the means of $ x $ and $ y $, respectively.
+- $ \rho $ is the correlation coefficient, given by:
+    $$
+    \rho = \frac{\text{Cov}(X, Y)}{\sigma_X \cdot \sigma_Y},
+    $$
+- $ \text{Cov}(X, Y) $ is the covariance between $ X $ and $ Y $, calculated as:
+    $$
+    \text{Cov}(X, Y) = E[(X - E[X])(Y - E[Y])].
+    $$
+- $ E[X] $ and $ E[Y] $ are the means (expectations) of $ X $ and $ Y $, respectively.
+- $ E[(X - E[X])(Y - E[Y])] $ is the expected value of the product of the deviations of $ X $ and $ Y $ from their means.
+
+Taking the logarithm of the bivariate normal distribution function yields BiNLL Loss:
+$$
+\log f(x, y) = -\log 2\pi - \log \sigma_x \sigma_y \sqrt{1 - \rho^2} - \frac{1}{2(1 - \rho^2)} \left[ \left(\frac{x - \mu_x}{\sigma_x}\right)^2 - 2 \rho \frac{x - \mu_x}{\sigma_x} \cdot \frac{y - \mu_y}{\sigma_y} + \left(\frac{y - \mu_y}{\sigma_y}\right)^2 \right]
+$$
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+BiNLL Loss是**Bivariate Gaussian Negative Log-Likelihood Loss**的缩写。在单变量高斯负对数似然损失函数那篇博客中，我们对一元正态分布取对数得到了NLL Loss，类似的，双变量高斯负对数似然损失函数可以由对二元正态分布函数取对数而得到。我们知道，二元正态分布函数如下：
+$$
+f(x,y)=\frac{1}{2\pi \sigma_x \sigma_y \sqrt{1-\rho^2}}exp\left\{-\frac{1}{2(1-\rho^2)}\left[\left(\frac{x-\mu_x}{\sigma_x}\right)^2-2\rho \frac{x-\mu_x}{\sigma_x}\frac{y-\mu_y}{\sigma_y}+\left(\frac{y-\mu_y}{\sigma_y}\right)^2 \right]\right \}
+$$
+其中$\sigma_x,\sigma_y$分别是$x,y$的方差，$\mu_x,\mu_y$分别是$x,y$的均值，$\rho$是相关系数，其表达式为：
+$$
+\rho = \frac{\text{Cov}(X, Y)}{\sigma_X \cdot \sigma_Y},
+$$
+
+其中：$ \text{Cov}(X, Y) $ 是 $ X $ 和 $ Y $​ 之间的协方差（covariance）。协方差的表达式为：
+$$
+\text{Cov}(X, Y) = E[(X - E[X])(Y - E[Y])],
+$$
+
+其中：
+
+- $E[X]$ 和 $E[Y]$ 分别是随机变量 $X$ 和 $Y$ 的期望（均值）。
+- $E[(X - E[X])(Y - E[Y])] $ 表示 $X$ 和 $Y$ 偏离各自期望的乘积的期望。
+
+然后对二元正态分布函数取对数得到BiNLL Loss：
+$$
+logf(x,y)=-log2\pi-log\sigma_x\sigma_y\sqrt{1-\rho^2}-\frac{1}{2(1-\rho^2)}\left[\left(\frac{x-\mu_x}{\sigma_x}\right)^2-2\rho \frac{x-\mu_x}{\sigma_x}\frac{y-\mu_y}{\sigma_y}+\left(\frac{y-\mu_y}{\sigma_y}\right)^2 \right]
+$$
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

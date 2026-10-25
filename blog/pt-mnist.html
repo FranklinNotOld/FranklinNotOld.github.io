@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loading MNIST · Yongkang Li</title>
+<meta name="description" content="MNIST is a simple machine vision database, a scaled-down version of NIST, the dataset from the (U.S.) National Institute of Standards and Technology.…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">PyTorch and tools</span><span data-l="cn">PyTorch 与工具</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Loading MNIST</span><span data-l="cn">加载 MNIST</span></h1>
+    <div class="meta"><span data-l="en">1 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="pt-transforms.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">torchvision.transforms</span><span data-l="cn">torchvision.transforms</span></span></a><a class="pn glass" href="pt-argparse.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">The argparse Module</span><span data-l="cn">argparse 模块</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+### Introduction
+
+MNIST is a simple machine vision database, a scaled-down version of NIST, the dataset from the (U.S.) National Institute of Standards and Technology. The training and test sets consist of digits handwritten by 250 different people, half of them high school students and half of them Census Bureau employees.
+
+**Source**: http://yann.lecun.com/exdb/mnist/
+
+The MNIST dataset is divided into three parts: 55,000 training samples (mnist.train), 10,000 test samples (mnist.test), and 5,000 validation samples (mnist.validation). Each sample consists of one image (image) and a corresponding label (label). Each image is made up of 28×28 pixels and can be stored as a one-dimensional array of 784 elements, whose content is the grayscale value of the image at each pixel.
+
+### Code Format
+
+```python
+datasets.MNIST(
+	root,
+	train=True,
+	transform=None,
+	target_transform=None,
+	download=False,
+)
+```
+
+**root:** the original location of the dataset
+
+**train:** `train = True` creates the dataset from training.py, and `train = False` creates it from test.py
+
+**transform:** a transform function that takes a PIL image and returns a transformed version of it (an image processing function)
+
+**target_transform:** a transform function that takes the target and transforms it (a method for modifying labels)
+
+**download:** `download = True` downloads the dataset from the internet and stores it in the root directory; if the dataset has already been downloaded, it will not be downloaded again
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+### 基本介绍
+
+​		MNIST是一个简单的机器视觉数据库，来自于美国国家标准与技术研究所的数据集NIST的缩小版。训练集和测试集由来自250个不同人手写的数字构成，其中高中学生和人口普查局工作人员各占一半
+
+**获取来源**：http://yann.lecun.com/exdb/mnist/
+
+​		MNIST数据集分成三个部分，包括55000张训练数据集(mnist.train)、10000张测试数据集(mnist.test)、5000张验证数据集(mnist.validation)组成，每张数据集由一张图像(image)和一个对应的标签(label)组成。其每个图像是由28×28的像素组成，可以用一个有784个元素的一维数组储存，存储的内容就是图像在这个像素点的灰度值。
+
+### 代码格式
+
+```python
+datasets.MNIST(
+	root,
+	train=True,
+	transform=None,
+	target_transform=None,
+	download=False,
+)
+```
+
+**root：**数据集的原地址
+
+**train：**`train = True`则从training.py中创建数据集，`train = False` 则从test.py创建数据集
+
+**transform：**接收PIL图片并返回转换后版本图片的转换函数(图像处理函数)
+
+**target_transform：**接收PIL接收目标并对其进行变换的转换函数(修改标签方法)
+
+**download：**`download = True`则从互联网下载数据集并存放在根目录中，如果数据集已经下载则不会再次下载
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decision Trees · Yongkang Li</title>
+<meta name="description" content="Information entropy is the average (valuable) information of a message once its redundant information has been excluded.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Machine learning basics</span><span data-l="cn">机器学习基础</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Decision Trees</span><span data-l="cn">决策树</span></h1>
+    <div class="meta"><span data-l="en">15 min read</span><span data-l="cn">约 11 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="ml-naive-bayes.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Naive Bayes</span><span data-l="cn">朴素贝叶斯</span></span></a><a class="pn glass" href="ml-svm.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Support Vector Machines (SVM)</span><span data-l="cn">支持向量机（SVM）</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+### Information Entropy
+
+##### References:
+
+**·**    [Zhihu: Yi Zhen](https://zhuanlan.zhihu.com/p/26486223)
+
+**·**    [Zhihu: Lin Jun](https://zhuanlan.zhihu.com/p/245617910)
+
+**·**    [Zhihu: Xu Tie - Cruiser Technology](https://zhuanlan.zhihu.com/p/22097796)
+
+#### Concept of Information Entropy:
+
+Information entropy is the average (valuable) information of a message once its redundant information has been excluded.
+
+That is, information is what is used to remove a person's uncertainty about something: removing entropy = gaining information
+
+> Understanding:
+>
+> In chemistry we introduced the concept of entropy to describe the degree of disorder of a system or of molecules. If we extend this concept and understand entropy as describing the degree of disorder of all kinds of things, we can likewise apply it in information science.
+>
+> We know that information is a very complex and uncertain concept. It is hard for us to measure how much information several thousand words or a picture can convey to us, let alone how much of it is useful information. Useful information usually has to be measured according to the actual situation, different people and places, and other complex factors. Information entropy defines exactly such an abstract concept for us.
+
+#### Information Entropy Formula:
+
+<img src="media/ml-decision-tree/图片记录-image-20220617203129286.png" alt="image-20220617203129286" style="zoom: 67%;" />
+
+> Understanding:
+>
+> But through a great deal of experiments and summarizing, **people have found that the less probable an event is, the more valuable it is when it happens and the more useful information it carries, while the more probable an event is, the less useful information it carries when it happens.** For example, it is not surprising at all that little Kangkang had steamed buns (mantou) for dinner on the evening of November 26, because he eats them often; but if one day he stayed in his dorm playing games all day long, anyone who heard about it might feel the sky was falling: how is that possible??!
+
+So the information content of a specific event should decrease as its probability increases.
+
+Suppose events x and y are unrelated; then the total information obtained from the two events, h(xy), is
+$$
+h(xy)=h(x)+h(y)
+$$
+Then the probability that they occur together, P(xy), is
+$$
+P(xy)=P(x)·P(y)
+$$
+And we also know that one of the properties of the logarithm is:
+
+<img src="media/ml-decision-tree/图片记录-image-20220617205624517.png" alt="image-20220617205624517" style="zoom:67%;" />
+
+We can guess that h(x) and p(x) may have the following kind of relationship (yes, your gaokao math multiple-choice instinct):
+
+<img src="media/ml-decision-tree/图片记录-image-20220617205903041.png" alt="image-20220617205903041" style="zoom:67%;" />
+
+> (1) Here n is generally taken to be 2, based on traditional information theory;
+
+> (2) Since the range of a probability is **[0,1]**, a negative sign is added in front of the log function to make sure the information content is positive.
+
+We can do a quick check:
+
+<img src="media/ml-decision-tree/图片记录-image-20220617210243064.png" alt="image-20220617210243064" style="zoom:67%;" />
+
+No problem.
+
+For event x, whose probability is P(x), the expected value of its useful information is:
+
+<img src="media/ml-decision-tree/图片记录-image-20220617211106488.png" alt="image-20220617211106488" style="zoom:67%;" />
+
+And for a larger event A, event x may be just one part of it, just as buying ten Snickers bars is only a small part of going out to buy snacks. Then the total expected value of useful information is:
+
+<img src="media/ml-decision-tree/图片记录-image-20220617203129286.png" alt="image-20220617203129286" style="zoom: 67%;" />
+
+That is just taking a sum of the expression above.
+
+And this gives us the formula presented at the beginning.
+
+<font color='red'>From our derivation it is not hard to see that **the more complex a system is and the more kinds of outcomes appear, the larger its information entropy and the lower its purity**. This is not hard to understand: when there are many kinds (many events), the probability of each kind is very small, and after passing through the log function and adding a negative sign, it becomes very large</font>
+
+### Conditional Entropy
+
+#### Concept of Conditional Entropy:
+
+It is defined as the mathematical expectation, over X, of the entropy of the conditional probability distribution of Y given X. The mathematical expression is **H(Y|X)**
+
+> Understanding:
+>
+> Classify the original variable by a new variable, compute a small information entropy (using conditional probability) within each small class, and then take the average.
+>
+> This can be used to judge whether this classification criterion is effective, that is, whether the uncertainty of the information has decreased (whether the purity has increased)
+>
+> Understanding it from the perspective of a tree is more vivid, but requires some background on trees:
+>
+> If we understand information entropy as how useful the information of a decision tree is, its condition is the different conditions that the root splits into. Then conditional entropy can be understood as how useful the information of one subtree of this decision tree is, and its condition is the different conditions that the subtree's root node splits into, that is, one child node.
+
+<img src="media/ml-decision-tree/图片记录-image-20220618105254714.png" alt="image-20220618105254714" style="zoom: 50%;" /> 
+
+#### Conditional Entropy Formula:
+
+<img src="media/ml-decision-tree/图片记录-image-20220618100928578.png" alt="image-20220618100928578" style="zoom:67%;" />
+
+> Understanding:
+>
+> It is just replacing the probability in information entropy with a conditional probability, and then computing the expected value under that conditional probability. In this way we can find the information entropy (conditional entropy) under the influence of a certain event
+
+We previously learned the formula for the conditional probability of event Y occurring given event X:
+
+<img src="media/ml-decision-tree/图片记录-image-20220617222848034.png" alt="image-20220617222848034" style="zoom:67%;" />
+
+We can use this to help us understand the concept of conditional entropy (but the mathematical expressions are indeed different; it only helps us understand the "condition")
+
+Define the conditional entropy of Y, **H(Y|X)**. This conditional entropy is also a large event that contains many small events. By analogy with the concept of information entropy, we get:
+
+<img src="media/ml-decision-tree/图片记录-image-20220618100928578.png" alt="image-20220618100928578" style="zoom:67%;" />
+
+Here **H(Y|X=xi)** means the information entropy under event xi. Substituting in the information entropy formula,
+
+
+
+According to the conditional probability formula, p(x)*p(y|x)=p(xy), substituting gives
+
+<img src="media/ml-decision-tree/图片记录-image-20220618101928430.png" alt="image-20220618101928430" style="zoom:67%;" />
+
+Finally we have reached the core of decision trees.
+
+The idea behind constructing a decision tree is that as the depth of the tree increases, the entropy of the nodes drops rapidly (there is more and more useful information, and the separation becomes more and more precise). And we hope to get a decision tree whose entropy drops fastest, that is, the decision tree with the smallest depth (height). Because the faster the entropy drops, the smaller the depth of the tree can be, which makes the algorithm simpler and also reduces the possibility of overfitting.
+
+To construct such a decision tree, we will introduce the following algorithms, which help us build optimal decision trees.
+
+The algorithms introduced below are information gain, information gain ratio, and the Gini index. Using these three to construct loss functions can help us build better decision trees
+
+> Information gain — ID3 decision tree
+
+> Gain ratio — C4.5 decision tree
+
+> Gini index — CART decision tree
+
+### Information Gain
+
+#### Concept of Information Gain:
+
+Information gain refers to how much useful information a feature can bring to a classification system. The more information it brings, the more important the feature is, and the larger the information gain.
+
+#### Information Gain Formula:
+
+<img src="media/ml-decision-tree/图片记录-image-20220618110745844.png" alt="image-20220618110745844" style="zoom:67%;" />
+
+That is, **conditional entropy minus information entropy**.
+
+For multiple ways of classifying, we compute the information gain of each by the algorithm and choose the way with the largest gain as the criterion for the next split in the decision tree, that is, the criterion with the best classification effect. Classifying this way makes the information in each class purer.
+
+#### Information Gain Ratio:
+
+##### Concept of Information Gain Ratio:
+
+The information gain ratio is the ratio of the information gain to the information entropy.
+
+> Understanding:
+>
+> In real life, many absolute quantities do not mean much. For example, suppose you want to complain about how hard you worked last semester, and you say: "I prepared for a full five days, my score went up by 10 points! My rank went up by 2 places!" But the problem is that I have no idea whether you went from a score of 1 to 11 and your rank went from 32651st in the city to 32649th, or from 739 to 749 and from third place to first. At least in my view, the former is more likely, and don't blame me if I'm wronging you; you're the one who gave me only an absolute number.
+>
+> But if I knew your rank rate (suppose we define such a concept), and you told me your rank rate is 2/32651, or 2/3, then I would have a preliminary grasp of how much you progressed. Although 2/3 could mean rising from third to first, or from 150th to 50th, in either case I can roughly tell your progress was really big (after all, going from third to first is really hard; the higher the rank, the harder it is to move up). [Assume the rank here is an overall ranking, and ignore the issue of chance.]
+>
+> The information gain ratio works in the same way. When we compare only the information gain, an absolute quantity, its being large or small does not mean much, so defining it with a ratio is more reasonable.
+
+##### Information Gain Ratio Formula:
+
+<img src="media/ml-decision-tree/图片记录-image-20220618112129528.png" alt="image-20220618112129528" style="zoom:67%;" />
+
+### Gini Index
+
+#### Concept of the Gini Index:
+
+The Gini index expresses the uncertainty of a set; the larger the Gini index, the greater the uncertainty of the samples
+
+#### Gini Index Formula:
+
+<img src="media/ml-decision-tree/图片记录-image-20220617215748695.png" alt="image-20220617215748695" style="zoom:67%;" />
+
+It can be understood as transforming **-log(P(x))** in the information entropy into **1-P(x)**, and then summing both sides of the equation:
+
+<img src="media/ml-decision-tree/图片记录-image-20220617220230141.png" alt="image-20220617220230141" style="zoom:67%;" />
+
+> Understanding:
+>
+> From the Gini index formula it is not hard to see that the more sub-events an event contains (buying an especially wide variety of snacks), the smaller the probability of each one occurring, that is, the smaller P(x), and after squaring, this number less than 1 only becomes smaller, while the Gini index becomes larger. Using the Gini index is more intuitive than using the information entropy formula.
+
+### Main Advantages and Disadvantages of Decision Trees:
+
+##### Advantages:
+
+1. Can be used for both classification and regression tasks, and can handle multi-class problems;
+
+2. No normalization needed, which reduces the data preprocessing work;
+
+3. Automatically selects variables, and the decision process is easy to interpret and visualize;
+
+4. Suited to high-dimensional data.
+
+##### Disadvantages:
+
+1. Unstable, with poor generalization performance;
+
+2. Does not consider correlations between variables; each selection considers only one variable;
+
+3. Can only split the data linearly;
+
+4. Essentially a greedy algorithm (it may not find the optimal tree).
+
+### Pruning
+
+#### Basic Concepts
+
+According to the principle of decision trees, if the breadth and depth of the tree are too large, there are too many classification criteria, and there are too many leaf nodes, overfitting easily occurs. Here is an example:
+<img src="media/ml-decision-tree/图片记录-image-20220620000758430.png" alt="image-20220620000758430" style="zoom: 45%;" /> 
+
+Suppose this is a survey about whether people choose to take a job, where the blue numbers indicate the number of people meeting the corresponding conditions. And we have classified all the cases completely.
+
+But now another sample appears, with the following situation: a monthly salary of 3000-5000 yuan, 5 working days a week, 5-10 days of annual leave, no year-end bonus, yet he chose to accept the job, that is, "Yes". This sample cannot be predicted correctly by the decision tree above.
+
+Why? Note that the sample **monthly salary 3000-5000 yuan, 5 working days a week, 5-10 days of annual leave, no year-end bonus** has only 2 people, while the sample **monthly salary 3000-5000 yuan, 5 working days a week, 5-10 days of annual leave, with year-end bonus** has 31 people, so we can say that the vast majority of people with **a monthly salary of 3000-5000 yuan, 5 working days a week, and 5-10 days of annual leave** choose the "Yes" option. Splitting off a separate subtree for those 2 people raises the accuracy on the original samples (the training set), but the generalization (on the test and validation sets) is poorer, because in most cases people have a year-end bonus and choose Yes.
+
+But the decision tree in the figure below can predict it correctly:
+
+<img src="media/ml-decision-tree/图片记录-image-20220620152016561.png" alt="image-20220620152016561" style="zoom:45%;" /> 
+
+The figure above merges the two classes **monthly salary 3000-5000 yuan, 5 working days a week, 5-10 days of annual leave, no year-end bonus sample and with year-end bonus**, and they can be merged further to get the figure below:
+
+<img src="media/ml-decision-tree/图片记录-image-20220620002713137.png" alt="image-20220620002713137" style="zoom:45%;" /> 
+
+Both figures predict the earlier sample correctly. Although these two decision trees are less accurate on the original samples (the training set), their generalization is stronger, which improves the accuracy of predicting other samples (the test and validation sets).
+
+The above kind of operation on a decision tree is called pruning; figuratively, it can be understood as cutting off the branches of the decision tree. Doing so improves generalization and predicts other samples better. Pruning comes in two kinds: pre-pruning and post-pruning.
+
+#### Pre-Pruning
+
+**Concept:** Stop the growth of the decision tree early during its construction.
+
+**Method:** During the construction of the decision tree, compare the precision P before and after a split. If P increases, keep the branch; if P decreases or stays the same, discard the branch.
+$$
+Precision=TP÷(FP+TP)
+$$
+
+> **Supplement: computing and understanding precision**
+
+<img src="media/ml-decision-tree/图片记录-image-20220620155437298.png" alt="image-20220620155437298" style="zoom:50%;" /> 
+
+> The above are some common concepts; let me explain them. First, we need to recognize that whether a prediction is positive or negative is different from whether the actual sample is positive or negative. To tell them apart, we use Positive to mean the sample is predicted to be positive and Negative to mean the sample is predicted to be negative; we use True to mean the actual sample is positive and False to mean the actual sample is negative. A positive sample is one that belongs to a given class, and a negative sample is one that does not belong to that class.
+
+> **Precision:** Among all samples predicted to be positive, the proportion that are actually positive.
+
+$$
+Precision=TP÷(FP+TP)
+$$
+
+> **Recall:** Among all samples that are actually positive, the proportion that are predicted to be positive.
+
+$$
+Precision=TP÷(TN+TP)
+$$
+
+**Advantages:** Lowers the risk of overfitting and also saves training time
+
+**Disadvantages:** Prone to underfitting
+
+#### Post-Pruning
+
+**Concept:** Only after the decision tree has been fully built do we start pruning its branches.
+
+**Method:** After the decision tree has been built, compare the precision P before and after each split from the leaf nodes upward. If P increases, keep the branch; if P decreases or stays the same, discard the branch.
+
+**Advantages:** Low risk of both underfitting and overfitting
+
+**Disadvantages:** Longer training time
+
+#### Comparing the Two Pruning Methods
+
+Suppose we now have the following complete decision tree (one that splits all cases completely, meaning the precision at all the square leaf nodes is 1), where circular regions represent branch nodes, square regions represent leaf nodes, and the number on a node is the new precision after adding that split.
+
+> Note: In fact, the precision before and after each split cannot be represented as professionally as in the figure below, and the meaning differs somewhat, but the figure below helps us distinguish the two pruning methods well.
+
+<img src="media/ml-decision-tree/图片记录-image-20220625143716482.png" alt="image-20220625143716482" style="zoom: 50%;" />
+
+If the pre-pruning method is used, the resulting decision tree is as in the figure below:
+
+<img src="media/ml-decision-tree/图片记录-image-20220625144720816.png" alt="image-20220625144720816" style="zoom:50%;" />
+
+If the post-pruning method is used, the resulting decision tree is as in the figure below:
+
+<img src="media/ml-decision-tree/图片记录-image-20220625144849505.png" alt="image-20220625144849505" style="zoom:50%;" />
+
+Comparing the two figures above, it is not hard to see that since pre-pruning goes from top to bottom, a subtree is cut as soon as its precision is smaller. But this can lead to the following situation: the precision of a subtree decreases, but the precision of a subtree of that subtree increases instead (see the branch 0.43-0.66-0.76-0.77-0.75-0.98 in the complete decision tree), which directly causes underfitting; post-pruning avoids this situation, but it needs to backtrack and compare from every leaf node, so its time complexity is far higher than that of pre-pruning.
+
+### Random Forest
+
+#### Concept of Random Forest
+
+Definition: Build a forest in a random way; the forest is made up of many decision trees, and the decision trees in a random forest are not correlated with one another.
+
+Before formally introducing random forests, let's briefly introduce **bagged decision trees**:
+
+- Draw n training data points uniformly and with replacement from the dataset, as the data sample for generating one decision tree;
+- Use these n samples to train one decision tree;
+- Repeat the above t times (t is also the number of decision trees).
+
+This gives us a forest made up of t decision trees.
+
+If our trees classify by class label (such as color), then the final prediction needs to use voting, and the class with the most votes is the best choice. Here is an example:
+
+<img src="media/ml-decision-tree/图片记录-image-20220625162928980.png" alt="image-20220625162928980" style="zoom:50%;" />
+
+Suppose we have some data points as in the figure above, in three colors in total: red, black, and green. The process of randomly selecting samples is like the figure below: randomly select some points of various colors (they don't have to be enclosed in boxes), where boxes of different colors represent the points selected in different draws. The points selected each time can be used to build a decision tree (represented by the corresponding color), and every point to be predicted has to be "voted" on by these decision trees: the color of the predicted point is the color with the most votes.
+
+<img src="media/ml-decision-tree/图片记录-image-20220625163117861.png" alt="image-20220625163117861" style="zoom: 88%;" />
+
+The bagged decision trees above only randomize the selected data points, whereas in a random forest, what is randomly selected is not only the data points but also the features of each data point. In almost all cases a data point has more than 1 feature, and in real engineering each data point has thousands of features. By randomly selecting among these features, a random forest can build more decision trees.
+
+But the number of randomly selected features, max_feature, is not arbitrary. If max_feature is too large, the similarity between different decision trees is high, the effect of "voting" is reduced, and the forest is strongly affected by unusual data points; if max_feature is too small, the decision trees in the random forest differ greatly from one another, and fitting all the data points requires very deep decision trees.
+
+Although every decision tree in a random forest overfits, they overfit in different directions, so after averaging, the degree of overfitting is greatly reduced.
+
+#### **Advantages of Random Forest:**
+
+(1) Introducing randomness in two dimensions makes random forests less prone to overfitting, and they have good noise resistance compared with other methods (they are not easily affected by erroneous data points)
+
+> Because of the randomness, erroneous data points will certainly be excluded in the random selection, which reduces their influence on the prediction
+
+(2) It can handle very high-dimensional data without feature selection.
+
+(3) It adapts well to datasets. It can handle both discrete and continuous data
+
+(4) It can give a ranking of feature importance as well as the interactions between features
+
+> This can be judged from the information gain (ratio) / the decrease in the Gini index at each split
+
+#### **Disadvantages of Random Forest:**
+
+(1) Training and prediction are slow, and it takes up a lot of space.
+
+Finally, I quote the content of an article by a Zhihu answerer (the link is given at the beginning of this article) to help understand what a random forest does:
+
+>**Each tree in the random forest produced by the random forest algorithm is very weak, but combined they are very powerful. I think the random forest algorithm can be compared like this: each decision tree is an expert proficient in one narrow field (because we select m of the M features for each decision tree to learn), so the random forest has many experts proficient in different fields. For a new problem (new input data), they can look at it from different angles, and in the end the experts vote to get the result. This is precisely collective wisdom, what economics calls the invisible hand, and it is also such a distributed classification system, in which an expert in each sub-field uses his own unique tacit knowledge to classify a product and decide whether it needs to be produced. The effectiveness of a random forest depends on the many classification trees being independent of one another. For the economy to keep developing without overfitting (that is, an economic growth led by the government that produces a bubble when it meets new circumstances), we need enterprises to develop independently and to select their own features independently.**
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+### 信息熵
+
+##### 文献参考引用：
+
+**·**    [知乎：忆臻](https://zhuanlan.zhihu.com/p/26486223)
+
+**·**    [知乎:   林君](https://zhuanlan.zhihu.com/p/245617910)
+
+**·**    [知乎：许铁-巡洋舰科技](https://zhuanlan.zhihu.com/p/22097796)
+
+#### 信息熵概念：
+
+信息熵把信息中排除了冗余信息后的平均（有价值）信息。
+
+即 信息就是用来消除人对这件事的不确定性的——消除熵=获取信息
+
+> 理解：
+>
+> ​        在化学中我们引入了熵的概念，用于描述体系或者分子的混乱程度。而如果我们拓展这个概念，将熵理解为描述各类事务的一种混乱程度。我们同样也可以将这个概念应用到信息学中。
+>
+> ​        我们知道信息是一种非常复杂而又不确定的概念。我们难以衡量几千字或者一张图片能传递给我们多少信息，更不用说其中的有用信息。有用信息往往是要根据实际情况、不同的人和地点等等复杂因素来衡量的。而信息熵就给我们定义了这样一个抽象概念。
+
+#### 信息熵公式：
+
+<img src="media/ml-decision-tree/图片记录-image-20220617203129286.png" alt="image-20220617203129286" style="zoom: 67%;" />
+
+> 理解：        
+>
+> ​        但是通过大量实验以及总结，**人们发现往往概率越小的事件发生了那么其价值越高有用信息越大，而概率越大的事件发生了其有用信息越小。**比如，康康小朋友在11.26日晚上吃馒头作为晚餐，这个一点也不让人奇怪，因为他经常吃；但是哪天他居然一整天呆在宿舍打游戏，那么闻着可能都会觉得天塌了：怎么可能？？！
+
+所以一个具体事件的信息量应该是随着其发生概率递减的。
+
+假设x,y两个事件没有关系，那么这两个事件得到的信息总和h(xy)
+$$
+h(xy)=h(x)+h(y)
+$$
+那么他们同时发生的概率P(xy)
+$$
+P(xy)=P(x)·P(y)
+$$
+而我们又知道，对数的其中一个运算性质为：
+
+<img src="media/ml-decision-tree/图片记录-image-20220617205624517.png" alt="image-20220617205624517" style="zoom:67%;" />
+
+我们可以猜出h(x)和p(x)可能会有如下的一种关系（没错，你高考数学选择题的本能）：
+
+<img src="media/ml-decision-tree/图片记录-image-20220617205903041.png" alt="image-20220617205903041" style="zoom:67%;" />
+
+> （1）其中n一般取2，基于传统的信息论；
+
+> （2）由于概率的取值范围是**[0,1]**，所以为了保证信息量是正数，在log函数前加一个负号。
+
+我们可以简单验证一下：
+
+<img src="media/ml-decision-tree/图片记录-image-20220617210243064.png" alt="image-20220617210243064" style="zoom:67%;" />
+
+没毛病。
+
+对于x这个事件，其发生概率为P(x)，所以其有用信息的期望值为：
+
+<img src="media/ml-decision-tree/图片记录-image-20220617211106488.png" alt="image-20220617211106488" style="zoom:67%;" />
+
+而对一个更大的事件A，x事件可能就是其中一个事件，就像买了十根士力架只是出门买零食的一小部分一样。那么总共的有用信息期望值为：
+
+<img src="media/ml-decision-tree/图片记录-image-20220617203129286.png" alt="image-20220617203129286" style="zoom: 67%;" />
+
+就是对上面式子取了一个求和。
+
+这下我们就得到了一开始给出的公式。
+
+<font color='red'>根据我们的推演不难发现，**如果一个系统越复杂，出现种类越多，那么他的信息熵越大，纯度越低**。这不难理解，当种类多的时候（事件很多），每个种类的概率很小，通过log函数，再加一个负号，就会变得很大</font>
+
+### 条件熵
+
+#### 条件熵概念：
+
+定义为在X给定条件下，Y的条件概率分布的熵对X的数学期望。数学表达式为 **H(Y|X)**
+
+> 理解：
+>
+> ​        按一个新的变量对原变量进行分类，然后在每个小类里面都计算一个小信息熵（用条件概率），之后求均值。
+>
+> ​        这样做可以用来判断这个分类标准是否有效，即信息的不确定度是否降低（纯度提高）
+>
+> ​        如果从树的角度去理解，更加形象但是需要有树的一些基础：
+>
+> ​        若将信息熵理解为一棵决策树的信息有用程度，其条件就是将根分类出的不同条件。那么就可以将条件熵理解为这课决策树一棵子树的信息有用程度，而其条件就是决策树子树的根结点分类出的不同条件，即一个孩子结点。
+
+<img src="media/ml-decision-tree/图片记录-image-20220618105254714.png" alt="image-20220618105254714" style="zoom: 50%;" /> 
+
+#### 条件熵公式：
+
+<img src="media/ml-decision-tree/图片记录-image-20220618100928578.png" alt="image-20220618100928578" style="zoom:67%;" />
+
+> 理解：
+>
+> ​        其实就是将信息熵中的改率换成条件概率，再计算条件概率下的期望值。这样做可以求出某一事件影响下的信息熵（条件熵）
+
+我们之前学过在事件X的条件下，发生事件Y的条件概率公式：
+
+<img src="media/ml-decision-tree/图片记录-image-20220617222848034.png" alt="image-20220617222848034" style="zoom:67%;" />
+
+我们可以用此来帮助理解条件熵的概念（但是数学表达式确实不一样，只能帮助理解“条件”）
+
+定义Y的条件熵 **H(Y|X)**。这个条件熵也是一个大事件，里面会包含许许多多小事件。类比信息熵的概念，我们会得到：
+
+<img src="media/ml-decision-tree/图片记录-image-20220618100928578.png" alt="image-20220618100928578" style="zoom:67%;" />
+
+其中 **H(Y|X=xi)** 的含义是在xi事件下的信息熵。我们将信息熵公式代入，
+
+
+
+根据条件概率公式，p(x)*p(y|x)=p(xy)代入可得
+
+<img src="media/ml-decision-tree/图片记录-image-20220618101928430.png" alt="image-20220618101928430" style="zoom:67%;" />
+
+终于到了我们决策树的核心。
+
+构造一棵决策树的想法就是，随着树的深度的增加，结点的熵会迅速降低（有用的信息越来越多，分离得越来越精确）。而我们希望得到一颗熵降低速度最快的一棵决策树，即深度（高度）最小的一棵决策树。因为熵降低越快，树的深度就可以越小，算法更加简单的同时，也减小造成过拟合的可能性。
+
+为了构造这样一个决策树，我们将介绍以下几种算法，帮助我们构造最优化的决策树。
+
+下面介绍的算法分别是信息增益、信息增益率和基尼系数，利用这三个构造损失函数可以帮助我们构造较优的决策树
+
+> 信息增益——ID3决策树
+
+> 增益率——C4.5决策树
+
+> 基尼系数——CART决策树
+
+### 信息增益
+
+#### 信息增益概念：
+
+信息增益指的是一个特征能为一个分类系统带来多少有用信息。若带来的信息越多，说明该特征越加重要，信息增益也就越大。
+
+#### 信息增益公式：
+
+<img src="media/ml-decision-tree/图片记录-image-20220618110745844.png" alt="image-20220618110745844" style="zoom:67%;" />
+
+即用**条件熵减去信息熵**。
+
+对于多种分类方式，我们通过算法分别计算其信息增益量，选择增益量最大的分类方式作为决策树下一个分类标标准，即分类效果最好的一个标准。这样分类可以使每个类别的信息更纯。
+
+#### 信息增益率：
+
+##### 信息增益率概念：
+
+信息增益率为信息增益量与信息熵的比值。
+
+> 理解：
+>
+> ​        在现实生活中，很多的绝对量是没有很大意义的。比如你现在要吐槽你上学期很用功，你说：“我预习了整整五天，我的分数增长了10分！排名上升了2名！”但是问题在于，我根本不知道你是从考1分变成了考11分，排名从全市32651上升到了32649；还是从739分考到了749分，排名从第三名上升到了第一名。至少在我看来，前者的可能性大一些，就算冤枉了你你也别怪我，谁叫你就告诉我哥绝对数字呢。
+>
+> ​        但是如果我知道的你的排名率（假设我们定义这样一个概念），你告诉我你的排名率是2/32651，或者是2/3，那么我就对你进步的程度有了一些初步的掌握。虽然2/3既可能是从第三名增长到第一名，也有可能是从第150名增长到50名，但是无论哪种情况我都能大概清楚你的进步真的很大（毕竟从第三到第一真的不容易，排名越高越难上升）。【假定这里的排名是综合排名，不考虑偶然性问题】
+>
+> ​        而信息增益率的作用也是如此。当我们只比较信息增益这一绝对量的时候，其值的大与小并没有太多的意义，所以我们用比值去定义会更加合理。
+
+##### 信息增益率公式：
+
+<img src="media/ml-decision-tree/图片记录-image-20220618112129528.png" alt="image-20220618112129528" style="zoom:67%;" />
+
+### 基尼系数
+
+#### 基尼系数概念：
+
+基尼系数表示一个集合的不确定性，基尼系数越大，样本的不确定性越大
+
+#### 基尼系数公式：
+
+<img src="media/ml-decision-tree/图片记录-image-20220617215748695.png" alt="image-20220617215748695" style="zoom:67%;" />
+
+可以理解为将信息熵中的 **-log(P(x))** 变换成 **1-P(x)** ，之后对等式左右两边求和：
+
+<img src="media/ml-decision-tree/图片记录-image-20220617220230141.png" alt="image-20220617220230141" style="zoom:67%;" />
+
+> 理解：
+>
+> ​        根据这个Gini系数的公式不难发现，当一个事件包含的子事件越多（买零食买得种类特别多），其每一件事发生的概率越小，即P(x)越小，那么经过平方处理后，这个小于1的数只会变得更小，而Gini系数会变得更大。使用Gini系数要比信息熵公式更加直观。
+
+### 决策树主要优缺点：
+
+##### 优点：
+
+1. 可同时用于分类和回归任务，且可以处理多分类问题；
+
+2. 不需要归一化，减少了数据预处理工作；
+
+3. 自动筛选变量，容易解释和可视化决策过程；
+
+4. 适合处理高维度数据。
+
+##### 缺点：
+
+1. 不稳定，泛化性能差；
+
+2. 没有考虑变量之间的相关性，每次筛选都只考虑一个变量；
+
+3. 只能线性分割数据；
+
+4. 本质上是贪婪算法（可能找不到最优的树）。
+
+### 剪枝处理
+
+#### 基本概念
+
+根据决策树的原理，如果树的广度和深度过大，分类标准过多，叶子结点过多，容易造成过拟合的现象。下面举一个例子：
+<img src="media/ml-decision-tree/图片记录-image-20220620000758430.png" alt="image-20220620000758430" style="zoom: 45%;" /> 
+
+假设这是一份关于人们是否选择工作的调查，蓝色的数字表示满足相应的条件的人数。而且我们是将所有情况完全分类的。
+
+但是这时我们出现了另外一个样本，这个样本的情况是这样的：月薪3000~5000元、一周工作5天、年假5~10天、无年终奖，但是他选择接受了这份工作，也就是“Yes”。这个样本就无法被上面的决策树正确预测。
+
+为什么呢？我们注意到**月薪3000~5000元、一周工作5天、年假5~10天、无年终奖样本**中只有2人，而**月薪3000~5000元、一周工作5天、年假5~10天，有年终奖**中有31人，我们可以说绝大部分**月薪3000~5000元、一周工作5天、年假5~10天**的人都会去选择 “Yes” 这个选项。为了这2人单独分出了一个子树虽然使在原有样本中（训练集）的正确率较高，但是泛化（测试集与验证集）程度较差，因为大部分情况都是有年终奖而且选择Yes的人。
+
+但是使用下图的决策树就可以正确预测：
+
+<img src="media/ml-decision-tree/图片记录-image-20220620152016561.png" alt="image-20220620152016561" style="zoom:45%;" /> 
+
+上图将**月薪3000~5000元、 一周工作5天、 年假5~10天、无年终奖样本和有年终奖**两个分类合并，也可以进一步合并得到下图：
+
+<img src="media/ml-decision-tree/图片记录-image-20220620002713137.png" alt="image-20220620002713137" style="zoom:45%;" /> 
+
+这两幅图都可以正确预测之前那个样本。虽然这两课决策树对于原有样本（训练集）的准确度降低，但是泛化性增强，提高了预测别的样本（测试集和验证集）的准确度。
+
+而以上这种对决策树的操作称为剪枝处理，形象地可以理解为将决策树的树枝剪掉。这样做可以提高泛化性，更好地去预测别的样本。而剪枝处理也分为两种：预剪枝处理和后剪枝处理。
+
+#### 预剪枝处理
+
+**概念：**在构建决策树的过程中，提前停止决策树生长。
+
+**方法：**在构建决策树的过程中，比较划分前后的精确度P，若P变大，则保留该树枝，若P减小或者不变，则丢弃该树枝。
+$$
+Precision=TP÷(FP+TP)
+$$
+
+> **补充：关于精确度Precision的计算和理解**
+
+<img src="media/ml-decision-tree/图片记录-image-20220620155437298.png" alt="image-20220620155437298" style="zoom:50%;" /> 
+
+> ​        以上是一些常见的概念，下面解释一下：首先我们需要认识到，预测的真假和实际样本的真假是有区别的。为了区分，我们将预测样本为正用Prositive来表示，预测样本为负用Negative来表示；将实际样本为正用True来表示，将实际样本为负用False来表示。正样本指的是属于某一类别的样本，负样本指的是不属于这一类别的样本。
+
+> **精确度Precision：**即在所有预测为正的样本中，实际为正的占比。
+
+$$
+Precision=TP÷(FP+TP)
+$$
+
+> **召回率Recall：**即在所有实际为正的样本中，预测为正的占比。
+
+$$
+Precision=TP÷(TN+TP)
+$$
+
+**优点：**降低了过拟合风险，同时节约了训练时间
+
+**缺点：**容易出现欠拟合的问题
+
+#### 后剪枝处理
+
+**概念：**决策树构建好之后，然后才开始裁剪决策树树枝。
+
+**方法：**在构建完决策树后，从叶结点开始从下往上比较划分前后的精确度P，若P变大，则保留该树枝，若P减小或者不变，则丢弃该树枝。
+
+**优点：**欠拟合和过拟合的风险都较低
+
+**缺点：**训练的时间较长
+
+#### 两种剪枝处理的比较
+
+假设现在我们有一棵如下的完全决策树（将所有情况完全划分，也就是正方形叶子结点的精确度全部为1），其中圆形区域表示分支结点，正方形区域表示叶子结点，结点上的数字表示加入该划分之后的新精确度。
+
+> 备注：事实上，每个划分前后的精确度并不能用如下图专业的表示，在意义上有些区别，不过利用下图可以较好地帮助我们区分两种剪枝方法。
+
+<img src="media/ml-decision-tree/图片记录-image-20220625143716482.png" alt="image-20220625143716482" style="zoom: 50%;" />
+
+如果使用预剪枝处理方法，生成的决策树如下图：
+
+<img src="media/ml-decision-tree/图片记录-image-20220625144720816.png" alt="image-20220625144720816" style="zoom:50%;" />
+
+如果使用后剪枝处理方法，生成的决策树如下图：
+
+<img src="media/ml-decision-tree/图片记录-image-20220625144849505.png" alt="image-20220625144849505" style="zoom:50%;" />
+
+上面两个图对比不难发现，由于预剪枝处理是从上往下，所以只要遇到子树精确度较小就剪去。但是这就可能会带来下面一种情况，就是子树精确度降低，但是子树的子树精确度反而升高（参考完全决策树0.43-0.66-0.76-0.77-0.75-0.98分支），这样直接会造成欠拟合的情况；而后剪枝处理方法虽然可以避免这种情况，但是需要从每个叶子结点回溯比较，时间复杂度要远高于预剪枝处理。
+
+### 随机森林
+
+#### 随机森林概念
+
+定义：用随机的方式建立一个森林，森林里面有很多的决策树组成，随机森林的每一棵决策树之间是没有关联的。
+
+在正式介绍随机森林之前，我们先简单介绍一下**Bagged决策树**：
+
+- 从数据集中均匀、有放回的抽取n个训练数据点，作为生成一棵决策树的数据样本；
+- 利用这n个样本，训练出一棵决策树；
+- 将上述操作重复t次（t也就为决策树的数量）。
+
+于是我们得到了一个由t棵决策树组成的森林。
+
+如果我们的树是按照类标签（比如颜色）分类，则最后预测的结果需要采用投票的方式，票数最多的类就是最优的选择。下面是一个举例：
+
+<img src="media/ml-decision-tree/图片记录-image-20220625162928980.png" alt="image-20220625162928980" style="zoom:50%;" />
+
+假设我们有如上图的一些数据点，总共三种颜色：红色、黑色和绿色。随机选取样本的过程就像下图一样，随机选取其中一些颜色的点（不一定非要用框框住），不同颜色的框表示不同次选取的点。每次选取的点可以构建一棵决策树（用相应的颜色表示），每个需要预测的点都要由这些决策树“投票”——最后预测的点的颜色为票数最多的点。
+
+<img src="media/ml-decision-tree/图片记录-image-20220625163117861.png" alt="image-20220625163117861" style="zoom: 88%;" />
+
+上面的Bagged决策树只是对选取的数据点进行了随机，而随机森林中，随机选取的不仅仅是数据点，还有每个数据点的特征。在几乎所有情况下，一个数据拥有的特征都大于1个，在实际工程中，每个数据都拥有成千上万个特征。随机森林通过随机选取这些特征值，可以构造出更多的决策树。
+
+但是随机选取的特征的数量max_feature并不是任意的。如果max_feature过大，则不同决策树之间相似度较高，“投票”的效果降低，受到特殊数据点影响程度较大；如果max_feature过小，则随机森林中的决策树之间差距很大，想要拟合所有数据点必须要用深度很大的决策树。
+
+虽然随机森林中每个决策树都过拟合，但是他们过拟合的方向不同，平均后过拟合程度会大大降低。
+
+#### **随机森林优点：**
+
+（1）两个维度的随机性的引入，使随机森林不容易过拟合而且相对其它方法有很好的的抗噪声能力（不容易受到错误数据点的影响）
+
+> 因为有随机性，所以错误的数据点肯定在随机中会被排除，减小了其对预测的影响
+
+（2）它能够处理很高维度数据，并且不用做特征选择。
+
+（3）对数据集的适应能力强。既能处理离散型数据，也能处理连续型数据
+
+（4）可以得到特征重要性排序以及特征间的相互影响
+
+> 根据分裂时的信息增益(率)/基尼系数下降量可以判断
+
+#### **随机森林缺点：**
+
+（1）训练和预测的速度较慢、而且需要占用大量空间。
+
+最后引用以为知乎答主的文章内容（链接已在文章开头附上）来帮助理解随机森林的作用：
+
+>**随机森林算法得到的随机森林中的每一棵都是很弱的，但是大家组合起来就很厉害了。我觉得可以这样比喻随机森林算法：每一棵决策树就是一个精通于某一个窄领域 的专家（因为我们从M个feature中选择m让每一棵决策树进行学习），这样在随机森林中就有了很多个精通不同领域的专家，对一个新的问题（新的输入数 据），可以用不同的角度去看待它，最终由各个专家，投票得到结果。而这正是群体智慧——经济学上说的看不见的手，也是这样一个分布式的分类系统，由每一自己子领域里的专家，利用自己独有的默会知识，去对一项产品进行分类，决定是否需要生产。随机森林的效果取决于多个分类树要相互独立，要想经济持续发展，不出现overfiting（就是由政府主导的经济增长，但在遇到新情况后产生泡沫），我们就需要要企业独立发展，独立选取自己的feature 。**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

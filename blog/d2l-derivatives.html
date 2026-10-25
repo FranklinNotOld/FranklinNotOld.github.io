@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Derivatives · Yongkang Li</title>
+<meta name="description" content="Derivatives are very important in neural networks; for example, they are needed to compute the gradient during gradient descent. Unlike simple scalar…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Dive into Deep Learning notes</span><span data-l="cn">《动手学深度学习》笔记</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Derivatives</span><span data-l="cn">导数</span></h1>
+    <div class="meta"><span data-l="en">1 min read</span><span data-l="cn">约 1 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="d2l-linear-algebra.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Linear Algebra Basics</span><span data-l="cn">线性代数基础</span></span></a><a class="pn glass" href="d2l-linear-regression.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Linear Regression</span><span data-l="cn">线性回归</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+Derivatives are very important in neural networks; for example, they are needed to compute the gradient during gradient descent. Unlike simple scalar derivatives, deep learning involves many derivatives with respect to vectors.
+
+### Extending Derivatives to Vectors
+
+For the derivative $\frac{\partial y}{\partial x}$ there are four cases: y and x are both scalars; y is a scalar and x is a vector; x is a vector and y is a scalar; x and y are both vectors. The all-scalar case is simple: it is the partial derivative as we normally understand it. Here I introduce the other three
+
+$\left[ \begin{matrix} 1 & x & x^2 \\ 1 & y & y^2 \\ 1 & z & z^2 \\ \end{matrix} \right]$
+
+(1) $\frac{\partial y}{\partial x}$, where x is a vector and y is a scalar
+$$
+X=\left[ \begin{matrix} x_1\\ x_2 \\...\\ x_n \\ \end{matrix} \right],\frac{\partial y}{\partial x}=[\frac{\partial y}{\partial x_1},\frac{\partial y}{\partial x_2},...,\frac{\partial y}{\partial x_n}]
+$$
+
+
+(2) $\frac{\partial y}{\partial x}$, where y is a vector and x is a scalar
+$$
+Y=\left[ \begin{matrix} y_1\\ y_2 \\...\\ y_n \\ \end{matrix} \right],\frac{\partial y}{\partial x}=\left[ \begin{matrix}\frac{\partial y_1}{\partial x}\\\frac{\partial y_2}{\partial x}\\...\\\frac{\partial y_n}{\partial x}\end{matrix} \right]
+$$
+
+
+(3) $\frac{\partial y}{\partial x}$, where x and y are both vectors
+$$
+X=\left[ \begin{matrix} x_1\\ x_2 \\...\\ x_n \\ \end{matrix} \right],Y=\left[ \begin{matrix} y_1\\ y_2 \\...\\ y_n \\ \end{matrix} \right],
+\frac{\partial y}{\partial x}=
+\left[ \begin{matrix}
+\frac{\partial y_1}{\partial x_1},\frac{\partial y_1}{\partial x_2},...,\frac{\partial y_1}{\partial x_n}\\
+\frac{\partial y_2}{\partial x_1},\frac{\partial y_2}{\partial x_2},...,\frac{\partial y_2}{\partial x_n}\\
+...~~~...~~~~~~~~~~...\\
+\frac{\partial y_n}{\partial x_n},\frac{\partial y_n}{\partial x_n},...,\frac{\partial y_n}{\partial x_n}
+\end{matrix} \right]
+$$
+
+
+We need not only to understand the relationships in the computation but also to pay attention to how the vector dimensions change (changes in rows and columns, etc.). This figure makes it easy to see:
+
+<img src="media/d2l-derivatives/3-导数-QQ图片20230309132626.png" alt="QQ picture 20230309132626" style="zoom: 67%;" /> 
+
+### Forward Differentiation and Reverse Accumulation
+
+We know that there is a famous chain rule for the derivative of composite functions, and it also holds for differentiation with respect to vectors. We know the following chain-rule expression:
+$$
+\frac{\partial y}{\partial x}=\frac{\partial y}{\partial u}·\frac{\partial u}{\partial v}·\frac{\partial v}{\partial w}···\frac{\partial m}{\partial x}
+$$
+Forward differentiation is:
+$$
+\frac{\partial y}{\partial x}=\{\frac{\partial y}{\partial u}·[\frac{\partial u}{\partial v}·(\frac{\partial v}{\partial w}···\frac{\partial m}{\partial x})]\}
+$$
+We evaluate inside the parentheses first, then the square brackets, then the curly braces. This is because $m$ is the function most directly composed with $x$, and we call the process that goes from the simplest composition to the most complex one forward.
+
+Reverse differentiation, on the other hand, is:
+$$
+\frac{\partial y}{\partial x}=\{[(\frac{\partial y}{\partial u})·\frac{\partial u}{\partial v}]·\frac{\partial v}{\partial w}···\frac{\partial m}{\partial x}\}
+$$
+
+### Code Implementation
+
+```python
+import torch
+
+x = torch.arange(4.0, requires_grad=True)  # [1, 2, 3, 4], gradients are needed, so that x.grad stores the gradient
+print(x.grad)  # Output: None
+y = 2 * torch.dot(x, x)  # Compute twice the dot product of x
+y.backward()
+print(x.grad)  # Output: tensor([ 0.,  4.,  8., 12.])
+
+x.grad.zero_()  # Zero out the gradient vector
+print(x.grad)  # Output: tensor([0., 0., 0., 0.])
+y = x*x
+u = y.detach()  # Equivalent to treating y as a constant
+z = u*x
+z.sum().backward()
+print(x.grad)  # Output: tensor([0., 1., 4., 9.])
+```
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+导数在神经网络中十分重要，比如在梯度下降时计算梯度就要用到。跟简单的标量导数不同，深度学习中涉及到很多向量的导数。
+
+### 将导数拓展到向量
+
+对于导数$\frac{\partial y}{\partial x}$，有四种情况：y和x都是标量；y是标量，x是向量；x是向量，y是标量；x和y都是向量。都是标量的情况很简单，就是我们正常理解的偏导，这里介绍下其余三种
+
+$\left[ \begin{matrix} 1 & x & x^2 \\ 1 & y & y^2 \\ 1 & z & z^2 \\ \end{matrix} \right]$
+
+（1）$\frac{\partial y}{\partial x}$，x是向量，y是标量
+$$
+X=\left[ \begin{matrix} x_1\\ x_2 \\...\\ x_n \\ \end{matrix} \right],\frac{\partial y}{\partial x}=[\frac{\partial y}{\partial x_1},\frac{\partial y}{\partial x_2},...,\frac{\partial y}{\partial x_n}]
+$$
+
+
+（2）$\frac{\partial y}{\partial x}$，y是向量，x是标量
+$$
+Y=\left[ \begin{matrix} y_1\\ y_2 \\...\\ y_n \\ \end{matrix} \right],\frac{\partial y}{\partial x}=\left[ \begin{matrix}\frac{\partial y_1}{\partial x}\\\frac{\partial y_2}{\partial x}\\...\\\frac{\partial y_n}{\partial x}\end{matrix} \right]
+$$
+
+
+（3）$\frac{\partial y}{\partial x}$，x和y都是向量
+$$
+X=\left[ \begin{matrix} x_1\\ x_2 \\...\\ x_n \\ \end{matrix} \right],Y=\left[ \begin{matrix} y_1\\ y_2 \\...\\ y_n \\ \end{matrix} \right],
+\frac{\partial y}{\partial x}=
+\left[ \begin{matrix}
+\frac{\partial y_1}{\partial x_1},\frac{\partial y_1}{\partial x_2},...,\frac{\partial y_1}{\partial x_n}\\
+\frac{\partial y_2}{\partial x_1},\frac{\partial y_2}{\partial x_2},...,\frac{\partial y_2}{\partial x_n}\\
+...~~~...~~~~~~~~~~...\\
+\frac{\partial y_n}{\partial x_n},\frac{\partial y_n}{\partial x_n},...,\frac{\partial y_n}{\partial x_n}
+\end{matrix} \right]
+$$
+
+
+我们不仅需要了解运算上的关系，也要注意向量维度的变化（行列变化等），用这张图就很好理解：
+
+<img src="media/d2l-derivatives/3-导数-QQ图片20230309132626.png" alt="QQ图片20230309132626" style="zoom: 67%;" /> 
+
+### 正向求导与反向累积
+
+我们知道复合函数的导数中有一个著名的链式法则，这个对于向量求导也是成立的，我们知道如下的链式求导式子：
+$$
+\frac{\partial y}{\partial x}=\frac{\partial y}{\partial u}·\frac{\partial u}{\partial v}·\frac{\partial v}{\partial w}···\frac{\partial m}{\partial x}
+$$
+正向求导就是：
+$$
+\frac{\partial y}{\partial x}=\{\frac{\partial y}{\partial u}·[\frac{\partial u}{\partial v}·(\frac{\partial v}{\partial w}···\frac{\partial m}{\partial x})]\}
+$$
+先运算小括号内后运算中括号、大括号。这是因为$m$是最直接复合$x$的，我们将从复合简单到符合复杂的过程叫做正向。
+
+而反向求导就是：
+$$
+\frac{\partial y}{\partial x}=\{[(\frac{\partial y}{\partial u})·\frac{\partial u}{\partial v}]·\frac{\partial v}{\partial w}···\frac{\partial m}{\partial x}\}
+$$
+
+### 代码实现
+
+```python
+import torch
+
+x = torch.arange(4.0, requires_grad=True)  # [1, 2, 3, 4], 需要计算梯度，这样x.grad就存储了梯度
+print(x.grad)  # 输出结果：None
+y = 2 * torch.dot(x, x)  # 求x的点积的两倍
+y.backward()
+print(x.grad)  # 输出结果：tensor([ 0.,  4.,  8., 12.])
+
+x.grad.zero_()  # 把梯度向量清零
+print(x.grad)  # 输出结果：tensor([0., 0., 0., 0.])
+y = x*x
+u = y.detach()  # 相当于把y看成常数
+z = u*x
+z.sum().backward()
+print(x.grad)  # 输出结果：tensor([0., 1., 4., 9.])
+```
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

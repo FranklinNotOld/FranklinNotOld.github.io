@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NLLLoss, KLDivLoss and CrossEntropyLoss · Yongkang Li</title>
+<meta name="description" content="These three functions are very common in deep learning models, especially in the field of knowledge distillation, where these three functions are ofte…">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Deep Learning from Zero to Kang</span><span data-l="cn">Deep Learning from Zero to Kang</span></span><i>/</i><span><span data-l="en">Loss functions</span><span data-l="cn">损失函数</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">NLLLoss, KLDivLoss and CrossEntropyLoss</span><span data-l="cn">NLLLoss、KLDivLoss 与 CrossEntropyLoss 对比</span></h1>
+    <div class="meta"><span data-l="en">2 min read</span><span data-l="cn">约 2 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="binll-loss.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Bivariate Gaussian NLL Loss</span><span data-l="cn">双变量高斯负对数似然损失</span></span></a><a class="pn glass" href="rnn.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Recurrent Neural Networks (RNN)</span><span data-l="cn">循环神经网络（RNN）</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+
+### Background Knowledge
+
+These three functions are very common in deep learning models, especially in the field of knowledge distillation, where these three functions are often compared.
+
+##### 1. Softmax Function
+
+The softmax function is typically used for multi-class classification and normalization, and its formula is as follows:
+$$
+\text{softmax}(x_i)=\frac{e^{x_i}}{\sum_{i=1}^{N} e^{x_i}}
+$$
+Some key features of the softmax function are:
+
+- **Normalization**: The outputs of softmax sum up to 1 and are all greater than 0, satisfying the properties of a probability distribution. This is because the denominator is the sum of all the exponentials of the input values, ensuring that the probabilities sum up to 1.
+- **Magnifying Differences**: This is achieved by the exponential function $e^x$. As the input values increase, the corresponding output values increase rapidly. This can be seen in the following example:
+
+| \( x \)        | 1     | 2     | 3     | 4     |
+| -------------- | ----- | ----- | ----- | ----- |
+| softmax(\(x\)) | 0.032 | 0.087 | 0.237 | 0.644 |
+
+However, this leads to a problem of large differences between values. To mitigate this, a hyperparameter **temperature \( T \)** is introduced to control the differences, given by the formula:
+$$
+\text{softmax}(x,T)=\frac{e^{\frac {x_i}{T}}}{\sum_{i=1}^{N} e^{\frac {x_i}{T}}}
+$$
+Then, using the previous example, we observe the changes in data when \( T=0.5, 1, 2, 4 \).
+
+| \( T \) / \( x \) | 1     | 2     | 3     | 4     |
+| ----------------- | ----- | ----- | ----- | ----- |
+| 0.5               | 0.002 | 0.016 | 0.117 | 0.865 |
+| 1                 | 0.032 | 0.087 | 0.237 | 0.644 |
+| 2                 | 0.101 | 0.167 | 0.276 | 0.455 |
+| 4                 | 0.165 | 0.212 | 0.272 | 0.350 |
+
+As observed, as \( T \) increases, the differences between different classes decrease (with more focus on non-correct labels), while the relative order remains the same. The graph below depicts the relationship between softmax values and temperature.
+
+![image-20230704103509816](media/nll-kl-ce/image-20230704103509816.png)
+
+##### 2. log_softmax Function
+
+The log_softmax function computes the logarithm of the softmax output values:
+$$
+\log(\text{softmax}(x))
+$$
+
+### NLLLoss Function
+
+NLLLoss measures the difference between two distributions, defined by the formula:
+$$
+\text{NLLLoss}(p,q)=-\sum_{i=1}^{N} q_i\log(p_i)
+$$
+Here, it involves the concept of entropy, which can be further understood through my blog post on machine learning and Bayesian methods. In simple terms, the greater the difference between \( p \) and \( q \), the larger the loss value, and the negative sign ensures this relationship.
+
+### CrossEntropyLoss Function
+
+CrossEntropyLoss, also known as cross-entropy loss function, has the same formula as NLL loss, but the meanings of \( p \) and \( q \) are different. Here, \( p \) and \( q \) are the outputs after log_softmax in PyTorch:
+$$
+\text{CrossEntropyLoss}(p,q)=-\sum_{i=1}^{N} q_i\log(p_i)
+$$
+
+### KLDivLoss Function
+
+KLDivLoss is used to measure the similarity or discrepancy between two distributions. Suppose we have two probability distributions \( P \) and \( Q \), their KL divergence is defined as:
+$$
+D_{KL}(P||Q)=-\sum_i P(i)\log\frac{Q(i)}{P(i)}=\sum_i P(i)\log\frac{P(i)}{Q(i)}\\
+D_{KL}(p||q)=\sum_i p(x_i)\log\frac{p(x_i)}{q(x_i)}=\sum_i p(x_i)[\log(p(x_i))-\log({q(x_i)})]
+$$
+KLDivLoss is suitable for measuring distances between continuous distributions and is often useful for regression on continuous output space distributions for discrete inputs.
+
+### Differences Between NLLLoss, CrossEntropyLoss, and KLDivLoss
+
+The difference between NLLLoss and CrossEntropyLoss lies in the presence of the log_softmax() function, while the difference between KLDivLoss and the other two lies in the subtraction of two KL divergences before summation, whereas the others are simply summed (though specific formulae may differ).
+
+```python
+# NLLLoss
+def forward()
+	x=self.fc2(x)
+	x=F.log_softmax(x,dim=1)
+return x
+
+F.nll_loss()
+
+# CrossEntropy
+def forward()
+	x=self.fc2(x)
+return x
+
+F.cross_entropy()
+```
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+### 前置知识
+
+这三个函数在深度学习模型中十分常见，尤其是在知识蒸馏领域，经常会将这三个函数进行比较
+
+##### 1、Softmax函数
+
+softmax函数通常作为多分类以及归一化函数使用，其公式如下：
+$$
+softmax(x)=\frac{e^{x_i}}{\sum_{i=1} e^{x_i}}
+$$
+softmax函数有些重点的特点：
+
+- 所有经过softmax输出数值总和为1且大于0，这**满足一个概率分布**。这点很好理解，因为分母是个求和，所有分式分子加起来就会得到分母
+- **扩大化大小差距**。这是由指数函数$e^x$造成的，根据指数函数图像，自变量值$x$越大，其因变量$y$值增长的越快。可以看下面这个例子
+
+| x          | 1     | 2     | 3     | 4     |
+| ---------- | ----- | ----- | ----- | ----- |
+| softmax(x) | 0.032 | 0.087 | 0.237 | 0.644 |
+
+这就进一步带来一个问题，是否可以通过一个方法，使数之间差距没有那么大呢？这里我们使用了一个超参数**温度T**，来控制差距，公式如下：
+$$
+softmax(x,T)=\frac{e^\frac {x_i}t}{\sum_{i=1} e^\frac {x_i}t}
+$$
+然后接着之前的例子，我们令T=0.5,1,2,4时，观察数据的变化。
+
+| T\x  | 1     | 2     | 3     | 4     |
+| ---- | ----- | ----- | ----- | ----- |
+| 0.5  | 0.002 | 0.016 | 0.117 | 0.865 |
+| 1    | 0.032 | 0.087 | 0.237 | 0.644 |
+| 2    | 0.101 | 0.167 | 0.276 | 0.455 |
+| 4    | 0.165 | 0.212 | 0.272 | 0.350 |
+
+可以发现随着$T$的增大，不同类别之间的差距值越小（对负标签，即非正确标签关注度更高），但是大小关系并不改变。下图是另一个softmax值与温度的关系图。
+
+![image-20230704103509816](media/nll-kl-ce/image-20230704103509816.png)
+
+##### 2、log_softmax函数
+
+log_softmax函数就是将softmax得到的输出值作为对数函数的输入值
+$$
+log(softmax(x))
+$$
+
+### NLLLoss函数
+
+NLLloss是衡量两者之间的差距，公式如下：
+$$
+NLLloss(p,q)=-\sum_{i=1} q_ilogp_i
+$$
+这里涉及到信息熵的概念，可以通过我关于机器学习贝叶斯那一篇博客去了解。简单理解来说就是，$p,q$两者差距越大则最后损失函数值越大，负号的作用就是为了满足这个关系。
+
+### CrossEntropyLoss函数
+
+CrossEntropy函数又称交叉熵损失函数，其实公式表现形式和NLL损失函数一致，但是$p、q$具体含义不同，这里的$p、q$是要经过log_softmax的【在pytorch中】
+$$
+CrossEntropyLoss(p,q)=-\sum_{i=1} q_ilogp_i
+$$
+
+### KLDivLoss函数
+
+KLDivLoss是用来判断两个分布的拟合/相似/匹配程度，假设现在有两个概率分布$P、Q$，它们的KL散度分别为：
+$$
+D_{KL}(P||Q)=-\sum_i P(i)ln\frac{Q(i)}{P(i)}=\sum_i P(i)ln\frac{P(i)}{Q(i)}\\
+D_{KL}(p||q)=\sum_i p(x_i)ln\frac{p(x_i)}{q(x_i)}=\sum_i p(x_i)[log(p(x_i))-log({q(x_i)})]
+$$
+KLDivLoss适合用于连续分布的距离度量；并且对离散采用的连续输出空间分布进行回归通常很有用
+
+### NLLLoss与CrossEntropyLoss、KLDivLoss区别
+
+NLLLoss与CrossEntropyLoss的区别在于一个log_softmax()函数，KLDivLoss与其它两者的区别在于其实两个KL散度之差再求和，而另外两者是求和（当然具体公式会有一定区别）
+
+```python
+#NLLloss
+def forward()
+	x=self.fc2(x)
+	x=F.log_softmax(x,dim=1)
+return x
+
+F.nll_loss()
+
+#CrossEntropy
+def forward()
+	x=self.fc2(x)
+return x
+
+F.cross_entropy()
+```
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>

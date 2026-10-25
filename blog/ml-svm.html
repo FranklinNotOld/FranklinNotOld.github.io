@@ -1,0 +1,1098 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support Vector Machines (SVM) · Yongkang Li</title>
+<meta name="description" content="Concept: sample points located near the classification hyperplane are called support vectors">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/blog.css">
+<script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body data-page="blog" data-root="../" data-lang="en">
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="page"><div class="wrap">
+
+<article class="post">
+  <nav class="crumbs"><a href="../blog.html"><span data-l="en">Blog</span><span data-l="cn">博客</span></a><i>/</i><span><span data-l="en">Machine-learning study notes</span><span data-l="cn">机器学习自学笔记</span></span><i>/</i><span><span data-l="en">Machine learning basics</span><span data-l="cn">机器学习基础</span></span></nav>
+  <header class="post-head">
+    <h1><span data-l="en">Support Vector Machines (SVM)</span><span data-l="cn">支持向量机（SVM）</span></h1>
+    <div class="meta"><span data-l="en">17 min read</span><span data-l="cn">约 14 分钟</span><div class="seg glass langseg" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="cn">中文</button></div></div>
+  </header>
+  
+  <div class="md glass" id="article"><noscript>This page needs JavaScript to render the notes.</noscript></div>
+  <nav class="prevnext"><a class="pn glass" href="ml-decision-tree.html"><small><span data-l="en">Previous</span><span data-l="cn">上一篇</span></small><span><span data-l="en">Decision Trees</span><span data-l="cn">决策树</span></span></a><a class="pn glass" href="ml-clustering.html"><small><span data-l="en">Next</span><span data-l="cn">下一篇</span></small><span><span data-l="en">Clustering</span><span data-l="cn">聚类</span></span></a></nav>
+</article>
+<script type="text/markdown" data-lang="en">
+#### References
+
+**·**   [Baidu Zhidao: Gui Lunmei](https://zhidao.baidu.com/question/416077221.html)
+
+
+
+
+### Basic Concepts
+
+#### Support Vectors
+
+Concept: sample points located near the classification hyperplane are called support vectors
+
+>In mathematics, the concept of a point is often replaced by that of a vector. For example, in a Cartesian coordinate system, if point A has coordinates (3,4), we can regard it as representing the vector ***OA*** = (3,4)
+
+Suppose we have the two-dimensional sample points (vectors) in the left figure below, where the yellow line is a classification line computed by linear regression; the points near the regression line in the right figure (marked with blue squares) are called support vectors.
+
+> The meaning of "support" can be understood this way:
+>
+> Only the points near the classification boundary affect the direction of the regression line (hyperplane); the points far from the classification boundary have no influence on how the regression line (hyperplane) is drawn
+
+ <img src="media/ml-svm/图片记录-image-20220701173829220.png" alt="image-20220701173829220" style="zoom: 67%;" />
+
+If we understand "machine" as "algorithm", then support vector machine is easy to understand as "the algorithm related to the support points (that finds the classification hyperplane)"
+
+Below is a more standard definition of the support vector machine:
+
+#### **Support Vector Machine (SVM)**
+
+It is a binary classification model, whose basic model is a linear classifier with the maximum margin defined on the feature space.
+
+For the dataset below, we want to separate it with a regression line. There are three lines, ①, ②, and ③. Which one works best?
+
+<img src="media/ml-svm/图片记录-image-20220701175525045.png" alt="image-20220701175525045" style="zoom: 67%;" />
+
+I think the vast majority of people would pick ②. Although all three lines satisfy the requirement of separating the triangles from the circles, for line ② the distances from the support vectors of the triangles and of the circles to line ② look more "balanced", as if it separates them from the middle.
+
+In fact, what a support vector machine means is: an algorithm that finds the hyperplane for which the sum of the distances from the support vectors to the hyperplane is as large as possible.
+
+> In fact, by the basic inequality, maximizing the sum of the distances and making the distances more "balanced" are equivalent
+
+This brings us to the concept of the maximum margin hyperplane
+
+
+
+#### Maximum Margin Hyperplane
+
+Line ② in the figure above, the line that looks most "balanced" to us, is in fact the line (called a hyperplane in higher dimensions) that separates the two classes of samples with the maximum margin, that is, the maximum margin hyperplane.
+
+<img src="media/ml-svm/图片记录-image-20220701203730498.png" alt="image-20220701203730498" style="zoom:67%;" />
+
+We find that the sample margins of lines ① and ③ are much smaller than that of ②, as in the figure below
+
+<img src="media/ml-svm/图片记录-image-20220701205023715.png" alt="image-20220701205023715" style="zoom:60%;" />
+
+And what the support vector machine algorithm (SVM) essentially finds is a line, plane, or hyperplane like ②
+
+
+
+#### Soft Margin and Hard Margin
+
+<img src="media/ml-svm/PNG-资源-15.png" alt="Resource 15" style="zoom:67%;" /> 
+
+Suppose that in the left coordinate system of the figure above, the yellow, black, and red lines are the negative, decision, and positive hyperplanes respectively. If a new data point $A$ is added between the yellow and red lines, there are two cases depending on whether the hyperplane is adjusted:
+
+- The first is Figure 1 at the upper right: although $A$ has been added, it still lies between the yellow and red lines;
+- The second is Figure 2 at the lower right: as $A$ is added, the hyperplane changes accordingly, finally ensuring that $A$ is below the yellow line.
+
+The distance between the yellow and red lines in the first case is called the soft margin; the distance between the yellow and red lines in the second case is called the hard margin.
+
+
+
+### Approach to Solving the SVM Optimization Problem
+
+In linear algebra, any hyperplane can be described by the following linear equation:
+$$
+W^{T}X+b=0
+$$
+where
+$$
+W=[w_1,w_2,···，w_n]
+$$
+
+$$
+X=[x_1,x_2,···，x_n]
+$$
+
+are coefficient matrices; after transposing the matrix W
+$$
+W^T = \left[
+\matrix{
+   W_1\\
+   W_2\\
+   ·\\
+   ·\\
+   ·\\
+   W_n
+}
+\right]
+$$
+so
+$$
+W^TX=w_1x_1+w_2x_2+w_3x_3+···+w_nx_n
+$$
+is the hyperplane expression we normally see
+
+By the point-to-line distance formula
+
+$$
+\frac{|Ax+By+C|}{\sqrt{A^2+B^2}}
+$$
+extended from two dimensions to higher dimensions
+$$
+\frac{|w_1x_1+w_2x_2+w_3x_3+···+w_nx_n+b|}{\sqrt{w_1^2+w_2^2+···+w_n^2}}
+$$
+where
+$$
+w_1x_1+w_2x_2+w_3x_3+···+w_nx_n=W^TX
+$$
+is the formula obtained earlier
+$$
+\sqrt{w_1^2+w_2^2+···+w_n^2}=||W||
+$$
+is the definition of the norm of a vector
+
+> For a two-dimensional vector ***X*** = (3,4), its norm is
+> $$
+> ||X||=\sqrt{3^2+4^2}=5
+> $$
+> The same goes for higher-dimensional vectors
+
+So the high-dimensional distance formula above can be converted into
+
+$$
+\frac{|W^TX+b|}{||W||}
+$$
+
+
+
+### Mathematical Principles of Support Vector Machines
+
+From the introduction above, we have a rough understanding of what support vector machines do and their simple principle. Below we introduce the mathematical principles and the algorithm of support vector machines in detail.
+
+- ##### Step 1: Establish the support vector equations
+
+First, a supplement to the introduction of hyperplanes above. We generally call the middle hyperplane used for separation the decision hyperplane, and the decision hyperplane is also the hyperplane we finally obtain. In the positive and negative directions of the decision hyperplane there are two more hyperplanes respectively: the positive hyperplane and the negative hyperplane. These two hyperplanes are used to help generate the decision hyperplane. For simplicity, we first consider only two-dimensional support vector machines.
+
+![Resource 3](media/ml-svm/PNG-资源-3.png) 
+
+The equations of the positive hyperplane, the decision hyperplane, and the negative hyperplane in the figure are as follows:
+$$
+w_1x_1+w_2x_2+b=1\\w_1x_1+w_2x_2+b=0\\w_1x_1+w_2x_2+b=-1
+$$
+This is not the only way to write the hyperplanes. In the basics section above we introduced how to express a linear equation with matrices; this form is just an equivalent variant of that one (after moving terms), which makes the later computation easier.
+
+Now suppose there are two support vectors, M and N, on the positive hyperplane and the negative hyperplane respectively. They satisfy the following equations respectively:
+$$
+w_1x_{1m}+w_2x_{2m}+b=1\\w_1x_{1n}+w_2x_{2n}+b=-1
+$$
+The two equations we have so far give us no use or inspiration. Considering that both equations have the common factors $w_1、w_2$ and both contain the constant $b$, we subtract one from the other and get the following result:
+$$
+w_1(x_{1m}-x_{1n})+w_2(x_{2m}-x_{2n})=2
+$$
+If we regard the equation above as the dot product of two vectors, we get:
+$$
+\vec{w}(\vec{x_m}-\vec{x_n})=2
+$$
+where $\vec{w}=[w_1 \ w_2]$, $\vec{x_m}=[x_{1m} \ x_{2m}]^T$, $\vec{x_n}=[x_{1n} \ x_{2n}]^T$
+
+According to $\vec{a}·\vec{b}=||\vec{a}||*||\vec{b}||*cos\theta$,
+$$
+||\vec{w}||*||\vec{x_m}-\vec{x_n}||*cos\theta=2
+$$
+where $||\vec{w}||=\sqrt{w_1^2+w_2^2}$.
+
+Rearranging
+$$
+||\vec{x_m}-\vec{x_n}||*cos\theta=\frac{2}{||\vec{w}||}
+$$
+
+> By rearranging, $x$ and $w$ end up on the left and right sides of the equation respectively. The left side is the coordinates of the data points, and the right side is the weights to be found.
+
+- ##### Step 2: Find the expression for the maximum margin $L$
+
+Let's think about the meaning of $||\vec{x_m}-\vec{x_n}||*cos\theta$.
+
+So we draw the figure below and try to observe the meaning of the expression above from a geometric perspective.
+
+We know that a vector dot product can be converted into a projection, that is, projecting the norm of one vector times $cos\theta$ onto the direction of the other vector; having the same direction greatly simplifies the computation.
+
+<img src="media/ml-svm/PNG-资源-7.png" alt="Resource 7" style="zoom:200%;" /> 
+
+So we draw the coordinate system and vectors below **(called Figure 1)**. We want to use the vector dot product as a projection, but we do not know the angle between MN and $\vec{w}$.
+
+![Resource 6](media/ml-svm/PNG-资源-6.png) 
+
+But we can transform the problem. We know M and N are on the positive and negative hyperplanes, so what if M and N were on the decision hyperplane? Since the equations of the three hyperplanes differ only in the constant on the right side of the equals sign, $\vec{w}$ when M and N are on the decision hyperplane should be the same as in the figure above. So let us first suppose M and N are on the decision hyperplane. We can draw the following figure **(called Figure 2)**:
+
+![Resource 8](media/ml-svm/PNG-资源-8.png) 
+
+Now M and N satisfy the following equations respectively:
+$$
+w_1x_{1m}+w_2x_{2m}+b=0\\w_1x_{1n}+w_2x_{2n}+b=0
+$$
+Subtracting the two equations, we get:
+$$
+w_1(x_{1m}-x_{1n})+w_2(x_{2m}-x_{2n})=0
+$$
+that is
+$$
+\vec{w}(\vec{x_m}-\vec{x_n})=0
+$$
+A vector dot product of zero means the two vectors are perpendicular to each other. Looking at the figure above, $\vec{x_m}-\vec{x_n}$ is exactly $\vec{NM}$. This means $\vec{w}$ is perpendicular to the decision hyperplane, and hence perpendicular to the positive and negative hyperplanes. Good, now we go back from Figure 2 to Figure 1. Let's show Figure 1 again for convenience.
+
+![Resource 6](media/ml-svm/PNG-资源-6.png) 
+
+Since $\vec{w}$ is perpendicular to the hyperplanes, the projection of $||\vec{NM}||$ onto $\vec{w}$ is the maximum margin $L$ between the positive and negative hyperplanes. And exactly, $||\vec{NM}||=||\vec{x_m}-\vec{x_n}||*cos\theta$, so
+$$
+L=\frac{2}{||\vec{w}||}
+$$
+
+- ##### Step 3: Find the constraint on $L$ and obtain the optimization problem
+
+Positive hyperplane: all red points belong to the positive class, so $y_i=1$; all red points lie above the positive hyperplane, so $\vec{w}·\vec{x_i}+b≥1$
+
+Negative hyperplane: all yellow points belong to the negative class, so $y_i=-1$; all yellow points lie below the negative hyperplane, so $\vec{w}·\vec{x_i}+b≤1$
+
+The two cases above can be summarized in the following expression:
+$$
+y_i*(\vec{w}·\vec{x_i}+b)≥1
+$$
+And this expression is the constraint.
+
+So the problem of finding the decision hyperplane is converted into:
+
+**Under the condition $y_i*(\vec{w}·\vec{x_i}+b)≥1$, find the minimum of $||\vec{w}||$.**
+
+Since $||\vec{w}||=\sqrt{w_1^2+w_2^2}$ contains a square root, the minimum is not easy to find. So we convert it, turning $||\vec{w}||$ into $\frac{||\vec{w}||^2}{2}$, and the problem becomes equivalent to:
+
+**Under the condition $y_i*(\vec{w}·\vec{x_i}+b)≥1$, find the minimum of $\frac{||\vec{w}||^2}{2}$.**
+
+- ##### Step 4: Derive the first four conditions of the solution of the optimization problem
+
+We solve this kind of problem with the method of Lagrange multipliers.
+
+But there is a problem: the constraint $y_i*(\vec{w}·\vec{x_i}+b)≥1$ is an inequality rather than an equality, so we first need a step to convert the inequality into an equality.
+
+We convert $y_i*(\vec{w}·\vec{x_i}+b)≥1$ into $y_i*(\vec{w}·\vec{x_i}+b)-1=p_i^2$. Since $p_i^2≥0$ always holds, $y_i*(\vec{w}·\vec{x_i}+b)-1≥0$ always holds.
+
+So the original problem is equivalent to:
+
+**Under the condition $y_i*(\vec{w}·\vec{x_i}+b)-1=p_i^2$, find the minimum of $\frac{||\vec{w}||^2}{2}$.**
+
+Next we construct the Lagrangian function:
+$$
+L(w,b,\lambda_i,p_i)=\frac{||\vec{w}||^2}{2}-\sum_{i=1}^s\lambda_i*(y_i*(\vec{w}·\vec{x_i}+b)-1-p_i^2)
+$$
+Then we solve it. Take the partial derivative of the Lagrangian with respect to each unknown and set it equal to 0.
+$$
+\frac{\partial{L}}{\partial{w}}=0;\frac{\partial{L}}{\partial{b}}=0;\frac{\partial{L}}{\partial{\lambda_i}}=0;\frac{\partial{L}}{\partial{p_i}}=0
+$$
+Let's compute them one by one.
+
+- First is $\frac{\partial{L}}{\partial{w}}=0$. $w$ appears in two places, $\frac{||\vec{w}||^2}{2}$ and $\sum_{i=1}^s\lambda_i*y_i*(\vec{w}·\vec{x_i}+b)$, and it is easy to differentiate and get the following equation:
+
+$$
+\vec{w}-\sum_{i=1}^s\lambda_iy_i\vec{x_i}=0············①
+$$
+
+- Then $\frac{\partial{L}}{\partial{b}}=0$. $b$ appears in only one place, $\sum_{i=1}^s\lambda_i*y_i*b$, and it is easy to differentiate and get the following equation:
+
+$$
+\sum_{i=1}^s\lambda_iy_i=0············②
+$$
+
+- Next is $\frac{\partial{L}}{\partial{\lambda_i}}=0$. $\lambda_i$ appears in only one place, $\sum_{i=1}^s\lambda_i*(y_i*(\vec{w}·\vec{x_i}+b)-1-p_i^2)$. The partial derivative would originally give $\sum_{i=1}^{s}{y_i*(\vec{w}·\vec{x_i}+b)-1-p_i^2=0}$, but in fact, by the constraint, $y_i*(\vec{w}·\vec{x_i}+b)-1-p_i^2=0$, so there is no need for the summation sign.
+
+$$
+y_i*(\vec{w}·\vec{x_i}+b)-1-p_i^2=0············③
+$$
+
+- Finally $\frac{\partial{L}}{\partial{p_i}}=0$. $p_i$ appears in only one place, $\sum_{i=1}^s\lambda_i*(-p_i^2)$, and it is easy to differentiate and get the following equation:
+
+$$
+2\lambda_ip_i=0············④
+$$
+
+The following steps use equations ①~④ and the original expression to find the minimum of $||\vec{w}||$. First we divide both sides of equation ④ by 2 and multiply by $p_i$, getting the following:
+$$
+\lambda_ip_i^2=0
+$$
+The reason for doing this is that equation ③ contains a $p_i^2$, and doing so simplifies the computation to some extent. We substitute equation ③ into equation ④ and get:
+$$
+\lambda_i(y_i*(\vec{w}·\vec{x_i}+b)-1)=0
+$$
+This equation is very interesting. In step 3 we obtained the constraint $y_i*(\vec{w}·\vec{x_i}+b)≥1$, so the equation above can hold in only two cases:
+
+① $y_i*(\vec{w}·\vec{x_i}+b)-1)＞0$, $\lambda_i=0$;
+
+② $y_i*(\vec{w}·\vec{x_i}+b)-1=0$, $\lambda_i≠0$.
+
+- ##### **Step 5: Derive the fifth condition of the solution of the optimization problem**
+
+For the Lagrangian function $L(w,b,\lambda_i,p_i)=\frac{||\vec{w}||^2}{2}-\sum_{i=1}^s\lambda_i*(y_i*(\vec{w}·\vec{x_i}+b)-1-p_i^2)$, when the constraint is not satisfied, that is, when $$y_i*(\vec{w}·\vec{x_i}+b)-1<0$$, if $\lambda_i<0$, then $\sum_{i=1}^s\lambda_i*(y_i*(\vec{w}·\vec{x_i}+b)-1-p_i^2)>0$, and $L(w,b,\lambda_i,p_i)$ would also become smaller. By the properties of the Lagrangian function, the better the constraint is satisfied, the smaller the value of the Lagrangian function. This shows that $\lambda_i$ being less than 0 is unreasonable, so it should be greater than or equal to 0.
+
+We can also explain this with a figure.
+
+Suppose we are in a two-dimensional space whose horizontal and vertical axes are $w_1$ and $w_2$. Then $||\vec{w}||=\sqrt{w_1^2+w_2^2}$ has the geometric meaning in the plot of a circle centered at the origin with radius $\sqrt{w_1^2+w_2^2}$.
+
+<img src="media/ml-svm/PNG-资源-9.png" alt="Resource 9" style="zoom: 50%;" /> 
+
+The optimization problem we want to solve, $min\frac{||\vec{w}||^2}{2}$, is attained when $||\vec{w}||$ takes its minimum. And since $||\vec{w}||$ is the radius of the circle, we want the circle to be as small as possible.
+
+Now we add the constraints. The first constraint is $$g_1=y_1*(\vec{w}·\vec{x_1}+b)-1≥0$$, which in the plot means the feasible region lies above a line (light green), as in the figure below:
+
+<img src="media/ml-svm/PNG-资源-11.png" alt="Resource 11" style="zoom:50%;" /> 
+
+The situation where some point on the circle lies within the feasible region and the radius of the circle is smallest is when the circle is tangent to the line (represented by the dark blue circle in the figure)
+
+Now we add another constraint, $$g_2=y_2*(\vec{w}·\vec{x_2}+b)-1≥0$$. Under the two constraints, the smallest circle is the one passing through the intersection of the two lines. And the direction of $\vec{w}=(w_1,w_2)$ at that point (represented by the red line) only needs to lie between the two lines.
+
+<img src="media/ml-svm/PNG-资源-12.png" alt="Resource 12" style="zoom:50%;" /> 
+
+
+
+From the figure above we can intuitively derive the following expression: the vector $\frac{\partial{f}}{\partial{w}}$ can be expressed as a linear combination of $\frac{\partial{g_1}}{\partial{w}}$ and $\frac{\partial{g_2}}{\partial{w}}$, and their coefficients $\lambda_1$ and $\lambda_2$ are both non-negative (by intuition or by using a vector triangle).
+$$
+\frac{\partial{f}}{\partial{w}}=\lambda_1\frac{\partial{g_1}}{\partial{w}}+\lambda_2\frac{\partial{g_2}}{\partial{w}}
+$$
+The figure above also helps us understand why $\lambda_i$ is greater than or equal to 0. And so we obtain the fifth condition:
+$$
+\lambda_i≥0············⑤
+$$
+Combining the above, we have obtained the five conditions of the solution, also called the KKT conditions:
+$$
+\vec{w}-\sum_{i=1}^s\lambda_iy_i\vec{x_i}=0····················①\\\sum_{i=1}^s\lambda_iy_i=0·························②\\y_i*(\vec{w}·\vec{x_i}+b)-1-p_i^2=0············③\\2\lambda_ip_i=0····························④\\\lambda_i≥0·······························⑤
+$$
+
+- ##### **Step 6: Convert to the SVM dual problem**
+
+The dual problem is a common method for solving linear programming problems. By converting a problem into its dual problem, we can sometimes greatly reduce the difficulty of solving it.
+
+Let's first review the original problem:
+
+**Under the condition $g_i(w,b)=y_i*(\vec{w}·\vec{x_i}+b)-1=p_i^2$, find the minimum of $\frac{||\vec{w}||^2}{2}$.**
+
+We first suppose the optimal solution of the original problem is $w^*、b^*$. Then let
+$$
+q(\lambda_i)=min(L(w,b,\lambda_i))=min(\frac{||\vec{w}||^2}{2}-\sum_{i=1}^s\lambda_i*(y_i*(\vec{w}·\vec{x_i}+b)-1-p_i^2))
+$$
+Substituting $w^*、b^*$, we get the following:
+$$
+q(\lambda_i)=min(L(w,b,\lambda_i))≤min(L(w^*,b^*,\lambda_i))
+$$
+that is, $min(\frac{||\vec{w}||^2}{2}-\sum_{i=1}^s\lambda_i*(y_i*(\vec{w}·\vec{x_i}+b)-1-p_i^2))≤\frac{||\vec{w^*}||^2}{2}-\sum_{i=1}^s\lambda_i*(y_i*(\vec{w^*}·\vec{x_i}+b^*)-1-p_i^2)$
+
+The less-than-or-equal sign arises from the $min$ minimum function.
+
+By conditions ③ and ⑤ of the KKT conditions, $\sum_{i=1}^s\lambda_i*(y_i*(\vec{w^*}·\vec{x_i}+b^*)-1-p_i^2)$ must be greater than 0, so
+$$
+\frac{||\vec{w^*}||^2}{2}-\sum_{i=1}^s\lambda_i*(y_i*(\vec{w^*}·\vec{x_i}+b^*)-1-p_i^2)≤\frac{||\vec{w^*}||^2}{2}
+$$
+And since $\vec{w^*}$ is the optimal solution of the original problem, we can get:
+$$
+\frac{||\vec{w^*}||^2}{2}≤\frac{||\vec{w}||^2}{2}
+$$
+So we can get the following chain of inequalities:
+$$
+q(\lambda_i)≤min(L(w^*,b^*,\lambda_i))≤\frac{||\vec{w^*}||^2}{2}≤\frac{||\vec{w}||^2}{2}
+$$
+We suppose $\lambda_i^*$ is the optimal solution of $q(\lambda_i)$. Then
+$$
+q(\lambda_i)≤q(\lambda_i^*)≤\frac{||\vec{w^*}||^2}{2}≤\frac{||\vec{w}||^2}{2}
+$$
+Good, at this point we can convert the original problem into the dual problem.
+
+**Original problem:**
+
+- **Under the condition $g_i(w,b)=y_i*(\vec{w}·\vec{x_i}+b)-1≥0$, find the minimum of $\frac{||\vec{w}||^2}{2}$.**
+
+**Dual problem:**
+
+- **Under the condition $\lambda_i≥0$, find the maximum of $q(\lambda_i)=min(L(w,b,\lambda_i))$.**
+
+When $q(\lambda_i^*)=\frac{||\vec{w^*}||^2}{2}$, the two problems are strongly dual and should attain their optimal solutions simultaneously. The proof follows:
+
+Because
+$$
+q(\lambda_i)≤\frac{||\vec{w}||^2}{2}
+$$
+so
+$$
+q(\lambda_i^*)≤\frac{||\vec{w}||^2}{2}
+$$
+hence
+$$
+\frac{||\vec{w^*}||^2}{2}≤\frac{||\vec{w}||^2}{2}
+$$
+And by the earlier result $q(\lambda_i)≤min(L(w^*,b^*,\lambda_i))≤\frac{||\vec{w^*}||^2}{2}$, we get
+$$
+q(\lambda_i)≤\frac{||\vec{w^*}||^2}{2}=q(\lambda_i^*)
+$$
+So $q(\lambda_i^*)$ is the maximizing solution of $q(\lambda_i)$.
+
+This proves that under strong duality, the optimal solutions of the original problem and the dual problem are attained simultaneously.
+
+- ##### Step 7: The optimization equation
+
+From the Lagrangian function above, we have already obtained:
+$$
+max(q(\lambda))=max(min(\frac{||\vec{w}||}{2})-\sum_{i=1}^s\lambda_i*(y_i*(\vec{w^*}·\vec{x_i}+b^*)-1)))
+$$
+Substituting the KKT conditions and simplifying gives:
+$$
+max(q(\lambda))=max(\sum_{i=1}^s{\lambda_i}-\frac{1}{2}\sum_{i=1}^{s}\sum_{j=1}^s\lambda_i\lambda_jy_iy_j\vec{x_i}·\vec{x_j})
+$$
+
+- ##### Step 8: Derive the algorithm steps
+
+We derived the following expressions earlier:
+
+① $y_i*(\vec{w}·\vec{x_i}+b)-1>0$, $\lambda_i=0$;
+
+② $y_i*(\vec{w}·\vec{x_i}+b)-1=0$, $\lambda_i≠0$.
+
+We also derived the condition $\lambda_i≥0$.
+
+From these two conditions we can draw some conclusions.
+
+- If a data point lies on the positive or negative hyperplane $\vec{w}·\vec{x_i}+b±1=0$, then since $|y_i|=1$, $y_i*(\vec{w}·\vec{x_i}+b)-1=0$, which falls under case ②, so $\lambda_i＞0$.
+
+- If a data point does not lie on the positive or negative hyperplane $\vec{w}·\vec{x_i}+b±1=0$, it falls under case ①, so $\lambda_i=0$. And substituting $\lambda_i=0$ gives $\lambda_i(y_i*(\vec{w}·\vec{x_i}+b)-1)=0$.
+
+The derivation above shows that when computing the hyperplane weights $w$ we only need the support vectors (the data points on the positive and negative hyperplanes), and do not need the non-support vectors.
+
+With the groundwork above, we can now state the support vector machine (SVM) algorithm.
+
+① Find the values of $\lambda_i$ by solving the following problem
+$$
+max(q(\lambda))=max(\sum_{i=1}^s{\lambda_i}-\frac{1}{2}\sum_{i=1}^{s}\sum_{j=1}^s\lambda_i\lambda_jy_iy_j\vec{x_i}·\vec{x_j})\\\text{where }\lambda_i≥0
+$$
+② According to the KKT conditions
+$$
+\vec{w}=\sum_{i=1}^s\lambda_iy_i\vec{x_i}
+$$
+we can find $\vec{w}$
+
+③ Find $b$ from $y_i*(\vec{w}·\vec{x_i}+b)-1=0$
+
+
+
+### Dimension-Raising Transformation and the Kernel Trick
+
+Let's look at the following scenario:
+
+Suppose there are some data points on the one-dimensional x-axis, red and blue. We now want to separate the red and blue points with a function (which in one dimension is just a constant). It is quite clear that this is impossible.
+
+![Resource 13](media/ml-svm/PNG-资源-13.png) 
+
+But if the figure above was produced by projecting a two-dimensional plane figure onto the one-dimensional x-axis, then when we "restore" the two-dimensional plane, we may discover a different world:
+
+![Resource 14](media/ml-svm/PNG-资源-14.png) 
+
+As in the figure above, if we can transform the one-dimensional data points into two-dimensional data points by some method, then it seems we can easily separate the data points (like the pink line in the figure)
+
+This process is the dimension-raising transformation.
+
+We can also use this method in support vector machines. Let's first review the optimization equation:
+$$
+max(q(\lambda_i))=max(\sum_{i=1}^s{\lambda_i}-\frac{1}{2}\sum_{i=1}^{s}\sum_{j=1}^s\lambda_i\lambda_jy_iy_j\vec{x_i}·\vec{x_j})\\\text{where }\lambda_i≥0
+$$
+$\vec{x_i}·\vec{x_j}$ denotes the dot product of the corresponding vector coordinates in the original dimension. But in fact, the equation above has no solution, so we can use the kernel trick to do the dimension-raising transformation. We use a function $T(x)$ to perform the dimension-raising transformation, and we call this function the dimension transformation function. Through the dimension transformation function, the original $\vec{x_i}$ becomes $T(\vec{x_i})$, and $\vec{x_j}$ becomes $T(\vec{x_j})$. So the original problem is converted into the following:
+$$
+max(q(\lambda_i))=max(\sum_{i=1}^s{\lambda_i}-\frac{1}{2}\sum_{i=1}^{s}\sum_{j=1}^s\lambda_i\lambda_jy_iy_jT(\vec{x_i})·T(\vec{x_j}))\\\text{where }\lambda_i≥0
+$$
+In fact, here we can either write out $T(\vec{x_i})、T(\vec{x_j})$ from $\vec{x_i}、\vec{x_j}$ and then take the dot product, or directly let $K(\vec{x_i},\vec{x_j})=T(\vec{x_i})·T(\vec{x_j})$ and then compute. The difference between the two is that the latter directly treats $\vec{x_i}·\vec{x_j}$ as a single unknown substituted into the computation. And this $K(\vec{x_i},\vec{x_j})$ is the kernel function. Its general expression is as follows:
+$$
+K(\vec{x_i},\vec{x_j})=(c+\vec{x_i}·\vec{x_j})^d
+$$
+So what do the parameters $c$ and $d$ do?
+
+For the same $d$ and different $c$, $c$ controls whether lower-order terms are present and the coefficients of the lower-order terms;
+
+For the same $c$ and different $d$, the size of $d$ determines the highest dimension.
+
+In addition, a kernel function can also be a linear combination of multiple kernel functions, for example: $K_1'(\vec{x_i},\vec{x_j})+K_2'(\vec{x_i},\vec{x_j})$
+
+There is also a rather special kernel function, one that transforms two dimensions into infinitely many dimensions. This is the Gaussian kernel function (RBF), whose formula is as follows:
+$$
+K(\vec{x_i},\vec{x_j})=e^{-\gamma||\vec{x_i}-\vec{x_j}||^2}
+$$
+
+### Soft Margin
+
+We explained the concepts of soft and hard margins earlier; now let's discuss them in detail.
+
+![Resource 16](media/ml-svm/PNG-资源-16.png) 
+
+As in the figure above, point A violates the constraint, lying between the yellow and black lines.
+
+We know the hard margin constraint is $y_i*(\vec{w^*}·\vec{x_i}+b^*)-1≥0$. If point A violates the constraint, then point A satisfies $y_a*(\vec{w^*}·\vec{x_a}+b^*)-1＜0$. We want to convert the inequality into an equality, which requires an $\epsilon_a$ to measure the error, as follows:
+$$
+\epsilon_a=1-y_a*(\vec{w^*}·\vec{x_a}+b^*)
+$$
+So the soft margin optimization problem is as follows:
+
+**Under the conditions $g_i(w,b)=y_i*(\vec{w}·\vec{x_i}+b)-1＞0$ and $max(0,1-y_a*(\vec{w^*}·\vec{x_a}+b^*))$,**
+
+**find the minimum of $\frac{||\vec{w}||^2}{2}+C\sum_{i=1}^s{\epsilon_i}$.**
+
+We can compare it with the earlier hard margin optimization problem:
+
+**Under the condition $g_i(w,b)=y_i*(\vec{w}·\vec{x_i}+b)-1＞0$,**
+
+**find the minimum of $\frac{||\vec{w}||^2}{2}$.**
+
+In fact, the biggest difference between the soft margin and the hard margin is one extra term
+$$
+C\sum_{i=1}^s{\epsilon_i}
+$$
+What this term means is that all the errors $\sum_{i=1}^s{\epsilon_i}$ are taken into account in the optimization problem, so that minimizing also helps reduce the errors. The constant $C$ is set by us, and it adjusts the tolerance for error.
+
+- The larger $C$ is, the lower the tolerance for $\epsilon_i$, that is, the fewer errors in the final result;
+- The smaller $C$ is, the higher the tolerance for $\epsilon_i$, that is, the larger the errors in the final result;
+
+</script>
+<script type="text/markdown" data-lang="cn">
+
+#### 文献参考
+
+**·**   [百度知道：桂纶美](https://zhidao.baidu.com/question/416077221.html)
+
+
+
+
+### 基本概念
+
+#### 支持向量
+
+概念：位于分类超平面附近的样本点，称为支持向量
+
+>在数学中，点这个概念常常用向量去取代。比如在直角坐标系下，点A坐标为(3,4)，我们可以认为它代表着向量***OA*** = (3,4)
+
+现在我们有如下左图的一个二维样本点（向量），其中黄色的线是经过线性回归计算得出来的分类线；而右图那些临近回归线的点（用蓝色方形标注），就叫做支持向量。
+
+> “支持” 的含义可以这样理解：
+>
+> ​        那些临近分类边界的点，才是对回归线（超平面）的走向有影响的点；距离分类边界较远的点，它们对回归线（超平面）如何去画并没有什么影响
+
+ <img src="media/ml-svm/图片记录-image-20220701173829220.png" alt="image-20220701173829220" style="zoom: 67%;" />
+
+如果我们将“机”理解成“算法”，那么支持向量机不难理解为“与支持点相关的(求出分类超平面的)算法”
+
+下面给出支持向量机较为标准的概念：
+
+#### **支持向量机(SVM)**
+
+是一种二分类模型，它的基本模型是定义在特征空间上的间隔最大的线性分类器。
+
+对于下面这一些数据集，要用一条回归线将其分开，现有①、②、③三条线，哪一条效果最好呢？
+
+<img src="media/ml-svm/图片记录-image-20220701175525045.png" alt="image-20220701175525045" style="zoom: 67%;" />
+
+我想绝大部分人都会认为是②。虽然三条线都满足了将三角形和圆形分开，但是对于②线来说，三角形和圆形的支持向量到②线的距离看上去更加“均衡”，像是从中间位置将其分隔。
+
+其实，支持向量机的意思是指：求支持向量到超平面的距离之和尽可能的大的算法。
+
+> 事实上，根据基本不等式，距离之和最大和距离更加“均衡”其实是等价的
+
+那么这里就引出了最大间隔超平面的概念
+
+
+
+#### 最大间隔超平面
+
+上图中对应的②线——也就是我们看起来的最“均衡线”，它其实是以最大间隔把两类样本分开的线（高维的称作超平面），即最大间隔超平面。
+
+<img src="media/ml-svm/图片记录-image-20220701203730498.png" alt="image-20220701203730498" style="zoom:67%;" />
+
+我们会发现①、③两条线的样本间隔要比②的小很多，如下图
+
+<img src="media/ml-svm/图片记录-image-20220701205023715.png" alt="image-20220701205023715" style="zoom:60%;" />
+
+而我们支持向量机算法（SVM）实质上求的就是②这样的线、平面或者超平面
+
+
+
+#### 软间隔与硬间隔
+
+<img src="media/ml-svm/PNG-资源-15.png" alt="资源 15" style="zoom:67%;" /> 
+
+假设上图中左边的坐标系中黄色、黑色和红色分别为负/决策/正超平面，而此时如果在黄线和红线之间新增了一个数据点$A$，那么围绕超平面是否进行调整，会分成两种情况：
+
+- 第一种就是右上角的图1，虽然加入了$A$，但是仍然使其在黄线与红线之间；
+- 第二种就是右下角的图2，随着$A$的加入，超平面也随之发生变化，最终保证$A$在黄线之下。
+
+第一种情况中的黄线与红线的距离我们称之为软间隔；第二种情况中的黄线与红线的距离我们称之为硬间隔。
+
+
+
+### SVM最优化问题求解思路
+
+在线性代数中，任意超平面可以用下面这个线性方程来描述：
+$$
+W^{T}X+b=0
+$$
+其中
+$$
+W=[w_1,w_2,···，w_n]
+$$
+
+$$
+X=[x_1,x_2,···，x_n]
+$$
+
+为系数矩阵，矩阵W转置后
+$$
+W^T = \left[
+\matrix{
+   W_1\\
+   W_2\\
+   ·\\
+   ·\\
+   ·\\
+   W_n
+}
+\right]
+$$
+故
+$$
+W^TX=w_1x_1+w_2x_2+w_3x_3+···+w_nx_n
+$$
+就是我们正常看到的超平面函数表达式
+
+根据点到直线的距离公式
+
+$$
+\frac{|Ax+By+C|}{\sqrt{A^2+B^2}}
+$$
+从二维拓展成高维
+$$
+\frac{|w_1x_1+w_2x_2+w_3x_3+···+w_nx_n+b|}{\sqrt{w_1^2+w_2^2+···+w_n^2}}
+$$
+其中
+$$
+w_1x_1+w_2x_2+w_3x_3+···+w_nx_n=W^TX
+$$
+为前面所得出的公式
+$$
+\sqrt{w_1^2+w_2^2+···+w_n^2}=||W||
+$$
+为向量的模的定义
+
+> 对于二维向量 ***X*** = (3,4)，其模
+> $$
+> ||X||=\sqrt{3^2+4^2}=5
+> $$
+> 高维向量以此类推
+
+所以上面的高维距离公式可以转化为
+
+$$
+\frac{|W^TX+b|}{||W||}
+$$
+
+
+
+### 支持向量机数学原理
+
+通过上文介绍，我们大概了解了支持向量机的作用与简单原理。下面我们详细介绍一下支持向量机的数学原理以及其算法。
+
+- ##### 第一步：建立支持向量方程
+
+首先补充一下上文介绍超平面的内容。我们一般将中间的用于分隔的超平面叫做决策超平面，决策超平面也是我们最后求得的超平面。而决策超平面的正方向与负方向分别有两个超平面：正超平面和负超平面。这两个超平面用于辅助生成决策超平面。为了简单化，我们先只考虑二维的支持向量机。
+
+![资源 3](media/ml-svm/PNG-资源-3.png) 
+
+图中正超平面、决策超平面、负超平面的方程分别如下：
+$$
+w_1x_1+w_2x_2+b=1\\w_1x_1+w_2x_2+b=0\\w_1x_1+w_2x_2+b=-1
+$$
+这个并非是超平面的唯一写法。前面基础部分我们介绍了线性方程如何用矩阵来表达，这种写法只是上面的一种等价变式（移项），方便后面的运算。
+
+现在我们假设在正超平面和负超平面上分别有两个支持向量M和N。他们分别满足下式：
+$$
+w_1x_{1m}+w_2x_{2m}+b=1\\w_1x_{1n}+w_2x_{2n}+b=-1
+$$
+目前现有的这两个方程对我们并没有什么作用或者启发，考虑到两个式子中都可以提出公因子$w_1、w_2$，以及都有常数$b$，所以我们将两式作差，会得到如下结果：
+$$
+w_1(x_{1m}-x_{1n})+w_2(x_{2m}-x_{2n})=2
+$$
+如果我们将上述式子看成两个向量做点积，我们会得到：
+$$
+\vec{w}(\vec{x_m}-\vec{x_n})=2
+$$
+其中$\vec{w}=[w_1 \ w_2]$，$\vec{x_m}=[x_{1m} \ x_{2m}]^T$，$\vec{x_n}=[x_{1n} \ x_{2n}]^T$
+
+根据$\vec{a}·\vec{b}=||\vec{a}||*||\vec{b}||*cos\theta$，
+$$
+||\vec{w}||*||\vec{x_m}-\vec{x_n}||*cos\theta=2
+$$
+其中$||\vec{w}||=\sqrt{w_1^2+w_2^2}$。
+
+移项	
+$$
+||\vec{x_m}-\vec{x_n}||*cos\theta=\frac{2}{||\vec{w}||}
+$$
+
+> 通过移项$x$与$w$分别在等式左右两边。左边是数据点的坐标，右边是待求的权重值。
+
+- ##### 第二步：求出最大间隔$L$表达式
+
+这里我们不妨思考下 $||\vec{x_m}-\vec{x_n}||*cos\theta$ 的意义。
+
+所以我们画出下图，尝试从几何角度去观察上式的意义。
+
+我们知道向量点积可以转化为投影，即将一个向量的模乘$cos\theta$投影到另外一个向量的方向上，相同方向会极大的方便计算。
+
+<img src="media/ml-svm/PNG-资源-7.png" alt="资源 7" style="zoom:200%;" /> 
+
+于是我们画出了下面的坐标系与向量**（称为图1）**。我们想用向量点积投影，但是我们并不知道MN和$\vec{w}$的夹角。
+
+![资源 6](media/ml-svm/PNG-资源-6.png) 
+
+但是我们可以进行转化。我们知道M、N两点在正负超平面上，那如果M、N在决策超平面上呢？由于这三个超平面的方程只有等号右边的常数不一样，所以如果M、N在决策超平面上时的$\vec{w}$应该与上图的一样。所以我们不妨先设M、N在决策超平面上。我们可以画出下图**（称为图2）**：
+
+![资源 8](media/ml-svm/PNG-资源-8.png) 
+
+此时的M、N分别满足下列式子：
+$$
+w_1x_{1m}+w_2x_{2m}+b=0\\w_1x_{1n}+w_2x_{2n}+b=0
+$$
+两式作差，可以得到：
+$$
+w_1(x_{1m}-x_{1n})+w_2(x_{2m}-x_{2n})=0
+$$
+即
+$$
+\vec{w}(\vec{x_m}-\vec{x_n})=0
+$$
+向量点积为零说明两向量互相垂直。观察上图，$\vec{x_m}-\vec{x_n}$即为$\vec{NM}$。而这也就意味着$\vec{w}$垂直于决策超平面，也就垂直与正、负超平面。好，这时我们从图2转回图1，我们再次将图1放出来方便说明。
+
+![资源 6](media/ml-svm/PNG-资源-6.png) 
+
+由于$\vec{w}$垂直于超平面，所以$||\vec{NM}||$在$\vec{w}$上的投影就为正负超平面的最大间隔$L$。而正好$||\vec{NM}||=||\vec{x_m}-\vec{x_n}||*cos\theta$，故
+$$
+L=\frac{2}{||\vec{w}||}
+$$
+
+- ##### 第三步：求$L$约束条件，得出优化问题
+
+正超平面：所有红点属于正类，所以$y_i=1$；所有红点都在正超平面上方，所以$\vec{w}·\vec{x_i}+b≥1$
+
+负超平面：所有黄点属于负类，所以$y_i=-1$；所有黄点都在负超平面下方，所以$\vec{w}·\vec{x_i}+b≤1$
+
+上面两种情况可以总结成下面这个式子：
+$$
+y_i*(\vec{w}·\vec{x_i}+b)≥1
+$$
+而这个式子就是约束条件。
+
+所以，求决策超平面问题就转化为：
+
+**在$y_i*(\vec{w}·\vec{x_i}+b)≥1$条件下，$||\vec{w}||$的最小值。**
+
+由于$||\vec{w}||=\sqrt{w_1^2+w_2^2}$中含有根号，所以最小值并不是很好求。所以我们转化一下，将$||\vec{w}||$转化成$\frac{||\vec{w}||^2}{2}$，于是问题等价为：
+
+**在$y_i*(\vec{w}·\vec{x_i}+b)≥1$条件下，$\frac{||\vec{w}||^2}{2}$的最小值。**
+
+- ##### 第四步：解出优化问题解的前四个条件
+
+这种问题我们会通过拉格朗日乘子法进行求解。
+
+但是有一个问题，就是约束条件$y_i*(\vec{w}·\vec{x_i}+b)≥1$是不等式而不是等式，所以我们要先经过一步转化，将不等式转化为等式。
+
+我们将$y_i*(\vec{w}·\vec{x_i}+b)≥1$转换成$y_i*(\vec{w}·\vec{x_i}+b)-1=p_i^2$，由于$p_i^2≥0$恒成立，故$y_i*(\vec{w}·\vec{x_i}+b)-1≥0$恒成立。
+
+所以原问题等价为：
+
+**在$y_i*(\vec{w}·\vec{x_i}+b)-1=p_i^2$条件下，$\frac{||\vec{w}||^2}{2}$的最小值。**
+
+下面构造拉格朗日函数：
+$$
+L(w,b,\lambda_i,p_i)=\frac{||\vec{w}||^2}{2}-\sum_{i=1}^s\lambda_i*(y_i*(\vec{w}·\vec{x_i}+b)-1-p_i^2)
+$$
+然后进行求解。拉格朗日函数对每个未知数求偏导并令其等于0。
+$$
+\frac{\partial{L}}{\partial{w}}=0;\frac{\partial{L}}{\partial{b}}=0;\frac{\partial{L}}{\partial{\lambda_i}}=0;\frac{\partial{L}}{\partial{p_i}}=0
+$$
+下面我们一个个来计算。
+
+- 首先是$\frac{\partial{L}}{\partial{w}}=0$。$w$出现在两个位置，分别是$\frac{||\vec{w}||^2}{2}$和$\sum_{i=1}^s\lambda_i*y_i*(\vec{w}·\vec{x_i}+b)$，很容易求导得下式：
+
+$$
+\vec{w}-\sum_{i=1}^s\lambda_iy_i\vec{x_i}=0············①
+$$
+
+- 然后是$\frac{\partial{L}}{\partial{b}}=0$。$b$只出现在一个位置，为$\sum_{i=1}^s\lambda_i*y_i*b$，很容易求导得下式：
+
+$$
+\sum_{i=1}^s\lambda_iy_i=0············②
+$$
+
+- 接着是$\frac{\partial{L}}{\partial{\lambda_i}}=0$。$\lambda_i$只出现在一个位置，为$\sum_{i=1}^s\lambda_i*(y_i*(\vec{w}·\vec{x_i}+b)-1-p_i^2)$。本来求偏导得到的结果应该是$\sum_{i=1}^{s}{y_i*(\vec{w}·\vec{x_i}+b)-1-p_i^2=0}$，但其实根据限制条件，$y_i*(\vec{w}·\vec{x_i}+b)-1-p_i^2=0$，没有必要使用求和符号。
+
+$$
+y_i*(\vec{w}·\vec{x_i}+b)-1-p_i^2=0············③
+$$
+
+- 最后是$\frac{\partial{L}}{\partial{p_i}}=0$。$p_i$只出现在一个位置，为$\sum_{i=1}^s\lambda_i*(-p_i^2)$，很容易求导得到下式：
+
+$$
+2\lambda_ip_i=0············④
+$$
+
+下面的步骤就是利用①~④式和原式求出$||\vec{w}||$的最小值。首先我们将④式左右两边同时除以2并乘$p_i$，得到下式：
+$$
+\lambda_ip_i^2=0
+$$
+之所以要这样做是因为③式中有一个$p_i^2$，这样做可以一定程度上化简计算。我们将③式代入④式，得到：
+$$
+\lambda_i(y_i*(\vec{w}·\vec{x_i}+b)-1)=0
+$$
+这个式子非常有趣。之前我们在第三步得到$y_i*(\vec{w}·\vec{x_i}+b)≥1$这个约束条件，那这样上式只可能在两种情况下成立：
+
+① $y_i*(\vec{w}·\vec{x_i}+b)-1)＞0$，$\lambda_i=0$;
+
+② $y_i*(\vec{w}·\vec{x_i}+b)-1=0$，$\lambda_i≠0$。
+
+- ##### **第五步：得出优化问题解的第五个条件**
+
+对于拉格朗日函数$L(w,b,\lambda_i,p_i)=\frac{||\vec{w}||^2}{2}-\sum_{i=1}^s\lambda_i*(y_i*(\vec{w}·\vec{x_i}+b)-1-p_i^2)$来说，当不满足约束条件时，即$$y_i*(\vec{w}·\vec{x_i}+b)-1<0$$时，如果$\lambda_i<0$，则$\sum_{i=1}^s\lambda_i*(y_i*(\vec{w}·\vec{x_i}+b)-1-p_i^2)>0$，而$L(w,b,\lambda_i,p_i)$也会更小。根据拉格朗日函数的性质，越符合约束条件拉格朗日函数的值越小。这就说明，$\lambda_i$小于0是不符合常理的，故其应该大于等于0。
+
+我们同样也可以通过图像来解释这个问题。
+
+我们假设是二维空间，在这个二维空间中，横纵坐标分别是$w_1$和$w_2$，那么$||\vec{w}||=\sqrt{w_1^2+w_2^2}$在图像上表示的几何含义为一个圆心为原点，半径为$\sqrt{w_1^2+w_2^2}$的圆。
+
+<img src="media/ml-svm/PNG-资源-9.png" alt="资源 9" style="zoom: 50%;" /> 
+
+我们所要求得的优化问题$min\frac{||\vec{w}||^2}{2}$，即为$||\vec{w}||$取最小值时取到。而由于$||\vec{w}||$即为圆的半径，所以我们希望圆尽可能的小。
+
+现在我们加入约束条件。第一个约束条件为$$g_1=y_1*(\vec{w}·\vec{x_1}+b)-1≥0$$，它在图像上表示的含义是可行区域在一条直线之上（浅绿色），如下图：
+
+<img src="media/ml-svm/PNG-资源-11.png" alt="资源 11" style="zoom:50%;" /> 
+
+而能够使圆上有点能在可行区域之内，且圆的半径要最小的情况就是圆与直线相切（如图中深蓝色圆所表示）
+
+此时我们加入另外一个限制条件，$$g_2=y_2*(\vec{w}·\vec{x_2}+b)-1≥0$$。此时在两个限制条件下，最小的圆是经过两条直线交点的圆。而此时的$\vec{w}=(w_1,w_2)$的方向（红色线所表示）只要在两个直线之内即可。
+
+<img src="media/ml-svm/PNG-资源-12.png" alt="资源 12" style="zoom:50%;" /> 
+
+
+
+通过上图直观理解，我们也可以得出下面一个式子：向量$\frac{\partial{f}}{\partial{w}}$可以由$\frac{\partial{g_1}}{\partial{w}}和\frac{\partial{g_2}}{\partial{w}}$线性表出，而它们的系数$\lambda_1$和$\lambda_2$都为非负数（通过直观理解或者用矢量三角形理解）。
+$$
+\frac{\partial{f}}{\partial{w}}=\lambda_1\frac{\partial{g_1}}{\partial{w}}+\lambda_2\frac{\partial{g_2}}{\partial{w}}
+$$
+通过上述图像也可以帮助我们理解，$\lambda_i$为什么大于等于0。我们也就得到了第五个条件：
+$$
+\lambda_i≥0············⑤
+$$
+综合上述，我们已经得到了解的五个条件，又称为KKT条件：
+$$
+\vec{w}-\sum_{i=1}^s\lambda_iy_i\vec{x_i}=0····················①\\\sum_{i=1}^s\lambda_iy_i=0·························②\\y_i*(\vec{w}·\vec{x_i}+b)-1-p_i^2=0············③\\2\lambda_ip_i=0····························④\\\lambda_i≥0·······························⑤
+$$
+
+- ##### **第六步：转化成SVM对偶问题**
+
+对偶问题是一种求解线性规划问题的常用方法。通过将一个问题转化为其对偶问题，有时能大大简化求解问题的难度。
+
+我们先回顾一下原问题：
+
+**在$g_i(w,b)=y_i*(\vec{w}·\vec{x_i}+b)-1=p_i^2$条件下，$求\frac{||\vec{w}||^2}{2}$的最小值。**
+
+我们先假设原问题的最优解为$w^*、b^*$。然后设
+$$
+q(\lambda_i)=min(L(w,b,\lambda_i))=min(\frac{||\vec{w}||^2}{2}-\sum_{i=1}^s\lambda_i*(y_i*(\vec{w}·\vec{x_i}+b)-1-p_i^2))
+$$
+代入$w^*、b^*$，可以得到下面的式子：
+$$
+q(\lambda_i)=min(L(w,b,\lambda_i))≤min(L(w^*,b^*,\lambda_i))
+$$
+即 $min(\frac{||\vec{w}||^2}{2}-\sum_{i=1}^s\lambda_i*(y_i*(\vec{w}·\vec{x_i}+b)-1-p_i^2))≤\frac{||\vec{w^*}||^2}{2}-\sum_{i=1}^s\lambda_i*(y_i*(\vec{w^*}·\vec{x_i}+b^*)-1-p_i^2)$
+
+小于等于号的存在是由$min$最小值函数决定的。
+
+根据KKT条件的③和⑤，$\sum_{i=1}^s\lambda_i*(y_i*(\vec{w^*}·\vec{x_i}+b^*)-1-p_i^2)$必定大于0，故
+$$
+\frac{||\vec{w^*}||^2}{2}-\sum_{i=1}^s\lambda_i*(y_i*(\vec{w^*}·\vec{x_i}+b^*)-1-p_i^2)≤\frac{||\vec{w^*}||^2}{2}
+$$
+又由于$\vec{w^*}$是原问题最优解，所以我们可以得到：
+$$
+\frac{||\vec{w^*}||^2}{2}≤\frac{||\vec{w}||^2}{2}
+$$
+所以我们可以得到下面一个不等式链：
+$$
+q(\lambda_i)≤min(L(w^*,b^*,\lambda_i))≤\frac{||\vec{w^*}||^2}{2}≤\frac{||\vec{w}||^2}{2}
+$$
+我们假设$\lambda_i^*为q(\lambda_i)$的最优解。则
+$$
+q(\lambda_i)≤q(\lambda_i^*)≤\frac{||\vec{w^*}||^2}{2}≤\frac{||\vec{w}||^2}{2}
+$$
+好，进行到这一步我们就可以将原问题转化成对偶问题了。
+
+**原问题：**
+
+- **在$g_i(w,b)=y_i*(\vec{w}·\vec{x_i}+b)-1≥0$条件下，$求\frac{||\vec{w}||^2}{2}$的最小值。**
+
+**对偶问题：**
+
+- **在$\lambda_i≥0$的条件下，求$q(\lambda_i)=min(L(w,b,\lambda_i))$的最大值。**
+
+当$q(\lambda_i^*)=\frac{||\vec{w^*}||^2}{2}$时，两个问题为强对偶问题，应同时取得最优解，下面进行证明：
+
+因为
+$$
+q(\lambda_i)≤\frac{||\vec{w}||^2}{2}
+$$
+所以
+$$
+q(\lambda_i^*)≤\frac{||\vec{w}||^2}{2}
+$$
+故
+$$
+\frac{||\vec{w^*}||^2}{2}≤\frac{||\vec{w}||^2}{2}
+$$
+而又根据前面得到的$q(\lambda_i)≤min(L(w^*,b^*,\lambda_i))≤\frac{||\vec{w^*}||^2}{2}$，所以
+$$
+q(\lambda_i)≤\frac{||\vec{w^*}||^2}{2}=q(\lambda_i^*)
+$$
+所以$q(\lambda_i^*)$为$q(\lambda_i)$的最大值解。
+
+故证明在强对偶条件下，原问题和对偶问题的最优解同时取到。
+
+- ##### 第七步：优化方程
+
+根据前面的拉格朗日函数，我们已经得到：
+$$
+max(q(\lambda))=max(min(\frac{||\vec{w}||}{2})-\sum_{i=1}^s\lambda_i*(y_i*(\vec{w^*}·\vec{x_i}+b^*)-1)))
+$$
+将KKT条件代入化简可得：
+$$
+max(q(\lambda))=max(\sum_{i=1}^s{\lambda_i}-\frac{1}{2}\sum_{i=1}^{s}\sum_{j=1}^s\lambda_i\lambda_jy_iy_j\vec{x_i}·\vec{x_j})
+$$
+
+- ##### 第八步：得出算法步骤
+
+上文我们推导过下列式子：
+
+① $y_i*(\vec{w}·\vec{x_i}+b)-1>0$，$\lambda_i=0$;
+
+② $y_i*(\vec{w}·\vec{x_i}+b)-1=0$，$\lambda_i≠0$。
+
+同时我们也推导出$\lambda_i≥0$这个条件。
+
+根据上面的两个条件我们可以得到一些结论。
+
+- 如果数据点在正负超平面$\vec{w}·\vec{x_i}+b±1=0$上，由于$|y_i|=1$，所以$y_i*(\vec{w}·\vec{x_i}+b)-1=0$，则属于情况②，故$\lambda_i＞0$。
+
+- 如果数据点不在正负超平面上$\vec{w}·\vec{x_i}+b±1=0$上，则属于情况①，所以$\lambda_i=0$。而将$\lambda_i=0$代入可得$\lambda_i(y_i*(\vec{w}·\vec{x_i}+b)-1)=0$。
+
+上述推导说明，我们在计算超平面权重值$w$时只需要用到支持向量（在正负超平面上的数据点），而不需要非支持向量。
+
+有了前文铺垫，我们就可以得出支持向量机SVM算法了。
+
+① 通过下列问题求得$\lambda_i$的值
+$$
+max(q(\lambda))=max(\sum_{i=1}^s{\lambda_i}-\frac{1}{2}\sum_{i=1}^{s}\sum_{j=1}^s\lambda_i\lambda_jy_iy_j\vec{x_i}·\vec{x_j})\\其中\lambda_i≥0
+$$
+② 根据KKT条件
+$$
+\vec{w}=\sum_{i=1}^s\lambda_iy_i\vec{x_i}
+$$
+可以求出$\vec{w}$
+
+③ 根据$y_i*(\vec{w}·\vec{x_i}+b)-1=0$求解出$b$
+
+
+
+### 升维转换与核技巧
+
+我们看下面一个情景：
+
+比如现在在一维x轴上有一些数据点，红色和蓝色。我们现在想要将其用一个函数（对于一维来说就是一个常量）去划分红点和蓝点。很直观地可以看出，这个是不可能的。
+
+![资源 13](media/ml-svm/PNG-资源-13.png) 
+
+但是，如果上图是由二维平面图形投影到一维x轴上而产生的，我们“还原”二维平面，或许会发现不一样的世界：
+
+![资源 14](media/ml-svm/PNG-资源-14.png) 
+
+如上图，如果我们能通过某些方法将一维的数据点转化为二维的数据点，那么我们似乎可以很容易对数据点进行划分（如图中粉红色那条线）
+
+这一过程即为升维转换。
+
+在支持向量机中我们也可以利用这个方法。我们先回顾下优化方程：
+$$
+max(q(\lambda_i))=max(\sum_{i=1}^s{\lambda_i}-\frac{1}{2}\sum_{i=1}^{s}\sum_{j=1}^s\lambda_i\lambda_jy_iy_j\vec{x_i}·\vec{x_j})\\其中\lambda_i≥0
+$$
+$\vec{x_i}·\vec{x_j}$表示在原维度下对应向量坐标的点积。但是事实上，上述方程是无解的，所以我们可以利用核技巧进行升维变换。我们会通过一个函数$T(x)$进行升维变换操作，这个函数我们称之为维度转换函数。通过维度转换函数，原来的$\vec{x_i}$变成了$T(\vec{x_i})$，$\vec{x_j}$变成了$T(\vec{x_j})$。所以原问题也转换成了下式：
+$$
+max(q(\lambda_i))=max(\sum_{i=1}^s{\lambda_i}-\frac{1}{2}\sum_{i=1}^{s}\sum_{j=1}^s\lambda_i\lambda_jy_iy_jT(\vec{x_i})·T(\vec{x_j}))\\其中\lambda_i≥0
+$$
+事实上，这里我们既可以通过$\vec{x_i}、\vec{x_j}$写出$T(\vec{x_i})、T(\vec{x_j})$，然后再进行点积操作，也可以直接令$K(\vec{x_i},\vec{x_j})=T(\vec{x_i})·T(\vec{x_j})$，然后进行计算。这两者的区别在于，后者是直接将$\vec{x_i}·\vec{x_j}$看成一个未知数整体代入计算。而这里的$K(\vec{x_i},\vec{x_j})$即为核函数。其一般表达式如下：
+$$
+K(\vec{x_i},\vec{x_j})=(c+\vec{x_i}·\vec{x_j})^d
+$$
+那么参数$c和d$都有什么作用呢？
+
+对于相同的$d$，不同的$c$来说，$c$可以控制低次项的存在与否，以及低次项的系数；
+
+对于相同的$c$，不同的$d$来说，$d$的大小决定了最高维度大小。
+
+除此之外，核函数还可以由多个核函数线性组合而成，比如：$K_1'(\vec{x_i},\vec{x_j})+K_2'(\vec{x_i},\vec{x_j})$
+
+也有一种比较特殊的核函数，即将二维转化成无穷维。这个核函数是高斯核函数(RBF)，其公式如下：
+$$
+K(\vec{x_i},\vec{x_j})=e^{-\gamma||\vec{x_i}-\vec{x_j}||^2}
+$$
+
+### 软间隔
+
+前文中解释过软硬间隔的概念，下面我们详细讨论下。
+
+![资源 16](media/ml-svm/PNG-资源-16.png) 
+
+如上图，有个点A违反了约束条件，在黄线和黑线之内。
+
+我们知道硬间隔约束条件为$y_i*(\vec{w^*}·\vec{x_i}+b^*)-1≥0$。如果点A违背约束条件，则点A满足式子$y_a*(\vec{w^*}·\vec{x_a}+b^*)-1＜0$。我们想要把不等式转化为等式，则需要一个$\epsilon_a$来衡量误差，式子如下：
+$$
+\epsilon_a=1-y_a*(\vec{w^*}·\vec{x_a}+b^*)
+$$
+所以软间隔优化问题如下：
+
+**在$g_i(w,b)=y_i*(\vec{w}·\vec{x_i}+b)-1＞0$和$max(0,1-y_a*(\vec{w^*}·\vec{x_a}+b^*))$条件下，**
+
+**$求\frac{||\vec{w}||^2}{2}+C\sum_{i=1}^s{\epsilon_i}$的最小值。**
+
+我们可以和之前的硬间隔优化问题进行比对：
+
+**在$g_i(w,b)=y_i*(\vec{w}·\vec{x_i}+b)-1＞0$条件下，**
+
+**$求\frac{||\vec{w}||^2}{2}$的最小值。**
+
+事实上，软间隔相比于硬间隔的最大差别是在于多了一项
+$$
+C\sum_{i=1}^s{\epsilon_i}
+$$
+这一项的意思就是，将所有的误差$\sum_{i=1}^s{\epsilon_i}$考虑到优化问题中，这样求最小值的时候也能够起到减少误差的作用。而常数$C$是我们人为规定的，它起到调节误差容忍度的作用。
+
+- $C$越大，说明对$\epsilon_i$的容忍度越小，也就是最终算出来的结果中产生的误差越少；
+- $C$越小，说明对$\epsilon_i$的容忍度越大，也就是最终算出来的结果中产生的误差越大；
+
+
+
+
+
+</script>
+<footer class="site"><span>© 2026 Yongkang Li</span><a href="../blog.html"><span data-l="en">All posts</span><span data-l="cn">全部文章</span></a></footer>
+</div></main>
+<script src="../assets/site.js"></script>
+<script src="../assets/blog-lang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/post.js"></script>
+</body>
+</html>
