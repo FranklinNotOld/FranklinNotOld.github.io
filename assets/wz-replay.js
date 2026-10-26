@@ -426,6 +426,7 @@
     const off = view.pos.clone().sub(view.at);
     off.applyAxisAngle(new T.Vector3(0, 1, 0), sway);
     camera.position.copy(view.at).add(off); camera.lookAt(view.at);
+    camera.updateMatrixWorld();                         // labels project with this frame's camera, not the last one
 
     let count = 0, inWz = 0, nFlag = 0;
     for (const o of vehicles) {

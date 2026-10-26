@@ -45,13 +45,14 @@
   .proj p { margin: 0 0 12px; color: var(--dim); font-size: 15px; }
   .proj h3 a:hover { text-decoration: underline; text-decoration-color: var(--c2); }
   .proj .more { margin-top: auto; font-weight: 600; font-size: 14px; color: var(--c2); }
-  .wz { background: linear-gradient(180deg, color-mix(in srgb, var(--c1) 14%, var(--bg)), color-mix(in srgb, var(--c2) 12%, var(--bg))); }
-  .wz svg { width: 100%; height: 100%; display: block; }
+  .wz { background: #04070d; }
+  .wz video { width: 100%; height: 100%; display: block; object-fit: cover; }
   .video { display: grid; place-items: center; background: radial-gradient(120% 120% at 20% 10%, color-mix(in srgb, var(--c1) 35%, #06060c), #06060c 70%); color: #f4f6fb; }
   .video .play { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.3); backdrop-filter: blur(6px); }
   .video .play::after { content: ""; border-left: 18px solid #fff; border-top: 11px solid transparent; border-bottom: 11px solid transparent; margin-left: 5px; }
   .video .cap { position: absolute; left: 14px; bottom: 12px; font: 500 12.5px var(--mono); letter-spacing: .06em; color: rgba(244,246,251,.75); }
   .video .waves { position: absolute; right: 18px; top: 16px; width: 64px; height: 64px; }
+  .video video { display: block; width: 100%; height: 100%; object-fit: contain; background: #06060c; }
 
   .aur { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 30px; padding: 28px; }
   .aur h3 { font-weight: 300; font-size: 40px; letter-spacing: -.035em; line-height: 1.05; margin: 14px 0 12px; }
@@ -203,23 +204,10 @@
     <div class="pgrid">
       <article class="proj glass">
         <div class="vis wz" aria-hidden="true">
-          <!-- schematic: vehicles approaching a lane closure, risk rising toward the taper -->
-          <svg viewBox="0 0 400 225" preserveAspectRatio="xMidYMid slice">
-            <defs>
-              <linearGradient id="risk" x1="0" x2="1"><stop offset="0" style="stop-color: var(--c3); stop-opacity: 0"/><stop offset=".55" style="stop-color: #fbbf24; stop-opacity: .45"/><stop offset="1" style="stop-color: #f43f5e; stop-opacity: .75"/></linearGradient>
-            </defs>
-            <rect x="0" y="62" width="400" height="104" rx="6" fill="#1b1f2a"/>
-            <path d="M0 114h400" stroke="#e5e7eb" stroke-width="2" stroke-dasharray="14 12" opacity=".7"/>
-            <path d="M0 64h400M0 164h400" stroke="#e5e7eb" stroke-width="2" opacity=".5"/>
-            <path d="M150 90 L262 90 L262 112 L150 112 Z" fill="url(#risk)"/>
-            <g fill="#fb923c"><path d="m262 140 5 -14 5 14z"/><path d="m282 128 5 -14 5 14z"/><path d="m302 118 5 -14 5 14z"/><path d="m322 118 5 -14 5 14z"/><path d="m342 118 5 -14 5 14z"/><path d="m362 118 5 -14 5 14z"/><path d="m382 118 5 -14 5 14z"/></g>
-            <rect x="300" y="122" width="96" height="40" rx="4" fill="#fb923c" opacity=".15"/>
-            <g><rect x="40" y="128" width="34" height="18" rx="5" style="fill: var(--c1)"/><rect x="118" y="128" width="34" height="18" rx="5" style="fill: var(--c2)"/><rect x="200" y="80" width="34" height="18" rx="5" fill="#e5e7eb"/><rect x="70" y="80" width="34" height="18" rx="5" fill="#e5e7eb" opacity=".8"/></g>
-            <path d="M152 137 C 200 137, 220 106, 262 101" fill="none" stroke="#fbbf24" stroke-width="2.5" stroke-dasharray="4 5"/>
-            <circle cx="262" cy="101" r="5" fill="#f43f5e"/>
-            <text x="16" y="48" font-family="JetBrains Mono, monospace" font-size="12" letter-spacing="1.5" style="fill: var(--dim)">WORK ZONE AHEAD · RISK ↑</text>
-            <text x="16" y="198" font-family="JetBrains Mono, monospace" font-size="11" style="fill: var(--faint)">schematic</text>
-          </svg>
+          <!-- the 3D replay from the project page (real radar tracks), rendered as a 24 s loop -->
+          <video autoplay muted loop playsinline poster="assets/projects/workzone/wz-card-poster.jpg?v=2">
+            <source src="assets/projects/workzone/wz-card.mp4?v=2" type="video/mp4">
+          </video>
         </div>
         <span class="badge" style="--c: #fb923c"><i></i>Research · Purdue × INDOT</span>
         <h3><a href="projects/workzone.html">Work Zone Risk Prediction</a></h3>
@@ -228,10 +216,10 @@
       </article>
 
       <article class="proj glass">
-        <div class="vis video" aria-label="Field-test video, coming soon">
-          <span class="play" aria-hidden="true"></span>
-          <svg class="waves" viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="rgba(244,246,251,.6)" stroke-width="2.5" stroke-linecap="round"><path d="M20 44a17 17 0 0 1 0-24"/><path d="M44 20a17 17 0 0 1 0 24"/><path d="M12 52a28 28 0 0 1 0-40"/><path d="M52 12a28 28 0 0 1 0 40"/><circle cx="32" cy="32" r="4" fill="rgba(244,246,251,.8)" stroke="none"/></svg>
-          <span class="cap">FIELD-TEST VIDEO · COMING SOON</span>
+        <div class="vis video">
+          <video controls playsinline preload="none" poster="assets/projects/workzone/cv-field-test-poster.jpg" aria-label="Field-test video: C-V2X work-zone warning, October 21, 2026">
+            <source src="assets/projects/workzone/cv-field-test.mp4" type="video/mp4">
+          </video>
         </div>
         <span class="badge" style="--c: var(--c1)"><i></i>Field test · real vehicles</span>
         <h3><a href="projects/connected-vehicles.html">Connected Vehicles</a></h3>
@@ -371,6 +359,9 @@
 <script src="assets/site.js"></script>
 <script>
   const isDark = () => document.documentElement.dataset.theme ? document.documentElement.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+
+  // Work Zone card: the looping replay holds still on its poster for reduced motion
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { const v = document.querySelector('.wz video'); v.removeAttribute('autoplay'); v.pause(); }
 
   // Aurora style viewer: the README images, one per style, light and dark
   const STYLES = ['aurora', 'hud', 'precision', 'phosphor', 'matrix', 'cockpit', 'widgets', 'hairline', 'swiss', 'editorial', 'analog', 'tonal'];
