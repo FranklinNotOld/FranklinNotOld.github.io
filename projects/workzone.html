@@ -7,9 +7,9 @@
 <meta name="description" content="A roadside system that predicts which vehicles are about to intrude into a highway work zone: a 4 s time-to-collision screen and an attention-LSTM trajectory predictor, field-tested in Indiana. Purdue University with INDOT.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/site.css">
-<link rel="stylesheet" href="../assets/project.css?v=3">
+<link rel="stylesheet" href="../assets/project.css?v=5">
 <script>try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
 </head>
 <body data-page="projects" data-root="../">
@@ -63,6 +63,10 @@
   <section class="block">
     <div class="kicker">How it works</div>
     <h2>Sense, screen, <b>predict</b></h2>
+    <figure class="wzx glass" data-film="A" hidden>
+      <div class="wzx-stage"><canvas role="img" aria-label="Animation of a lane closure at night: a car still in the closing lane is flagged under 4 s, its forecast stays in the closed lane, and it is rated high risk"></canvas></div>
+      <figcaption>Illustration of one closure, start to finish. The radar tracks every vehicle; cars still in the closing lane are timed to the closure front, and one under 4 s is flagged. The scene slows while Stage 2 forecasts that car's next 4 s from its last 2 s: the path stays in the closed lane, so it is rated high risk. A second car, whose forecast merges out, is rated medium. Every vehicle's level goes to the digital twin.</figcaption>
+    </figure>
     <div class="pipe glass">
       <svg viewBox="0 0 1000 150" role="img" aria-label="Pipeline: roadside sensing, fusion and lane estimation, Stage 1 time-to-collision screen, Stage 2 trajectory prediction, risk level, digital twin">
         <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk" d="M0 0 10 5 0 10z"/></marker></defs>
@@ -83,7 +87,7 @@
         <div class="k">Stage 1 · physics</div>
         <h3>A cheap, explainable screen</h3>
         <p>Every tracked vehicle in the closing lane gets a <b>time-to-collision with the closure front</b>, from its distance, speed and acceleration. Only vehicles under the threshold go on to Stage 2, so the expensive model runs on a small fraction of traffic.</p>
-        <p>Trucks that weave across lanes near the closure (two or more lane changes) are escalated directly.</p>
+        <p>Trucks that weave across lanes near the closure (two or more lane changes) skip the screen and go straight to Stage 2.</p>
       </div>
       <div class="card glass">
         <div class="k" style="color: var(--c2)">Stage 2 · learning</div>
@@ -93,9 +97,9 @@
       </div>
     </div>
 
-    <figure class="fig glass">
-      <img src="../assets/projects/workzone/monte-carlo-rollout.png" alt="A vehicle's history and predicted trajectory crossing into the shaded work-zone area; label COLLISION @ 2.8s">
-      <figcaption>Stage 2 in action: the predicted trajectory of one vehicle reaches the shaded work-zone area 2.8 s ahead.</figcaption>
+    <figure class="wzx glass" data-film="B" hidden>
+      <div class="wzx-stage"><canvas role="img" aria-label="Animation of the decision logic: vehicles pass a lane check and a 4 s time-to-collision gate, flagged ones run through the STA-LSTM, and each lands in low, medium or high risk"></canvas></div>
+      <figcaption>The same logic for every tracked vehicle. Vehicles outside the closing lane, or more than 4 s from the closure, leave as low risk; weaving trucks skip the screen. For a flagged vehicle, the last 20 frames pass through an input MLP and an LSTM encoder; the decoder unrolls 40 steps, attending back over the encoded frames at each one, and the resulting path is checked against the closure front: crossing it is high risk, merging out is medium.</figcaption>
     </figure>
 
     <div class="card glass" style="margin-top:22px">
@@ -112,6 +116,10 @@
       <p>A driver needs about 1.5 s to react (AASHTO designs for 2.5 s) and brakes comfortably at roughly 0.35 g. With 4 s left, only a driver going about 38 mph or slower can still stop comfortably; at 65 mph it takes 6–7 s. So the gate flags exactly the vehicles that are running out of room. Calibrating a threshold per site gave values between 0.5 s and 2.6 s across six sites — all below 4 s — so <strong>one fixed threshold works everywhere</strong>.</p>
       <p>Congestion takes care of itself: in slower traffic fewer vehicles cross the gate, so the system does not need a separate congestion mode.</p>
     </div>
+    <figure class="wzx glass" data-film="D" hidden>
+      <div class="wzx-stage"><canvas role="img" aria-label="Animation of one vehicle: its time to the closure falls below 4 s, two forecasts a second apart rate it medium then high, and it drops back to low after merging out"></canvas></div>
+      <figcaption>One driver, seven seconds. The time to the closure falls through 4 s, and the next check hands the car to Stage 2. The first forecast still merges out (medium); one check later it no longer does (high). The level rises at once and drops back to low at the first check after the driver merges out.</figcaption>
+    </figure>
     <div class="figs2">
       <figure class="fig glass"><img src="../assets/projects/workzone/ttc-stopping-time.png" alt="Time needed to stop comfortably versus speed, with lines at TTC 4, 6 and 6.8 seconds"><figcaption>Time needed to stop comfortably vs. speed; the 4 s line crosses at 38 mph.</figcaption></figure>
       <figure class="fig glass"><img src="../assets/projects/workzone/per-site-ttc.png" alt="Per-site calibrated TTC thresholds between 0.52 and 2.60 seconds, all below the recommended fixed 4 seconds"><figcaption>Per-site calibrated thresholds would all be shorter than a human reaction; the fixed 4 s gate sits above all six.</figcaption></figure>
@@ -150,6 +158,10 @@
   <section class="block">
     <div class="kicker">Engineering</div>
     <h2>Built to run <b>unattended</b> on the roadside</h2>
+    <figure class="wzx glass" data-film="C" hidden>
+      <div class="wzx-stage"><canvas role="img" aria-label="Animation of a radar scope with telemetry for one vehicle: its time to the closure, which stage has fired, and the level sent to the digital twin"></canvas></div>
+      <figcaption>Illustration of the runtime's view of one vehicle. Radar returns become tracks with a lane and a motion state; for the car in the closing lane it keeps the gap and time to the closure, which stage has fired, and the level it sends to the digital twin.</figcaption>
+    </figure>
     <div class="eng">
       <div class="card glass"><div class="k">Runtime</div><h3>Real time at the edge</h3><p>Reads live radar and camera–radar fusion streams over UDP and runs on an on-site computer with a handful of dependencies; every vehicle is re-evaluated about once a second.</p></div>
       <div class="card glass"><div class="k">Reliability</div><h3>Fails safe</h3><p>A state machine (boot → calibration → operation → failsafe) and a watchdog that notices when sensor data stops arriving.</p></div>
@@ -203,5 +215,6 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script src="../assets/projects/workzone/replay-data.js?v=3"></script>
 <script src="../assets/wz-replay.js?v=4"></script>
+<script src="../assets/wz-explainer.js?v=3"></script>
 </body>
 </html>
